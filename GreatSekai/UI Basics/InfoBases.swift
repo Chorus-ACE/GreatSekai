@@ -151,6 +151,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
         } .onUpdate {
             if let information = $0 {
                 self.information = information
+                infoIsAvailable = true
             } else {
                 infoIsAvailable = false
             }

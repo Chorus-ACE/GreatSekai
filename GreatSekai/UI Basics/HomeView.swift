@@ -46,6 +46,10 @@ struct HomeView: View {
                 Button(action: {
                     Task {
                         SekaiCache.invalidateAll()
+                        
+                        let char = await Character(id: 3)
+                        
+                        print(char)
                     }
                 }, label: {
                     Text(verbatim: "1")

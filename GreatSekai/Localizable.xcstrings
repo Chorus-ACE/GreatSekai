@@ -1,7 +1,1041 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
 
+    },
+    "#%@" : {
+      "shouldTranslate" : false
+    },
+    "%@" : {
+      "shouldTranslate" : false
+    },
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%f" : {
+      "shouldTranslate" : false
+    },
+    "App.home" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "首页"
+          }
+        }
+      }
+    },
+    "App.info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Info"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信息"
+          }
+        }
+      }
+    },
+    "App.info.characters" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Characters"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "角色"
+          }
+        }
+      }
+    },
+    "App.info.characters.abbr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Characters"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "角色"
+          }
+        }
+      }
+    },
+    "App.tools" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tools"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "工具"
+          }
+        }
+      }
+    },
+    "Character" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Character"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "角色"
+          }
+        }
+      }
+    },
+    "Character.advanced.breast-size" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breast Size"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "胸部尺寸"
+          }
+        }
+      }
+    },
+    "Character.advanced.figure" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Figure Type"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "人物类型"
+          }
+        }
+      }
+    },
+    "Character.advanced.live2d-height-adjustment-value" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live2D Height Adjustment Value"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live2D高度调整值"
+          }
+        }
+      }
+    },
+    "Character.advanced.support-unit-type" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support Unit Type"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附属组合类型"
+          }
+        }
+      }
+    },
+    "Character.birthday" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Birthday"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生日"
+          }
+        }
+      }
+    },
+    "Character.character-voice" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Character Voice"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配音"
+          }
+        }
+      }
+    },
+    "Character.class" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "School Year"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年级"
+          }
+        }
+      }
+    },
+    "Character.color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "颜色"
+          }
+        }
+      }
+    },
+    "Character.color.details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "详细信息"
+          }
+        }
+      }
+    },
+    "Character.color.main-color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main Color"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主颜色"
+          }
+        }
+      }
+    },
+    "Character.color.skin-color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skin Color"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "肤色"
+          }
+        }
+      }
+    },
+    "Character.color.skin-shadow-color-1" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skin Shadow Color 1"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "皮肤阴影色1"
+          }
+        }
+      }
+    },
+    "Character.color.skin-shadow-color-2" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skin Shadow Color 2"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "皮肤阴影色2"
+          }
+        }
+      }
+    },
+    "Character.color.unit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "组合"
+          }
+        }
+      }
+    },
+    "Character.disliked-food" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disliked Food"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "讨厌的食物"
+          }
+        }
+      }
+    },
+    "Character.favorite-food" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favorite Food"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "喜欢的食物"
+          }
+        }
+      }
+    },
+    "Character.furigana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Furigana"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "注音"
+          }
+        }
+      }
+    },
+    "Character.gender" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gender"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "性别"
+          }
+        }
+      }
+    },
+    "Character.height" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Height"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "身高"
+          }
+        }
+      }
+    },
+    "Character.hobby" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hobby"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "兴趣"
+          }
+        }
+      }
+    },
+    "Character.introduction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduction"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "介绍"
+          }
+        }
+      }
+    },
+    "Character.name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名字"
+          }
+        }
+      }
+    },
+    "Character.school" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "School"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学校"
+          }
+        }
+      }
+    },
+    "Character.search.unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Character Search Unavailable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "角色搜索不可用"
+          }
+        }
+      }
+    },
+    "Character.special-skill" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Special Skill"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特技"
+          }
+        }
+      }
+    },
+    "Character.unit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "组合"
+          }
+        }
+      }
+    },
+    "Character.unit.count.%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld units"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld个组合"
+          }
+        }
+      }
+    },
+    "Character.weakness" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weakness"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不擅长"
+          }
+        }
+      }
+    },
+    "Content.unavailable.%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Unavailable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@不可用"
+          }
+        }
+      }
+    },
+    "Debug.crash-detected.direct-enter" : {
+
+    },
+    "Debug.crash-detected.invalidate-cache-enter" : {
+
+    },
+    "Debug.crash-detected.message" : {
+
+    },
+    "Debug.crash-detected.title" : {
+
+    },
+    "Detail.next" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next Item"
+          }
+        }
+      }
+    },
+    "Detail.previous" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous Item"
+          }
+        }
+      }
+    },
+    "Details.arts" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Art"
+          }
+        }
+      }
+    },
+    "Details.arts.unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Art Unavailable"
+          }
+        }
+      }
+    },
+    "Details.show-all.%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show All (%lld)"
+          }
+        }
+      }
+    },
+    "Details.show-less" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Less (%lld)"
+          }
+        }
+      }
+    },
+    "Details.unavailable.%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Unavailable"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "External-links" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "External Link"
+          }
+        }
+      }
+    },
+    "Filter.view.banner-and-details" : {
+
+    },
+    "Filter.view.banner-only" : {
+
+    },
+    "Filter.view.grid" : {
+
+    },
+    "Filter.view.list" : {
+
+    },
+    "Home.banner.no-pre-cahce.subtitle" : {
+
+    },
+    "Home.banner.no-pre-cahce.title" : {
+
+    },
+    "Image.copy.image" : {
+
+    },
+    "Image.copy.link" : {
+
+    },
+    "Image.copy.subject" : {
+
+    },
+    "Image.image" : {
+
+    },
+    "Image.save.as" : {
+
+    },
+    "Image.save.download" : {
+
+    },
+    "Image.share" : {
+
+    },
+    "Info.id" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID"
+          }
+        }
+      }
+    },
+    "Info.unavailable" : {
+
+    },
+    "Message.multilingual" : {
+
+    },
+    "Search.layout" : {
+
+    },
+    "Search.unavailable.description" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Settings.about" : {
+
+    },
+    "Settings.about.acknowledgements" : {
+
+    },
+    "Settings.about.acknowledgements.code-snippets" : {
+
+    },
+    "Settings.about.acknowledgements.footer" : {
+
+    },
+    "Settings.about.acknowledgements.packages" : {
+
+    },
+    "Settings.about.github" : {
+
+    },
+    "Settings.about.privacy-policy" : {
+
+    },
+    "Settings.about.report-a-problem" : {
+
+    },
+    "Settings.about.user-agreement-license" : {
+
+    },
+    "Settings.about.version.%@" : {
+
+    },
+    "Settings.advanced" : {
+
+    },
+    "Settings.advanced.banners.disabling-features.description" : {
+
+    },
+    "Settings.advanced.banners.low-power" : {
+
+    },
+    "Settings.advanced.banners.power-saving.high-temperature" : {
+
+    },
+    "Settings.advanced.image" : {
+
+    },
+    "Settings.advanced.image.subject-prefer-system-model" : {
+
+    },
+    "Settings.advanced.image.subject-prefer-system-model.description" : {
+
+    },
+    "Settings.advanced.image.use-super-resolution" : {
+
+    },
+    "Settings.advanced.image.use-super-resolution.description" : {
+
+    },
+    "Settings.advanced.storage" : {
+
+    },
+    "Settings.advanced.storage.clear-cache" : {
+
+    },
+    "Settings.advanced.storage.clear-cache.alert.action.confirm" : {
+
+    },
+    "Settings.advanced.storage.clear-cache.alert.message" : {
+
+    },
+    "Settings.advanced.storage.clear-cache.alert.title" : {
+
+    },
+    "Settings.advanced.storage.clear-cache.clear" : {
+
+    },
+    "Settings.advanced.storage.clear-cache.description" : {
+
+    },
+    "Settings.advanced.ui" : {
+
+    },
+    "Settings.advanced.ui.random-card-contains-all-card" : {
+
+    },
+    "Settings.advanced.ui.random-card-contains-all-card.description" : {
+
+    },
+    "Settings.birthday-time-zone" : {
+
+    },
+    "Settings.birthday-time-zone.description" : {
+
+    },
+    "Settings.birthday-time-zone.name.adaptive" : {
+
+    },
+    "Settings.birthday-time-zone.name.CST" : {
+
+    },
+    "Settings.birthday-time-zone.name.JST" : {
+
+    },
+    "Settings.birthday-time-zone.name.PT" : {
+
+    },
+    "Settings.birthday-time-zone.name.UTC" : {
+
+    },
+    "Settings.birthday-time-zone.selection.adaptive" : {
+
+    },
+    "Settings.birthday-time-zone.selection.adaptive.abbr" : {
+
+    },
+    "Settings.birthday-time-zone.selection.CST" : {
+
+    },
+    "Settings.birthday-time-zone.selection.CST.abbr" : {
+
+    },
+    "Settings.birthday-time-zone.selection.JST" : {
+
+    },
+    "Settings.birthday-time-zone.selection.JST.abbr" : {
+
+    },
+    "Settings.birthday-time-zone.selection.PT.abbr" : {
+
+    },
+    "Settings.birthday-time-zone.selection.PT.PDT" : {
+
+    },
+    "Settings.birthday-time-zone.selection.PT.PST" : {
+
+    },
+    "Settings.birthday-time-zone.selection.UTC" : {
+
+    },
+    "Settings.birthday-time-zone.selection.UTC.abbr" : {
+
+    },
+    "Settings.debug" : {
+
+    },
+    "Settings.debug.activate-alert.confirm" : {
+
+    },
+    "Settings.debug.activate-alert.message" : {
+
+    },
+    "Settings.debug.activate-alert.prompt" : {
+
+    },
+    "Settings.debug.activate-alert.succeed" : {
+
+    },
+    "Settings.debug.activate-alert.title" : {
+
+    },
+    "Settings.debug.deactivate-alert.cancel" : {
+
+    },
+    "Settings.debug.deactivate-alert.confirm" : {
+
+    },
+    "Settings.debug.deactivate-alert.prompt" : {
+
+    },
+    "Settings.debug.deactivate-alert.title" : {
+
+    },
+    "Settings.debug.flags" : {
+
+    },
+    "Settings.document.close" : {
+
+    },
+    "Settings.document.unavailable" : {
+
+    },
+    "Settings.home-edit" : {
+
+    },
+    "Settings.locale" : {
+
+    },
+    "Settings.locale.primary-locale" : {
+
+    },
+    "Settings.locale.secondary-locale" : {
+
+    },
+    "Settings.offline-data" : {
+
+    },
+    "Settings.offline-data.source-preference" : {
+
+    },
+    "Settings.offline-data.source-preference.selection.hybrid" : {
+
+    },
+    "Settings.offline-data.source-preference.selection.internet" : {
+
+    },
+    "Settings.offline-data.source-preference.selection.local" : {
+
+    },
+    "Settings.prompt" : {
+
+    },
+    "Time-zone.%@.%@.%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Time-zone.%1$@.%2$@.%3$lld"
+          }
+        }
+      }
+    },
+    "Time-zone.same-time" : {
+
+    },
+    "Time-zone.today" : {
+
+    },
+    "Time-zone.tomorrow" : {
+
+    },
+    "Time-zone.yesterday" : {
+
+    },
+    "Type.card.plural" : {
+
+    },
+    "Type.card.singular" : {
+
+    },
+    "Type.character.plural" : {
+
+    },
+    "Type.character.singular" : {
+
+    },
+    "Typography.bold-dot-seperater" : {
+
+    },
+    "Welcome.agree-done" : {
+
+    },
+    "Welcome.footnote" : {
+
+    },
+    "Welcome.message" : {
+
+    },
+    "Welcome.primary-locale" : {
+
+    },
+    "Welcome.secondary-locale" : {
+
+    },
+    "Welcome.title" : {
+
+    },
+    "Whats-new.done" : {
+
+    },
+    "Whats-new.testflight-note" : {
+
+    },
+    "Whats-new.title.build.%lld" : {
+
+    },
+    "Whats-new.title.recent" : {
+
+    },
+    "Whats-new.title.version.%@" : {
+
+    }
   },
   "version" : "1.1"
 }

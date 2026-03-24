@@ -38,11 +38,13 @@ struct CharacterDetailOverviewView: View {
                                 LocalizableText(text: information.fullNameRuby)
                             })
                             
-                            ListItem(title: {
-                                Text("Character.character-voice")
-                            }, value: {
-                                LocalizableText(text: information.characterVoice)
-                            })
+                            if !information.characterVoice.isEmpty {
+                                ListItem(title: {
+                                    Text("Character.character-voice")
+                                }, value: {
+                                    LocalizableText(text: information.characterVoice)
+                                })
+                            }
                             
                             if let color = information.color {
                                 ListItem(title: {
@@ -95,47 +97,56 @@ struct CharacterDetailOverviewView: View {
                                 Text(information.height, format: .measurement(width: .narrow, usage: .personHeight))
                             })
                             
-                            ListItem(title: {
-                                Text("Character.school")
-                                    .bold()
-                            }, value: {
-                                LocalizableText(text: information.school)
-                            })
-                            
-                            ListItem(title: {
-                                Text("Character.special-skill")
-                                    .bold()
-                            }, value: {
-                                LocalizableText(text: information.specialSkill)
-                            })
-                            
-                            ListItem(title: {
-                                Text("Character.hobby")
-                                    .bold()
-                            }, value: {
-                                LocalizableText(text: information.hobby)
-                            })
-                            
-                            ListItem(title: {
-                                Text("Character.favorite-food")
-                                    .bold()
-                            }, value: {
-                                LocalizableText(text: information.favoriteFood)
-                            })
-                            
-                            ListItem(title: {
-                                Text("Character.disliked-food")
-                                    .bold()
-                            }, value: {
-                                LocalizableText(text: information.dislikedFood)
-                            })
-                            
-                            ListItem(title: {
-                                Text("Character.weakness")
-                                    .bold()
-                            }, value: {
-                                LocalizableText(text: information.weakness)
-                            })
+                            if !information.school.isEmpty {
+                                
+                                ListItem(title: {
+                                    Text("Character.school")
+                                        .bold()
+                                }, value: {
+                                    LocalizableText(text: information.school)
+                                })
+                                
+                                ListItem(title: {
+                                    Text("Character.class")
+                                }, value: {
+                                    LocalizableText(text: information.schoolClass)
+                                })
+                                
+                                ListItem(title: {
+                                    Text("Character.special-skill")
+                                        .bold()
+                                }, value: {
+                                    LocalizableText(text: information.specialSkill)
+                                })
+                                
+                                ListItem(title: {
+                                    Text("Character.hobby")
+                                        .bold()
+                                }, value: {
+                                    LocalizableText(text: information.hobby)
+                                })
+                                
+                                ListItem(title: {
+                                    Text("Character.favorite-food")
+                                        .bold()
+                                }, value: {
+                                    LocalizableText(text: information.favoriteFood)
+                                })
+                                
+                                ListItem(title: {
+                                    Text("Character.disliked-food")
+                                        .bold()
+                                }, value: {
+                                    LocalizableText(text: information.dislikedFood)
+                                })
+                                
+                                ListItem(title: {
+                                    Text("Character.weakness")
+                                        .bold()
+                                }, value: {
+                                    LocalizableText(text: information.weakness)
+                                })
+                            }
                             
                             ListItem(title: {
                                 Text("Character.introduction")
