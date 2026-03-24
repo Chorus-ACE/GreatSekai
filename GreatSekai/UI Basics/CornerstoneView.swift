@@ -829,343 +829,159 @@ struct LocalePicker<L: View>: View {
     }
 }
 
-//// MARK: MultilingualText
-//struct MultilingualText: View {
-//    let primaryText: String
-//    let secondaryText: String
-//    var showSecondaryText: Bool = true
-//    //    let locale: Locale
-//    var showLocaleKey: Bool = false
-//    var allowPopover = true
-//    @Environment(\.disablePopover) var envDisablesPopover
-//    @State var isHovering = false
-//    @State var allLocaleTexts: [String] = []
-//    @State var shownLocaleValueDict: [String: SekaiLocale] = [:]
-//    @State var primaryDisplayString = ""
-//    @State var showCopyMessage = false
-//    @State var lastCopiedLocaleValue: SekaiLocale? = nil
-//
-//    init(primaryText: String, secondaryText: String, showSecondaryText: Bool = true, showLocaleKey: Bool = false, allowPopover: Bool = true) {
-//        self.primaryText = primaryText
-//        self.secondaryText = secondaryText
-//        self.showSecondaryText = showSecondaryText
-//        self.showLocaleKey = showLocaleKey
-//        self.allowPopover = allowPopover
-//
-//        var __allLocaleTexts: [String] = []
-//        var __shownLocaleValueDict: [String: SekaiLocale] = [:]
-//        for lang in SekaiLocale.allCases {
-//            if let pendingString = source.forLocale(lang) {
-//                if !__allLocaleTexts.contains(pendingString) {
-//                    __allLocaleTexts.append("\(pendingString)\(showLocaleKey ? " (\(lang.rawValue.uppercased()))" : "")")
-//                    __shownLocaleValueDict.updateValue(lang, forKey: __allLocaleTexts.last!)
-//                }
-//            }
-//        }
-//        self._allLocaleTexts = .init(initialValue: __allLocaleTexts)
-//        self._shownLocaleValueDict = .init(initialValue: __shownLocaleValueDict)
-//    }
-//    var body: some View {
-//        Group {
-//#if os(iOS)
-//            ZStack(alignment: .trailing, content: {
-//                Label(lastCopiedLocaleValue == nil ? "Message.copy.success" : "Message.copy.success.locale.\(lastCopiedLocaleValue!.rawValue.uppercased())", systemImage: "doc.on.doc")
-//                    .opacity(showCopyMessage ? 1 : 0)
-//                    .offset(y: 2)
-//                MultilingualTextInternalLabel(source: source, showSecondaryText: showSecondaryText, showLocaleKey: showLocaleKey)
-//                    .opacity(showCopyMessage ? 0 : 1)
-//            })
-//            .animation(.easeIn(duration: 0.2), value: showCopyMessage)
-//            .onChange(of: showCopyMessage, {
-//                if showCopyMessage {
-//                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-//                        showCopyMessage = false
-//                    }
-//                }
-//            })
-//            .buttonStyle(.borderless)
-//            .foregroundStyle(.primary)
-//#else
-//            MultilingualTextInternalLabel(source: source, showSecondaryText: showSecondaryText, showLocaleKey: showLocaleKey)
-//                .onHover { isHovering in
-//                    if allowPopover {
-//                        self.isHovering = isHovering && !envDisablesPopover
-//                    }
-//                }
-//                .popover(isPresented: $isHovering, arrowEdge: .bottom) {
-//                    VStack(alignment: .trailing) {
-//                        ForEach(allLocaleTexts, id: \.self) { text in
-//                            Text(text)
-//                                .multilineTextAlignment(.trailing)
-//                                .typesettingLanguage(.explicit((shownLocaleValueDict[text]?.nsLocale().language) ?? Locale.current.language))
-//                            if text.contains("\n") && text != allLocaleTexts.last {
-//                                Text("")
-//                            }
-////                                .typesettingLanguage(.explicit(DoriAPI.Locale(rawValue: localeValue)?.nsLocale()))
-//                        }
-//                    }
-//                    .padding()
-//                }
-//#endif
-//        }
-//        .accessibilityElement(children: .ignore)
-//        .accessibilityLabel(source.forPreferredLocale() ?? "")
-//        .accessibilityHint("Accessibility.multilingual")
-//    }
-//    struct MultilingualTextInternalLabel: View {
-//        let source: LocalizedData<String>
-//        //    let locale: Locale
-//        let showSecondaryText: Bool
-//        let showLocaleKey: Bool
-//        let allowTextSelection: Bool = true
-//        @State var primaryDisplayString: String = ""
-//        var body: some View {
-//            VStack(alignment: .trailing) {
-//                if let sourceInPrimaryLocale = source.forPreferredLocale(allowsFallback: false) {
-//                    Text("\(sourceInPrimaryLocale)\(showLocaleKey ? " (\(SekaiLocale.primaryLocale.rawValue.uppercased()))" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.primaryLocale.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInPrimaryLocale
-//                        }
-//                } else if let sourceInSecondaryLocale = source.forSecondaryLocale(allowsFallback: false) {
-//                    Text("\(sourceInSecondaryLocale)\(showLocaleKey ? " (\(SekaiLocale.secondaryLocale.rawValue.uppercased()))" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.secondaryLocale.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInSecondaryLocale
-//                        }
-//                } else if let sourceInJP = source.jp {
-//                    Text("\(sourceInJP)\(showLocaleKey ? " (JP)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.jp.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInJP
-//                        }
-//                } else if let sourceInWhateverLocale = source.en {
-//                    Text("\(sourceInWhateverLocale)\(showLocaleKey ? " (EN)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.en.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInWhateverLocale
-//                        }
-//                } else if let sourceInWhateverLocale = source.tw {
-//                    Text("\(sourceInWhateverLocale)\(showLocaleKey ? " (TW)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.tw.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInWhateverLocale
-//                        }
-//                } else if let sourceInWhateverLocale = source.cn {
-//                    Text("\(sourceInWhateverLocale)\(showLocaleKey ? " (CN)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.cn.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInWhateverLocale
-//                        }
-//                } else if let sourceInWhateverLocale = source.kr {
-//                    Text("\(sourceInWhateverLocale)\(showLocaleKey ? " (KR)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.kr.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInWhateverLocale
-//                        }
-//                }
-//                if showSecondaryText {
-//                    if let secondarySourceInSecondaryLang = source.forSecondaryLocale(allowsFallback: false), secondarySourceInSecondaryLang != primaryDisplayString {
-//                        Text("\(secondarySourceInSecondaryLang)\(showLocaleKey ? " (\(SekaiLocale.secondaryLocale.rawValue.uppercased()))" : "")")
-//                            .typesettingLanguage(.explicit((SekaiLocale.secondaryLocale.nsLocale().language)))
-//                            .foregroundStyle(.secondary)
-//                    } else if let secondarySourceInJP = source.jp, secondarySourceInJP != primaryDisplayString {
-//                        Text("\(secondarySourceInJP)\(showLocaleKey ? " (JP)" : "")")
-//                            .typesettingLanguage(.explicit((SekaiLocale.jp.nsLocale().language)))
-//                            .foregroundStyle(.secondary)
-//                    }
-//                }
-//            }
-//            .multilineTextAlignment(.trailing)
-//            .wrapIf(allowTextSelection, in: { content in
-//                content
-//                    .textSelection(.enabled)
-//            }, else: { content in
-//                content
-//                    .textSelection(.disabled)
-//            })
-//            .fixedSize(horizontal: false, vertical: true)
-//        }
-//    }
-//}
+struct MultilingualText: View {
+    @Environment(\.disablePopover) var envDisablesPopover
+    
+    var text: LocalizedData<String>
+    var showSecondaryText: Bool = true
+    var showLocaleKey: Bool = false
+    var reducedStrings: [SekaiLocale: String]
+    
+    @State var isHovering = false
+    @State var lastCopiedLocale: SekaiLocale?
+    @State var copyMessageIsDisplaying = false
+    
+    init(text: LocalizedData<String>, showSecondaryText: Bool = true, showLocaleKey: Bool = false) {
+        self.text = text
+        self.showSecondaryText = showSecondaryText
+        self.showLocaleKey = showLocaleKey
+        
+        var _reducedStrings: [SekaiLocale: String] = [:]
+        var seenValues: [String] = []
+        for locale in text.allAvailableLocales {
+            let value = text[locale] ?? ""
+            if !seenValues.contains(value) {
+                seenValues.append(value)
+                _reducedStrings.updateValue(value, forKey: locale)
+            }
+        }
+        
+        self.reducedStrings = _reducedStrings
+    }
+    var body: some View {
+        Group {
+#if os(iOS)
+            Menu(content: {
+                ForEach(reducedStrings.keys.sorted(), id: \.self) { locale in
+                    Button(action: {
+                        copyStringToClipboard(reducedStrings[locale] ?? "")
+                        lastCopiedLocale = locale
+                        copyMessageIsDisplaying = true
+                    }, label: {
+                        Text(reducedStrings[locale] ?? "")
+                            .lineLimit(nil)
+                            .multilineTextAlignment(.trailing)
+                            .textSelection(.enabled)
+                            .typesettingLanguage(.explicit(locale.nsLocale.language))
+                    })
+                    .accessibilityHint("Accessibility.copiable")
+                }
+            }, label: {
+                ZStack(alignment: .trailing, content: {
+                    Label(lastCopiedLocale == nil ? "Message.copy.success" : "Message.copy.success.locale.\(lastCopiedLocale!.rawValue.uppercased())", systemImage: "doc.on.doc")
+                        .opacity(copyMessageIsDisplaying ? 1 : 0)
+                        .offset(y: 2)
+                    LabelView(text: text, showSecondaryText: showSecondaryText, showLocaleKey: showLocaleKey)
+                        .opacity(copyMessageIsDisplaying ? 0 : 1)
+                })
+                .animation(.easeIn(duration: 0.2), value: copyMessageIsDisplaying)
+                .onChange(of: copyMessageIsDisplaying, {
+                    if copyMessageIsDisplaying {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            copyMessageIsDisplaying = false
+                        }
+                    }
+                })
+            })
+            .menuStyle(.button)
+            .buttonStyle(.borderless)
+            .menuIndicator(.hidden)
+            .foregroundStyle(.primary)
+#else
+            LabelView(text: text, showSecondaryText: showSecondaryText, showLocaleKey: showLocaleKey)
+                .onHover { hoverStatus in
+                    isHovering = hoverStatus && !envDisablesPopover
+                }
+                .popover(isPresented: $isHovering, arrowEdge: .bottom) {
+                    VStack(alignment: .trailing) {
+                        ForEach(reducedStrings.keys.sorted(), id: \.self) { locale in
+                            Text(reducedStrings[locale] ?? "")
+                                .multilineTextAlignment(.trailing)
+                                .typesettingLanguage(.explicit(locale.nsLocale.language))
+                        }
+                        .wrapIf(reducedStrings.values.contains(where: { $0.contains("\n") })) { context in
+                            context.insert {
+                                Text("")
+                            }
+                        }
+                    }
+                    .padding()
+                }
+#endif
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(text.forPreferredLocale() ?? "")
+        .accessibilityHint("Message.multilingual")
+    }
+    
+    struct LabelView: View {
+        let text: LocalizedData<String>
+        let showSecondaryText: Bool
+        let showLocaleKey: Bool
+        
+        var primaryLocale: SekaiLocale?
+        var secondaryLocale: SekaiLocale?
+        
+        init(text: LocalizedData<String>, showSecondaryText: Bool, showLocaleKey: Bool) {
+            self.text = text
+            self.showSecondaryText = showSecondaryText
+            self.showLocaleKey = showLocaleKey
+            
+            let availableLocales = text.allAvailableLocales
+            self.primaryLocale = availableLocales.first
+            self.secondaryLocale = availableLocales.access(1)
+        }
+        var body: some View {
+            VStack(alignment: .trailing) {
+                if let primaryLocale {
+                    Text("\(text[primaryLocale] ?? "")\(showLocaleKey ? " (\(primaryLocale.rawValue.uppercased()))" : "")")
+                        .typesettingLanguage(.explicit((primaryLocale.nsLocale.language)))
+                    
+                    if let secondaryLocale, text[secondaryLocale] != text[primaryLocale] {
+                        Text("\(text[secondaryLocale] ?? "")\(showLocaleKey ? " (\(secondaryLocale.rawValue.uppercased()))" : "")")
+                            .typesettingLanguage(.explicit((secondaryLocale.nsLocale.language)))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .multilineTextAlignment(.trailing)
+            .textSelection(.enabled)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
 
-//// MARK: MultilingualText
-//struct MultilingualText: View {
-//    let source: LocalizedData<String>
-//    var showSecondaryText: Bool = true
-//    //    let locale: Locale
-//    var showLocaleKey: Bool = false
-//    var allowPopover = true
-//    @Environment(\.disablePopover) var envDisablesPopover
-//    @State var isHovering = false
-//    @State var allLocaleTexts: [String] = []
-//    @State var shownLocaleValueDict: [String: SekaiLocale] = [:]
-//    @State var primaryDisplayString = ""
-//    @State var showCopyMessage = false
-//    @State var lastCopiedLocaleValue: SekaiLocale? = nil
-//    
-//    init(_ source: LocalizedData<String>, showSecondaryText: Bool = true, showLocaleKey: Bool = false, allowPopover: Bool = true) {
-//        self.source = source
-//        self.showSecondaryText = showSecondaryText
-//        self.showLocaleKey = showLocaleKey
-//        self.allowPopover = allowPopover
-//        
-//        var __allLocaleTexts: [String] = []
-//        var __shownLocaleValueDict: [String: SekaiLocale] = [:]
-//        for lang in SekaiLocale.allCases {
-//            if let pendingString = source.forLocale(lang) {
-//                if !__allLocaleTexts.contains(pendingString) {
-//                    __allLocaleTexts.append("\(pendingString)\(showLocaleKey ? " (\(lang.rawValue.uppercased()))" : "")")
-//                    __shownLocaleValueDict.updateValue(lang, forKey: __allLocaleTexts.last!)
-//                }
-//            }
-//        }
-//        self._allLocaleTexts = .init(initialValue: __allLocaleTexts)
-//        self._shownLocaleValueDict = .init(initialValue: __shownLocaleValueDict)
-//    }
-//    var body: some View {
-//        Group {
-//#if os(iOS)
-//            Menu(content: {
-//                ForEach(allLocaleTexts, id: \.self) { localeValue in
-//                    Button(action: {
-//                        copyStringToClipboard(localeValue)
-//                        print(shownLocaleValueDict)
-//                        lastCopiedLocaleValue = shownLocaleValueDict[localeValue]
-//                        showCopyMessage = true
-//                    }, label: {
-//                        Text(localeValue)
-//                            .lineLimit(nil)
-//                            .multilineTextAlignment(.trailing)
-//                            .textSelection(.enabled)
-//                            .typesettingLanguage(.explicit((shownLocaleValueDict[localeValue]?.nsLocale().language) ?? Locale.current.language))
-//                    })
-//                    .accessibilityHint("Accessibility.copiable")
-//                }
-//            }, label: {
-//                ZStack(alignment: .trailing, content: {
-//                    Label(lastCopiedLocaleValue == nil ? "Message.copy.success" : "Message.copy.success.locale.\(lastCopiedLocaleValue!.rawValue.uppercased())", systemImage: "doc.on.doc")
-//                        .opacity(showCopyMessage ? 1 : 0)
-//                        .offset(y: 2)
-//                    MultilingualTextInternalLabel(source: source, showSecondaryText: showSecondaryText, showLocaleKey: showLocaleKey)
-//                        .opacity(showCopyMessage ? 0 : 1)
-//                })
-//                .animation(.easeIn(duration: 0.2), value: showCopyMessage)
-//                .onChange(of: showCopyMessage, {
-//                    if showCopyMessage {
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-//                            showCopyMessage = false
-//                        }
-//                    }
-//                })
-//            })
-//            .menuStyle(.button)
-//            .buttonStyle(.borderless)
-//            .menuIndicator(.hidden)
-//            .foregroundStyle(.primary)
-//#else
-//            MultilingualTextInternalLabel(source: source, showSecondaryText: showSecondaryText, showLocaleKey: showLocaleKey)
-//                .onHover { isHovering in
-//                    if allowPopover {
-//                        self.isHovering = isHovering && !envDisablesPopover
-//                    }
-//                }
-//                .popover(isPresented: $isHovering, arrowEdge: .bottom) {
-//                    VStack(alignment: .trailing) {
-//                        ForEach(allLocaleTexts, id: \.self) { text in
-//                            Text(text)
-//                                .multilineTextAlignment(.trailing)
-//                                .typesettingLanguage(.explicit((shownLocaleValueDict[text]?.nsLocale().language) ?? Locale.current.language))
-//                            if text.contains("\n") && text != allLocaleTexts.last {
-//                                Text("")
-//                            }
-////                                .typesettingLanguage(.explicit(DoriAPI.Locale(rawValue: localeValue)?.nsLocale()))
-//                        }
-//                    }
-//                    .padding()
-//                }
-//#endif
-//        }
-//        .accessibilityElement(children: .ignore)
-//        .accessibilityLabel(source.forPreferredLocale() ?? "")
-//        .accessibilityHint("Accessibility.multilingual")
-//    }
-//    struct MultilingualTextInternalLabel: View {
-//        let source: LocalizedData<String>
-//        //    let locale: Locale
-//        let showSecondaryText: Bool
-//        let showLocaleKey: Bool
-//        let allowTextSelection: Bool = true
-//        @State var primaryDisplayString: String = ""
-//        var body: some View {
-//            VStack(alignment: .trailing) {
-//                if let sourceInPrimaryLocale = source.forPreferredLocale(allowsFallback: false) {
-//                    Text("\(sourceInPrimaryLocale)\(showLocaleKey ? " (\(SekaiLocale.primaryLocale.rawValue.uppercased()))" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.primaryLocale.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInPrimaryLocale
-//                        }
-//                } else if let sourceInSecondaryLocale = source.forSecondaryLocale(allowsFallback: false) {
-//                    Text("\(sourceInSecondaryLocale)\(showLocaleKey ? " (\(SekaiLocale.secondaryLocale.rawValue.uppercased()))" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.secondaryLocale.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInSecondaryLocale
-//                        }
-//                } else if let sourceInJP = source.jp {
-//                    Text("\(sourceInJP)\(showLocaleKey ? " (JP)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.jp.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInJP
-//                        }
-//                } else if let sourceInWhateverLocale = source.en {
-//                    Text("\(sourceInWhateverLocale)\(showLocaleKey ? " (EN)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.en.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInWhateverLocale
-//                        }
-//                } else if let sourceInWhateverLocale = source.tw {
-//                    Text("\(sourceInWhateverLocale)\(showLocaleKey ? " (TW)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.tw.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInWhateverLocale
-//                        }
-//                } else if let sourceInWhateverLocale = source.cn {
-//                    Text("\(sourceInWhateverLocale)\(showLocaleKey ? " (CN)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.cn.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInWhateverLocale
-//                        }
-//                } else if let sourceInWhateverLocale = source.kr {
-//                    Text("\(sourceInWhateverLocale)\(showLocaleKey ? " (KR)" : "")")
-//                        .typesettingLanguage(.explicit((SekaiLocale.kr.nsLocale().language)))
-//                        .onAppear {
-//                            primaryDisplayString = sourceInWhateverLocale
-//                        }
-//                }
-//                if showSecondaryText {
-//                    if let secondarySourceInSecondaryLang = source.forSecondaryLocale(allowsFallback: false), secondarySourceInSecondaryLang != primaryDisplayString {
-//                        Text("\(secondarySourceInSecondaryLang)\(showLocaleKey ? " (\(SekaiLocale.secondaryLocale.rawValue.uppercased()))" : "")")
-//                            .typesettingLanguage(.explicit((SekaiLocale.secondaryLocale.nsLocale().language)))
-//                            .foregroundStyle(.secondary)
-//                    } else if let secondarySourceInJP = source.jp, secondarySourceInJP != primaryDisplayString {
-//                        Text("\(secondarySourceInJP)\(showLocaleKey ? " (JP)" : "")")
-//                            .typesettingLanguage(.explicit((SekaiLocale.jp.nsLocale().language)))
-//                            .foregroundStyle(.secondary)
-//                    }
-//                }
-//            }
-//            .multilineTextAlignment(.trailing)
-//            .wrapIf(allowTextSelection, in: { content in
-//                content
-//                    .textSelection(.enabled)
-//            }, else: { content in
-//                content
-//                    .textSelection(.disabled)
-//            })
-//            .fixedSize(horizontal: false, vertical: true)
-//        }
-//    }
-//}
+struct LocalizableText: View {
+    var text: LocalizableData<String>
+    var showSecondaryText = true
+    var showLocaleKey = false
+    
+    var body: some View {
+        Group {
+            if case .localized(let localizedData) = text {
+                MultilingualText(text: localizedData, showSecondaryText: showSecondaryText, showLocaleKey: showLocaleKey)
+            } else if case .unlocalized(let t) = text {
+                if let t {
+                    Text(t)
+                } else {
+                    Text("Info.unavailable")
+                        .foregroundStyle(.secondary)
+                        .italic()
+                }
+            }
+        }
+    }
+}
 
 //// MARK: MultilingualTextForCountdown
 //struct MultilingualTextForCountdown: View {

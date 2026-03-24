@@ -107,7 +107,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
         .wrapIf(showSubtitle) { content in
             if #available(iOS 26, macOS 14.0, *) {
                 content
-                    .navigationSubtitle(information?.title.forPreferredLocale() != nil ? "#\(String(currentID))" : "")
+                    .navigationSubtitle(information?.title != nil ? "#\(String(currentID))" : "")
             } else {
                 content
             }
@@ -126,7 +126,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
             } else if let ListGettableType = Information.self as? (any (Sendable & Identifiable & ListGettable).Type) {
                 // We can always assume that the ID of elements are `Int`
                 // because it has been constrainted in the generic decls
-                allPreviewIDs = await ListGettableType.all(forLocale: .primaryLocale)?.map { $0.id as! Int } ?? []
+                allPreviewIDs = await ListGettableType.all()?.map { $0.id as! Int } ?? []
             }
         }
         .toolbar {

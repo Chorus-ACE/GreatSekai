@@ -52,7 +52,7 @@ struct SettingsView: View {
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
                             DismissButton(action: dismiss.callAsFunction) {
-                                Image(systemName: .xmark)
+                                Image(systemName: "xmark")
                             }
                         }
                     }
@@ -84,20 +84,6 @@ struct SettingsView: View {
             switch tab {
             case "locale":
                 SettingsLocaleView()
-            case "home":
-                SettingsHomeView()
-            case "story":
-                SettingsStoryView()
-//            case "permission":
-//                SettingsPermissionsView()
-//            case "widget":
-//                if #available(visionOS 26.0, *) {
-//                    SettingsWidgetsView()
-//                }
-            case "font":
-                SettingsFontsView()
-//            case "account":
-//                SettingsAccountsView()
             case "advanced":
                 SettingsAdvancedView()
             case "about":
@@ -174,11 +160,11 @@ struct SettingsTab: Hashable {
 let settingsTabs: [SettingsTab] = [
     .init(symbol: "globe", name: "Settings.locale", destination: "locale"),
     .init(symbol: "rectangle.3.group", name: "Settings.home-edit", destination: "home"),
-    .init(symbol: "books.vertical", name: "Settings.story-viewer", destination: "story"),
-    .init(symbol: "bell.badge", name: "Settings.permissions", destination: "permission"),
-    .init(symbol: "widget.small", name: "Settings.widgets", destination: "widget", note: "WIDGETKIT"),
-    .init(symbol: "person.crop.circle", name: "Settings.account", destination: "account", note: "NO-FORM"),
-    .init(symbol: "textformat", name: "Settings.fonts", destination: "font", note: "NO-FORM"),
+//    .init(symbol: "books.vertical", name: "Settings.story-viewer", destination: "story"),
+//    .init(symbol: "bell.badge", name: "Settings.permissions", destination: "permission"),
+//    .init(symbol: "widget.small", name: "Settings.widgets", destination: "widget", note: "WIDGETKIT"),
+//    .init(symbol: "person.crop.circle", name: "Settings.account", destination: "account", note: "NO-FORM"),
+//    .init(symbol: "textformat", name: "Settings.fonts", destination: "font", note: "NO-FORM"),
     .init(symbol: "hammer", name: "Settings.advanced", destination: "advanced"),
     .init(symbol: "info.circle", name: "Settings.about", destination: "about", note: "NO-FORM"),
     .init(symbol: "ant", name: "Settings.debug", destination: "debug", note: "DEBUG")

@@ -277,12 +277,12 @@ struct ImageLookView: View {
                 .scaleEffect(dismissingScale)
                 .opacity(imageOpacity)
             }
-            .background {
-                Rectangle()
-                    .fill(Color(.systemBackground))
-                    .ignoresSafeArea()
-                    .opacity(dismissingOpacity)
-            }
+//            .background {
+//                Rectangle()
+//                    .fill(Color(.systemBackground))
+//                    .ignoresSafeArea()
+//                    .opacity(dismissingOpacity)
+//            }
             .onTapGesture {
                 isFullScreen.toggle()
             }
@@ -377,7 +377,7 @@ struct ImageLookView: View {
                                 }
                             }
                         } else {
-                            Image(systemName: .checkmark)
+                            Image(systemName: "checkmark")
                         }
                     }
                     if #available(iOS 26.0, *) {

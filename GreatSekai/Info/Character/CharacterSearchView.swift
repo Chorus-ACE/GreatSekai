@@ -48,7 +48,7 @@ struct CharacterSearchView: View {
                                                 .wrapIf(true, in: { content in
                                                     if #available(iOS 18.0, *) {
                                                         content
-                                                            .navigationTransition(.zoom(sourceID: char.id, in: detailNavigation))
+                                                            .navigationTransition(.zoom(sourceID: charID, in: detailNavigation))
                                                     } else {
                                                         content
                                                     }
@@ -76,8 +76,8 @@ struct CharacterSearchView: View {
                                                 content
                                             }
                                         })
-                                        .help(allCharacters.first(where: { $0.id == charID })?.fullName ?? "")
-                                        .accessibilityLabel(allCharacters.first(where: { $0.id == charID })?.fullName ?? "")
+                                        .help(allCharacters.first(where: { $0.id == charID })?.fullName.majorValue ?? "")
+                                        .accessibilityLabel(allCharacters.first(where: { $0.id == charID })?.fullName.majorValue ?? "")
                                     }
                                 }
                                 if sizeClass == .regular {

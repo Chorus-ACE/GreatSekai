@@ -43,6 +43,13 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
+                Button(action: {
+                    Task {
+                        SekaiCache.invalidateAll()
+                    }
+                }, label: {
+                    Text(verbatim: "1")
+                })
                 /*
                 ZStack {
                     VStack {

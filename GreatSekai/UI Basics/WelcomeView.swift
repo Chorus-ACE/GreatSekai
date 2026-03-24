@@ -285,7 +285,7 @@ struct WelcomeView: View {
                             Button(action: {
                                 isLicenseAgreementPresented = false
                             }, label: {
-                                Image(systemName: .xmark)
+                                Image(systemName: "xmark")
                             })
                         }
                     }

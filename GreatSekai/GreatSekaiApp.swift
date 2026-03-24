@@ -143,7 +143,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         // Don't say lazy
         _ = NetworkMonitor.shared
         
-        initializeISV_ABTest()
+//        initializeISV_ABTest()
         
         try? AVAudioSession.sharedInstance().setCategory(
             .playback,
@@ -159,7 +159,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         open url: URL,
         options: [UIApplication.OpenURLOptionsKey : Any] = [:]
     ) -> Bool {
-        _handleURL(url)
+//        _handleURL(url)
         return true
     }
     

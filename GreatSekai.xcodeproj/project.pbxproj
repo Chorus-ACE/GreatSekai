@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E90629822F727BA900EDCDC6 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E90629812F727BA900EDCDC6 /* Localizable.xcstrings */; };
+		E90629842F727BD400EDCDC6 /* SettingsDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90629832F727BD200EDCDC6 /* SettingsDebugView.swift */; };
 		E912B29A2F6FE2C200B7220C /* CharacterDetailOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E912B2992F6FE2BB00B7220C /* CharacterDetailOverviewView.swift */; };
-		E912B29C2F6FE90200B7220C /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E912B29B2F6FE90200B7220C /* Localizable.xcstrings */; };
 		E912E5EA2F6FAD8A00B7220C /* CharacterSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E912E5E92F6FAD8300B7220C /* CharacterSearchView.swift */; };
 		E931520D2F5401D1002D102D /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152022F5401D1002D102D /* HomeView.swift */; };
 		E931520E2F5401D1002D102D /* WhatsNewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152042F5401D1002D102D /* WhatsNewView.swift */; };
@@ -22,21 +23,10 @@
 		E93152162F5401D1002D102D /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152032F5401D1002D102D /* WelcomeView.swift */; };
 		E93152172F5401D1002D102D /* ExternalLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = E931520B2F5401D1002D102D /* ExternalLinks.swift */; };
 		E93152AF2F540621002D102D /* SettingsAdvanced.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A32F540621002D102D /* SettingsAdvanced.swift */; };
-		E93152B02F540621002D102D /* SettingsDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A62F540621002D102D /* SettingsDebugView.swift */; };
-		E93152B12F540621002D102D /* SettingsHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E931529E2F540621002D102D /* SettingsHomeView.swift */; };
-		E93152B22F540621002D102D /* SettingsFontsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A22F540621002D102D /* SettingsFontsView.swift */; };
 		E93152B32F540621002D102D /* AppFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152AA2F540621002D102D /* AppFlags.swift */; };
-		E93152B42F540621002D102D /* SettingsPermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A02F540621002D102D /* SettingsPermissionsView.swift */; };
 		E93152B52F540621002D102D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E931529C2F540621002D102D /* SettingsView.swift */; };
 		E93152B62F540621002D102D /* SettingsDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152AB2F540621002D102D /* SettingsDocument.swift */; };
-		E93152B72F540621002D102D /* SettingsWidgetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A12F540621002D102D /* SettingsWidgetsView.swift */; };
-		E93152B82F540621002D102D /* SettingsCollectionCardSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A72F540621002D102D /* SettingsCollectionCardSelector.swift */; };
-		E93152B92F540621002D102D /* DebugPlaygroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A92F540621002D102D /* DebugPlaygroundView.swift */; };
-		E93152BA2F540621002D102D /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A82F540621002D102D /* DebugView.swift */; };
 		E93152BB2F540621002D102D /* Acknowledgements.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152AC2F540621002D102D /* Acknowledgements.swift */; };
-		E93152BC2F540621002D102D /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152AD2F540621002D102D /* KeychainManager.swift */; };
-		E93152BD2F540621002D102D /* SettingsStoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E931529F2F540621002D102D /* SettingsStoryView.swift */; };
-		E93152BE2F540621002D102D /* SettingsAccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A52F540621002D102D /* SettingsAccountsView.swift */; };
 		E93152BF2F540621002D102D /* SettingsAboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152A42F540621002D102D /* SettingsAboutView.swift */; };
 		E93152C02F540621002D102D /* SettingsLocaleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E931529D2F540621002D102D /* SettingsLocaleView.swift */; };
 		E93152C32F540687002D102D /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = E93152C22F540687002D102D /* MarkdownUI */; };
@@ -59,8 +49,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E90629812F727BA900EDCDC6 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		E90629832F727BD200EDCDC6 /* SettingsDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDebugView.swift; sourceTree = "<group>"; };
 		E912B2992F6FE2BB00B7220C /* CharacterDetailOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterDetailOverviewView.swift; sourceTree = "<group>"; };
-		E912B29B2F6FE90200B7220C /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E912E5E92F6FAD8300B7220C /* CharacterSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterSearchView.swift; sourceTree = "<group>"; };
 		E93152012F5401D1002D102D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		E93152022F5401D1002D102D /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -75,22 +66,11 @@
 		E931520B2F5401D1002D102D /* ExternalLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalLinks.swift; sourceTree = "<group>"; };
 		E931529C2F540621002D102D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		E931529D2F540621002D102D /* SettingsLocaleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLocaleView.swift; sourceTree = "<group>"; };
-		E931529E2F540621002D102D /* SettingsHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsHomeView.swift; sourceTree = "<group>"; };
-		E931529F2F540621002D102D /* SettingsStoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoryView.swift; sourceTree = "<group>"; };
-		E93152A02F540621002D102D /* SettingsPermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPermissionsView.swift; sourceTree = "<group>"; };
-		E93152A12F540621002D102D /* SettingsWidgetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWidgetsView.swift; sourceTree = "<group>"; };
-		E93152A22F540621002D102D /* SettingsFontsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsFontsView.swift; sourceTree = "<group>"; };
 		E93152A32F540621002D102D /* SettingsAdvanced.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAdvanced.swift; sourceTree = "<group>"; };
 		E93152A42F540621002D102D /* SettingsAboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAboutView.swift; sourceTree = "<group>"; };
-		E93152A52F540621002D102D /* SettingsAccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAccountsView.swift; sourceTree = "<group>"; };
-		E93152A62F540621002D102D /* SettingsDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDebugView.swift; sourceTree = "<group>"; };
-		E93152A72F540621002D102D /* SettingsCollectionCardSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCollectionCardSelector.swift; sourceTree = "<group>"; };
-		E93152A82F540621002D102D /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
-		E93152A92F540621002D102D /* DebugPlaygroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugPlaygroundView.swift; sourceTree = "<group>"; };
 		E93152AA2F540621002D102D /* AppFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlags.swift; sourceTree = "<group>"; };
 		E93152AB2F540621002D102D /* SettingsDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDocument.swift; sourceTree = "<group>"; };
 		E93152AC2F540621002D102D /* Acknowledgements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Acknowledgements.swift; sourceTree = "<group>"; };
-		E93152AD2F540621002D102D /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		E93153412F540A45002D102D /* FilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterView.swift; sourceTree = "<group>"; };
 		E93153422F540A45002D102D /* DetailSectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailSectionsView.swift; sourceTree = "<group>"; };
 		E93153432F540A45002D102D /* DetailArtsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailArtsView.swift; sourceTree = "<group>"; };
@@ -155,22 +135,12 @@
 			children = (
 				E931529C2F540621002D102D /* SettingsView.swift */,
 				E931529D2F540621002D102D /* SettingsLocaleView.swift */,
-				E931529E2F540621002D102D /* SettingsHomeView.swift */,
-				E931529F2F540621002D102D /* SettingsStoryView.swift */,
-				E93152A02F540621002D102D /* SettingsPermissionsView.swift */,
-				E93152A12F540621002D102D /* SettingsWidgetsView.swift */,
-				E93152A22F540621002D102D /* SettingsFontsView.swift */,
 				E93152A32F540621002D102D /* SettingsAdvanced.swift */,
 				E93152A42F540621002D102D /* SettingsAboutView.swift */,
-				E93152A52F540621002D102D /* SettingsAccountsView.swift */,
-				E93152A62F540621002D102D /* SettingsDebugView.swift */,
-				E93152A72F540621002D102D /* SettingsCollectionCardSelector.swift */,
-				E93152A82F540621002D102D /* DebugView.swift */,
-				E93152A92F540621002D102D /* DebugPlaygroundView.swift */,
+				E90629832F727BD200EDCDC6 /* SettingsDebugView.swift */,
 				E93152AA2F540621002D102D /* AppFlags.swift */,
 				E93152AB2F540621002D102D /* SettingsDocument.swift */,
 				E93152AC2F540621002D102D /* Acknowledgements.swift */,
-				E93152AD2F540621002D102D /* KeychainManager.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -228,7 +198,7 @@
 			isa = PBXGroup;
 			children = (
 				E9C55FC82F53F3C100DCFD2D /* Assets.xcassets */,
-				E912B29B2F6FE90200B7220C /* Localizable.xcstrings */,
+				E90629812F727BA900EDCDC6 /* Localizable.xcstrings */,
 				E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */,
 				E931520C2F5401D1002D102D /* UI Basics */,
 				E93152AE2F540621002D102D /* Settings */,
@@ -309,7 +279,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E912B29C2F6FE90200B7220C /* Localizable.xcstrings in Resources */,
+				E90629822F727BA900EDCDC6 /* Localizable.xcstrings in Resources */,
 				E9C55FCC2F53F3C100DCFD2D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -335,25 +305,15 @@
 				E93152122F5401D1002D102D /* FallbackableWebImage.swift in Sources */,
 				E93152132F5401D1002D102D /* NavigationComponentsView.swift in Sources */,
 				E93152AF2F540621002D102D /* SettingsAdvanced.swift in Sources */,
-				E93152B02F540621002D102D /* SettingsDebugView.swift in Sources */,
-				E93152B12F540621002D102D /* SettingsHomeView.swift in Sources */,
-				E93152B22F540621002D102D /* SettingsFontsView.swift in Sources */,
 				E93152B32F540621002D102D /* AppFlags.swift in Sources */,
-				E93152B42F540621002D102D /* SettingsPermissionsView.swift in Sources */,
+				E90629842F727BD400EDCDC6 /* SettingsDebugView.swift in Sources */,
 				E93152B52F540621002D102D /* SettingsView.swift in Sources */,
 				E93152B62F540621002D102D /* SettingsDocument.swift in Sources */,
 				E912E5EA2F6FAD8A00B7220C /* CharacterSearchView.swift in Sources */,
-				E93152B72F540621002D102D /* SettingsWidgetsView.swift in Sources */,
-				E93152B82F540621002D102D /* SettingsCollectionCardSelector.swift in Sources */,
-				E93152B92F540621002D102D /* DebugPlaygroundView.swift in Sources */,
-				E93152BA2F540621002D102D /* DebugView.swift in Sources */,
 				E93153452F540A45002D102D /* FilterView.swift in Sources */,
 				E93153462F540A45002D102D /* DetailArtsView.swift in Sources */,
 				E93153472F540A45002D102D /* DetailSectionsView.swift in Sources */,
 				E93152BB2F540621002D102D /* Acknowledgements.swift in Sources */,
-				E93152BC2F540621002D102D /* KeychainManager.swift in Sources */,
-				E93152BD2F540621002D102D /* SettingsStoryView.swift in Sources */,
-				E93152BE2F540621002D102D /* SettingsAccountsView.swift in Sources */,
 				E93152BF2F540621002D102D /* SettingsAboutView.swift in Sources */,
 				E93152C02F540621002D102D /* SettingsLocaleView.swift in Sources */,
 				E93152142F5401D1002D102D /* ContentView.swift in Sources */,

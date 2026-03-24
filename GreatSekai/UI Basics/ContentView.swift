@@ -20,6 +20,7 @@ import os
 import SekaiKit
 import SwiftUI
 
+let correctDebugPassword = "Engeki"
 
 //MARK: ContentView
 struct ContentView: View {
@@ -56,8 +57,7 @@ struct ContentView: View {
                                 ForEach(0..<allInfoDestinationItems.count, id: \.self) { itemIndex in
                                     Tab(value: AppSection.info(allInfoDestinationItems[itemIndex].tabValue), content: {
                                         NavigationStack {
-//                                            allInfoDestinationItems[itemIndex].destination()
-                                            CharacterSearchView()
+                                            allInfoDestinationItems[itemIndex].destination()
                                         }
                                     }, label: {
                                         Label(title: {
@@ -72,8 +72,7 @@ struct ContentView: View {
                             })
                         } else {
                             Tab("App.info", systemImage: "rectangle.stack", value: .info(.home)) {
-//                                InfoView()
-                                EmptyView()
+                                InfoView()
                             }
                         }
                         
