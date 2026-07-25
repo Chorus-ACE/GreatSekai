@@ -468,71 +468,73 @@ struct ExtendedConstraints<Content: View>: View {
     }
 }
 
-//// MARK: FilterAndSorterPicker
-//struct FilterAndSorterPicker: View {
-//    @Binding var showFilterSheet: Bool
-//    @Binding var sorter: DoriSorter
-//    var filterIsFiltering: Bool
-//    let sorterKeywords: [DoriSorter.Keyword]
-//    let hasEndingDate: Bool
-//    var body: some View {
-//#if os(macOS)
-//        HStack(spacing: 0) {
-//            Button(action: {
-//                showFilterSheet.toggle()
-//            }, label: {
-//                (filterIsFiltering ? Color.white : .primary)
-//                    .scaleEffect(2) // a larger value has no side effects because we're using `mask`
-//                    .mask {
-//                        // We use `mask` to prgacha unexpected blink
-//                        // while changing `foregroundStyle`.
-//                        Image(systemName: .line3HorizontalDecrease)
-//                    }
-//                    .background {
-//                        if filterIsFiltering {
-//                            Capsule().foregroundStyle(Color.accentColor).scaledToFill().scaleEffect(platform == .macOS ? 1.1 : 1.65)
-//                        }
-//                    }
-//            })
-//            .animation(.easeInOut(duration: 0.2), value: filterIsFiltering)
-//            SorterPickerView(sorter: $sorter, allOptions: sorterKeywords, sortingItemsHaveEndingDate: hasEndingDate)
-//        }
-//#else
-//        Button(action: {
-//            showFilterSheet.toggle()
-//        }, label: {
-//            if #available(iOS 26.0, * /* Keep macOS */) {
-//                (filterIsFiltering ? Color.white : .primary)
-//                    .scaleEffect(2) // a larger value has no side effects because we're using `mask`
-//                    .mask {
-//                        // We use `mask` to prgacha unexpected blink
-//                        // while changing `foregroundStyle`.
-//                        Image(systemName: .line3HorizontalDecrease)
-//                    }
-//                    .background {
-//                        if filterIsFiltering {
-//                            Capsule().foregroundStyle(Color.accentColor).scaledToFill().scaleEffect(platform == .macOS ? 1.1 : 1.65)
-//                        }
-//                    }
-//            } else {
-//                Image(systemName: .line3HorizontalDecrease)
-//                    .foregroundStyle(filterIsFiltering ? Color.white : .blue)
-//                    .background {
-//                        if filterIsFiltering {
-//                            Circle()
-//                                .foregroundStyle(Color.accentColor)
-//                                .scaleEffect(1.65)
-//                        }
-//                    }
-//            }
-//        })
-//        .animation(.easeInOut(duration: 0.2), value: filterIsFiltering)
-//        .accessibilityLabel("Filter")
-//        .accessibilityValue(filterIsFiltering ? "Accessibility.filter.active" : "Accessibility.filter.not-active")
-//        SorterPickerView(sorter: $sorter, allOptions: sorterKeywords, sortingItemsHaveEndingDate: hasEndingDate)
-//#endif
-//    }
-//}
+
+// MARK: FilterAndSorterPicker
+struct FilterAndSorterPicker: View {
+    @Binding var showFilterSheet: Bool
+    @Binding var sorter: SekaiSorter
+    var isFiltering: Bool
+    let sorterKeywords: [SekaiSorter.Keyword]
+    let hasEndingDate: Bool
+    var body: some View {
+#if os(macOS)
+        HStack(spacing: 0) {
+            Button(action: {
+                showFilterSheet.toggle()
+            }, label: {
+                (isFiltering ? Color.white : .primary)
+                    .scaleEffect(2) // a larger value has no side effects because we're using `mask`
+                    .mask {
+                        // We use `mask` to prgacha unexpected blink
+                        // while changing `foregroundStyle`.
+                        Image(systemName: "line.3.horizontal.decrease")
+                    }
+                    .background {
+                        if isFiltering {
+                            Capsule().foregroundStyle(Color.accentColor).scaledToFill().scaleEffect(platform == .macOS ? 1.1 : 1.65)
+                        }
+                    }
+            })
+            .animation(.easeInOut(duration: 0.2), value: isFiltering)
+            SorterPickerView(sorter: $sorter, allOptions: sorterKeywords, sortingItemsHaveEndingDate: hasEndingDate)
+        }
+#else
+        Button(action: {
+            showFilterSheet.toggle()
+        }, label: {
+            if #available(iOS 26.0, * /* Keep macOS */) {
+                (isFiltering ? Color.white : .primary)
+                    .scaleEffect(2) // a larger value has no side effects because we're using `mask`
+                    .mask {
+                        // We use `mask` to prgacha unexpected blink
+                        // while changing `foregroundStyle`.
+                        Image(systemName: "line.3.horizontal.decrease")
+                    }
+                    .background {
+                        if isFiltering {
+                            Capsule().foregroundStyle(Color.accentColor).scaledToFill().scaleEffect(platform == .macOS ? 1.1 : 1.65)
+                        }
+                    }
+            } else {
+                Image(systemName: "line.3.horizontal.decrease")
+                    .foregroundStyle(isFiltering ? Color.white : .blue)
+                    .background {
+                        if isFiltering {
+                            Circle()
+                                .foregroundStyle(Color.accentColor)
+                                .scaleEffect(1.65)
+                        }
+                    }
+            }
+        })
+        .animation(.easeInOut(duration: 0.2), value: isFiltering)
+        .accessibilityLabel("Filter")
+        .accessibilityValue(isFiltering ? "Accessibility.filter.active" : "Accessibility.filter.not-active")
+        SorterPickerView(sorter: $sorter, allOptions: sorterKeywords, sortingItemsHaveEndingDate: hasEndingDate)
+#endif
+    }
+}
+
 // # Guidance for `FilterAndSorterPicker`
 //
 // ```swift
@@ -911,7 +913,7 @@ struct MultilingualText: View {
                         }
                         .wrapIf(reducedStrings.values.contains(where: { $0.contains("\n") })) { context in
                             context.insert {
-                                Text("")
+                                Divider()
                             }
                         }
                     }

@@ -46,6 +46,7 @@
 		E9C55FD42F53F3C100DCFD2D /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C55FC62F53F3C100DCFD2D /* ViewModifiers.swift */; };
 		E9C55FD62F53F3C100DCFD2D /* GreatSekaiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */; };
 		E9CB981F2F5FC20B00F9BBEC /* CharacterDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CB981E2F5FC20200F9BBEC /* CharacterDetailView.swift */; };
+		E9D6676C3014DD2800F6A422 /* FilterSorterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -85,6 +86,7 @@
 		E9C55FC82F53F3C100DCFD2D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreatSekaiApp.swift; sourceTree = "<group>"; };
 		E9CB981E2F5FC20200F9BBEC /* CharacterDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterDetailView.swift; sourceTree = "<group>"; };
+		E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSorterView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +128,7 @@
 				E93152092F5401D1002D102D /* ItemSelector.swift */,
 				E931520A2F5401D1002D102D /* CompactAudioPlayer.swift */,
 				E931520B2F5401D1002D102D /* ExternalLinks.swift */,
+				E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */,
 			);
 			path = "UI Basics";
 			sourceTree = "<group>";
@@ -302,6 +305,7 @@
 				E912B29A2F6FE2C200B7220C /* CharacterDetailOverviewView.swift in Sources */,
 				E931520F2F5401D1002D102D /* CompactAudioPlayer.swift in Sources */,
 				E93152102F5401D1002D102D /* InfoBases.swift in Sources */,
+				E9D6676C3014DD2800F6A422 /* FilterSorterView.swift in Sources */,
 				E93152112F5401D1002D102D /* CornerstoneView.swift in Sources */,
 				E93152122F5401D1002D102D /* FallbackableWebImage.swift in Sources */,
 				E93152132F5401D1002D102D /* NavigationComponentsView.swift in Sources */,
@@ -482,10 +486,10 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "-enable-experimental-feature BuiltinModule -enable-experimental-feature CompileTimeValues";
 				PRODUCT_BUNDLE_IDENTIFIER = com.qastor.GreatSekai;
@@ -500,7 +504,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.2;
+				XROS_DEPLOYMENT_TARGET = 18.0;
 			};
 			name = Debug;
 		};
@@ -537,10 +541,10 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "-enable-experimental-feature BuiltinModule -enable-experimental-feature CompileTimeValues";
 				PRODUCT_BUNDLE_IDENTIFIER = com.qastor.GreatSekai;
@@ -555,7 +559,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.2;
+				XROS_DEPLOYMENT_TARGET = 18.0;
 			};
 			name = Release;
 		};

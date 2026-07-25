@@ -102,7 +102,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
                 }
             }
         }
-        .navigationTitle(Text(information?.title ?? (platform == .macOS ? String(localized: String.LocalizationValue(Information.singularName.key)) : "")))
+        .navigationTitle(Text(information?.title.majorValue ?? (platform == .macOS ? String(localized: String.LocalizationValue(Information.singularName.key)) : "")))
         #if os(iOS)
         .wrapIf(showSubtitle) { content in
             if #available(iOS 26, macOS 14.0, *) {
@@ -151,81 +151,81 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
         } .onUpdate {
             if let information = $0 {
                 self.information = information
-                infoIsAvailable = true
+//                infoIsAvailable = true
             } else {
                 infoIsAvailable = false
             }
         }
     }
 }
-//
-//struct SummaryViewBase<Image: View, Detail: View>: View {
-//    var layout: SummaryLayout
-//    var title: LocalizedData<String>
-//    var makeImageView: () -> Image
-//    var makeDetailView: () -> Detail
-//    
-//    init<Source: TitleDescribable>(
-//        _ layout: SummaryLayout,
-//        source: Source,
-//        @ViewBuilder image: @escaping () -> Image,
-//        @ViewBuilder detail: @escaping () -> Detail
-//    ) {
-//        self.layout = layout
-//        self.title = source.title
-//        self.makeImageView = image
-//        self.makeDetailView = detail
-//    }
-//    init(
-//        _ layout: SummaryLayout,
-//        title: LocalizedData<String>,
-//        @ViewBuilder image: @escaping () -> Image,
-//        @ViewBuilder detail: @escaping () -> Detail
-//    ) {
-//        self.layout = layout
-//        self.title = title
-//        self.makeImageView = image
-//        self.makeDetailView = detail
-//    }
-//    
-//    var body: some View {
-//        CustomGroupBox(showGroupBox: layout != .vertical(hidesDetail: true)) {
-//            CustomStack(axis: layout.axis) {
-//                makeImageView()
-//                if layout != .vertical(hidesDetail: true) {
-//                    if layout != .horizontal {
-//                        Spacer()
-//                    } else {
-//                        Spacer()
-//                            .frame(maxWidth: 15)
-//                    }
-//                    
-//                    VStack(alignment: layout == .horizontal ? .leading : .center) {
-//                        HighlightableText(title.forPreferredLocale() ?? "")
-//                            .bold()
-//                            .font(!isMACOS ? .body : .title3)
-//                            .layoutPriority(1)
-//                        makeDetailView()
-//                            .environment(\.isCompactHidden, layout != .horizontal)
-//                            .foregroundStyle(.secondary)
-//                    }
-//                    .frame(maxWidth: .infinity, alignment: layout == .horizontal ? .leading : .center)
-//                    .multilineTextAlignment(layout == .horizontal ? .leading : .center)
-//                }
-//                Spacer(minLength: 0)
-//            }
-//            .wrapIf(layout != .horizontal) { content in
-//                HStack {
-//                    Spacer(minLength: 0)
-//                    content
-//                    Spacer(minLength: 0)
-//                }
-//            }
-//        }
-//        .accessibilityElement(children: .contain)
-//    }
-//}
-//
+
+struct SummaryViewBase<Image: View, Detail: View>: View {
+    var layout: SummaryLayout
+    var title: LocalizableData<String>
+    var makeImageView: () -> Image
+    var makeDetailView: () -> Detail
+    
+    init<Source: TitleDescribable>(
+        _ layout: SummaryLayout,
+        source: Source,
+        @ViewBuilder image: @escaping () -> Image,
+        @ViewBuilder detail: @escaping () -> Detail
+    ) {
+        self.layout = layout
+        self.title = source.title
+        self.makeImageView = image
+        self.makeDetailView = detail
+    }
+    init(
+        _ layout: SummaryLayout,
+        title: LocalizableData<String>,
+        @ViewBuilder image: @escaping () -> Image,
+        @ViewBuilder detail: @escaping () -> Detail
+    ) {
+        self.layout = layout
+        self.title = title
+        self.makeImageView = image
+        self.makeDetailView = detail
+    }
+    
+    var body: some View {
+        CustomGroupBox(showGroupBox: layout != .vertical(hidesDetail: true)) {
+            CustomStack(axis: layout.axis) {
+                makeImageView()
+                if layout != .vertical(hidesDetail: true) {
+                    if layout != .horizontal {
+                        Spacer()
+                    } else {
+                        Spacer()
+                            .frame(maxWidth: 15)
+                    }
+                    
+                    VStack(alignment: layout == .horizontal ? .leading : .center) {
+                        HighlightableText(title.majorValue ?? "")
+                            .bold()
+                            .font(platform == .iOS ? .body : .title3)
+                            .layoutPriority(1)
+                        makeDetailView()
+                            .environment(\.isCompactHidden, layout != .horizontal)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: layout == .horizontal ? .leading : .center)
+                    .multilineTextAlignment(layout == .horizontal ? .leading : .center)
+                }
+                Spacer(minLength: 0)
+            }
+            .wrapIf(layout != .horizontal) { content in
+                HStack {
+                    Spacer(minLength: 0)
+                    content
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+}
+
 enum SummaryLayout: Hashable {
     case horizontal
     case vertical(hidesDetail: Bool = false)
@@ -264,364 +264,368 @@ extension EnvironmentValues {
 @MainActor let verticalAndHorizontalLayouts: [(LocalizedStringKey, String, SummaryLayout)] = [("Filter.view.list", "list.bullet", SummaryLayout.horizontal), ("Filter.view.grid", "square.grid.2x2", SummaryLayout.vertical(hidesDetail: false))]
 @MainActor let bannerLayouts: [(LocalizedStringKey, String, Bool)] = [("Filter.view.banner-and-details", "text.below.rectangle", true), ("Filter.view.banner-only", "rectangle.grid.1x2", false)]
 
-//struct SearchViewBase<Element: Sendable & Hashable & DoriCacheable & DoriFilterable & DoriSortable & DoriSearchable & DoriTypeDescribable, Layout, LayoutPicker: View, Container: View, Content: View, Destination: View>: View {
-//    var updateList: @Sendable () async -> [Element]?
-//    var makeLayoutPicker: (Binding<Layout>) -> LayoutPicker
-//    var makeContainer: (Layout, [Element], AnyView, @escaping (Element) -> AnyView) -> Container
-//    var makeSomeContent: (Layout, Element) -> Content
-//    var makeDestination: (Element, [Element]) -> Destination
-//    @State var currentLayout: Layout
-//    
-//    var unavailablePrompt: LocalizedStringResource
-//    var searchPlaceholder: LocalizedStringResource
-//    var getResultCountDescription: ((Int) -> LocalizedStringResource)?
-//
-//    init(
-//        forType type: Element.Type,
-//        initialLayout: Layout,
-//        layoutOptions: [(LocalizedStringKey, String, Layout)],
-//        @ViewBuilder container: @escaping (_ layout: Layout, _ elements: [Element], _ content: AnyView, _ eachContent: @escaping (Element) -> AnyView) -> Container,
-//        @ViewBuilder eachContent: @escaping (_ layout: Layout, _ element: Element) -> Content,
-//        @ViewBuilder destination: @escaping (_ element: Element, _ list: [Element]) -> Destination
-//    ) where Element: ListGettable, Layout: Hashable, LayoutPicker == Greatdori.LayoutPicker<Layout> {
-//        self.init(
-//            forType: type,
-//            initialLayout: initialLayout,
-//            layoutPicker: { layout in
-//                Greatdori.LayoutPicker(selection: layout, options: layoutOptions)
-//            },
-//            container: container,
-//            eachContent: eachContent,
-//            destination: destination
-//        )
-//    }
-//    init(
-//        initialLayout: Layout,
-//        updateList: @Sendable @escaping () async -> [Element]?,
-//        layoutOptions: [(LocalizedStringKey, String, Layout)],
-//        @ViewBuilder container: @escaping (_ layout: Layout, _ elements: [Element], _ content: AnyView, _ eachContent: @escaping (Element) -> AnyView) -> Container,
-//        @ViewBuilder eachContent: @escaping (_ layout: Layout, _ element: Element) -> Content,
-//        @ViewBuilder destination: @escaping (_ element: Element, _ list: [Element]) -> Destination
-//    ) where Layout: Hashable, LayoutPicker == Greatdori.LayoutPicker<Layout> {
-//        self.init(
-//            initialLayout: initialLayout,
-//            updateList: updateList,
-//            layoutPicker: { layout in
-//                Greatdori.LayoutPicker(selection: layout, options: layoutOptions)
-//            },
-//            container: container,
-//            eachContent: eachContent,
-//            destination: destination
-//        )
-//    }
-//    init(
-//        forType _: Element.Type,
-//        initialLayout: Layout,
-//        @ViewBuilder layoutPicker: @escaping (Binding<Layout>) -> LayoutPicker,
-//        @ViewBuilder container: @escaping (_ layout: Layout, _ elements: [Element], _ content: AnyView, _ eachContent: @escaping (Element) -> AnyView) -> Container,
-//        @ViewBuilder eachContent: @escaping (_ layout: Layout, _ element: Element) -> Content,
-//        @ViewBuilder destination: @escaping (_ element: Element, _ list: [Element]) -> Destination
-//    ) where Element: ListGettable {
-//        self.init(
-//            initialLayout: initialLayout,
-//            updateList: Element.all,
-//            layoutPicker: layoutPicker,
-//            container: container,
-//            eachContent: eachContent,
-//            destination: destination
-//        )
-//    }
-//    init(
-//        initialLayout: Layout,
-//        updateList: @Sendable @escaping () async -> [Element]?,
-//        @ViewBuilder layoutPicker: @escaping (Binding<Layout>) -> LayoutPicker,
-//        @ViewBuilder container: @escaping (_ layout: Layout, _ elements: [Element], _ content: AnyView, _ eachContent: @escaping (Element) -> AnyView) -> Container,
-//        @ViewBuilder eachContent: @escaping (_ layout: Layout, _ element: Element) -> Content,
-//        @ViewBuilder destination: @escaping (_ element: Element, _ list: [Element]) -> Destination
-//    ) {
-//        self.updateList = updateList
-//        self.makeLayoutPicker = layoutPicker
-//        self.makeContainer = container
-//        self.makeSomeContent = eachContent
-//        self.makeDestination = destination
-//        self._currentLayout = .init(initialValue: initialLayout)
-//        self.unavailablePrompt = "Search.unavailable.\(Element.singularName)"
-//        self.searchPlaceholder = "Search.prompt.\(Element.pluralName)"
-//        self._filter = .init(initialValue: .recoverable(id: Element.pluralName.key))
-//    }
-//    
-//    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-//    @Environment(\.horizontalSizeClass) private var sizeClass
-//    @Environment(\.colorScheme) private var colorScheme
-//    @Namespace private var navigationAnimationNamespace
-//    @State private var filter: DoriFrontend.Filter
-//    @State private var sorter = DoriSorter(keyword: Element.applicableSortingTypes.contains(.releaseDate(in: .jp)) ? .releaseDate(in: .jp) : .id, direction: .descending)
-//    @State private var elements: [Element]?
-//    @State private var searchedElements: [Element]?
-//    @State private var infoIsAvailable = true
-//    @State private var searchedText = ""
-//    @State private var showFilterSheet = false
-//    @State private var presentingElement: Element?
-//    @State private var elementIDMap: [Element: Int64] = [:]
-//    @State private var isCustomGroupBoxActive = false
-//    
-//    var body: some View {
-//        VStack {
-//            if let resultElements = searchedElements ?? elements {
-//                Group {
-//                    if !resultElements.isEmpty {
-//                        ScrollView {
-//                            HStack {
-//                                Spacer(minLength: 0)
-//                                makeContainer(currentLayout, resultElements,
-//                                    AnyView(
-//                                        ForEach(resultElements, id: \.self) { element in
-//                                            Group {
-//                                                // There's a problem that only presents
-//                                                // on macOS 26.0 below, we use a fallback
-//                                                // as workaround.
-//                                                if #available(macOS 26.0, *) {
-//                                                    Button(action: {
-//                                                        showFilterSheet = false
-//                                                        presentingElement = element
-//                                                    }, label: {
-//                                                        makeElementLabel(for: element)
-//                                                    })
-//                                                } else {
-//                                                    NavigationLink {
-//                                                        makeDestination(element, elements ?? [])
-//                                                            .onAppear {
-//                                                                showFilterSheet = false
-//                                                            }
-//                                                    } label: {
-//                                                        makeElementLabel(for: element)
-//                                                    }
-//                                                }
-//                                            }
-//                                            .buttonStyle(.plain)
-//                                            .buttonBorderShape(.roundedRectangle(radius: 20))
-//                                        }
-//                                    )
-//                                ) { element in
-//                                    AnyView(
-//                                        Group {
-//                                            // There's a problem that only presents
-//                                            // on macOS 26.0 below, we use a fallback
-//                                            // as workaround.
-//                                            if #available(macOS 26.0, *) {
-//                                                Button(action: {
-//                                                    showFilterSheet = false
-//                                                    presentingElement = element
-//                                                }, label: {
-//                                                    makeElementLabel(for: element)
-//                                                })
-//                                            } else {
-//                                                NavigationLink {
-//                                                    makeDestination(element, elements ?? [])
-//                                                        .onAppear {
-//                                                            showFilterSheet = false
-//                                                        }
-//                                                } label: {
-//                                                    makeElementLabel(for: element)
-//                                                }
-//                                            }
-//                                        }
-//                                        .buttonStyle(.plain)
-//                                        .buttonBorderShape(.roundedRectangle(radius: 20))
-//                                    )
-//                                }
-//                                .padding(.horizontal)
-//                                Spacer(minLength: 0)
-//                            }
-//                        }
-//                    } else {
-//                        ContentUnavailableView("Search.no-results", systemImage: "magnifyingglass", description: Text("Search.no-results.description"))
-//                    }
-//                }
-//            } else {
-//                if infoIsAvailable {
-//                    ExtendedConstraints {
-//                        ProgressView()
-//                    }
-//                } else {
-//                    ExtendedConstraints {
-//                        ContentUnavailableView(unavailablePrompt, systemImage: Element.symbol, description: Text("Search.unavailable.description"))
-//                            .onTapGesture {
-//                                Task {
-//                                    await getList()
-//                                }
-//                            }
-//                    }
-//                }
-//            }
-//        }
-//        .searchable(text: $searchedText, prompt: searchPlaceholder)
-//        .onSubmit {
-//            if let elements {
-//                searchedElements = elements.search(for: searchedText)
-//            }
-//        }
-//        .navigationTitle(Element.pluralName)
-//        .navigationDestination(item: $presentingElement) { element in
-//            makeDestination(element, elements ?? [])
-//            #if !os(macOS)
-//                .wrapIf(true) { content in
-//                    if #available(iOS 18.0, *) {
-//                        content
-//                            .navigationTransition(.zoom(sourceID: element.hashValue, in: navigationAnimationNamespace))
-//                            .onDisappear {
-//                                elementIDMap.updateValue(
-//                                    Int64(CFAbsoluteTimeGetCurrent() * 1000),
-//                                    forKey: element
-//                                )
-//                            }
-//                    } else {
-//                        content
-//                    }
-//                }
-//            #endif
-//        }
-//        #if !os(visionOS)
-//        .wrapIf(searchedElements != nil) { content in
-//            if #available(iOS 26.0, *) {
+struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilterable & SekaiSortable & SekaiSearchable & SekaiTypeDescribable, Layout, LayoutPicker: View, Container: View, Content: View, Destination: View>: View {
+    var updateList: @Sendable () async -> [Element]?
+    var makeLayoutPicker: (Binding<Layout>) -> LayoutPicker
+    var makeContainer: (Layout, [Element], AnyView, @escaping (Element) -> AnyView) -> Container
+    var makeSomeContent: (Layout, Element) -> Content
+    var makeDestination: (Element, [Element]) -> Destination
+    @State var currentLayout: Layout
+    
+    var unavailablePrompt: LocalizedStringResource
+    var searchPlaceholder: LocalizedStringResource
+    var getResultCountDescription: ((Int) -> LocalizedStringResource)?
+
+    init(
+        forType type: Element.Type,
+        initialLayout: Layout,
+        layoutOptions: [(LocalizedStringKey, String, Layout)],
+        @ViewBuilder container: @escaping (_ layout: Layout, _ elements: [Element], _ content: AnyView, _ eachContent: @escaping (Element) -> AnyView) -> Container,
+        @ViewBuilder eachContent: @escaping (_ layout: Layout, _ element: Element) -> Content,
+        @ViewBuilder destination: @escaping (_ element: Element, _ list: [Element]) -> Destination
+    ) where Element: ListGettable, Layout: Hashable, LayoutPicker == GreatSekai.LayoutPicker<Layout> {
+        self.init(
+            forType: type,
+            initialLayout: initialLayout,
+            layoutPicker: { layout in
+                GreatSekai.LayoutPicker(selection: layout, options: layoutOptions)
+            },
+            container: container,
+            eachContent: eachContent,
+            destination: destination
+        )
+    }
+    init(
+        initialLayout: Layout,
+        updateList: @Sendable @escaping () async -> [Element]?,
+        layoutOptions: [(LocalizedStringKey, String, Layout)],
+        @ViewBuilder container: @escaping (_ layout: Layout, _ elements: [Element], _ content: AnyView, _ eachContent: @escaping (Element) -> AnyView) -> Container,
+        @ViewBuilder eachContent: @escaping (_ layout: Layout, _ element: Element) -> Content,
+        @ViewBuilder destination: @escaping (_ element: Element, _ list: [Element]) -> Destination
+    ) where Layout: Hashable, LayoutPicker == GreatSekai.LayoutPicker<Layout> {
+        self.init(
+            initialLayout: initialLayout,
+            updateList: updateList,
+            layoutPicker: { layout in
+                GreatSekai.LayoutPicker(selection: layout, options: layoutOptions)
+            },
+            container: container,
+            eachContent: eachContent,
+            destination: destination
+        )
+    }
+    init(
+        forType _: Element.Type,
+        initialLayout: Layout,
+        @ViewBuilder layoutPicker: @escaping (Binding<Layout>) -> LayoutPicker,
+        @ViewBuilder container: @escaping (_ layout: Layout, _ elements: [Element], _ content: AnyView, _ eachContent: @escaping (Element) -> AnyView) -> Container,
+        @ViewBuilder eachContent: @escaping (_ layout: Layout, _ element: Element) -> Content,
+        @ViewBuilder destination: @escaping (_ element: Element, _ list: [Element]) -> Destination
+    ) where Element: ListGettable {
+        self.init(
+            initialLayout: initialLayout,
+            updateList: Element.all,
+            layoutPicker: layoutPicker,
+            container: container,
+            eachContent: eachContent,
+            destination: destination
+        )
+    }
+    init(
+        initialLayout: Layout,
+        updateList: @Sendable @escaping () async -> [Element]?,
+        @ViewBuilder layoutPicker: @escaping (Binding<Layout>) -> LayoutPicker,
+        @ViewBuilder container: @escaping (_ layout: Layout, _ elements: [Element], _ content: AnyView, _ eachContent: @escaping (Element) -> AnyView) -> Container,
+        @ViewBuilder eachContent: @escaping (_ layout: Layout, _ element: Element) -> Content,
+        @ViewBuilder destination: @escaping (_ element: Element, _ list: [Element]) -> Destination
+    ) {
+        self.updateList = updateList
+        self.makeLayoutPicker = layoutPicker
+        self.makeContainer = container
+        self.makeSomeContent = eachContent
+        self.makeDestination = destination
+        self._currentLayout = .init(initialValue: initialLayout)
+        self.unavailablePrompt = "Search.unavailable.\(Element.singularName)"
+        self.searchPlaceholder = "Search.prompt.\(Element.pluralName)"
+        self._filter = .init(initialValue: .recoverable(id: Element.pluralName.key))
+    }
+    
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.colorScheme) private var colorScheme
+    @Namespace private var navigationAnimationNamespace
+    @State private var filter: SekaiFilter
+    @State private var sorter = SekaiSorter(keyword: Element.applicableSortingTypes.contains(.releaseDate(in: .jp)) ? .releaseDate(in: .jp) : .id, direction: .descending)
+    @State private var elements: [Element]?
+    @State private var searchedElements: [Element]?
+    @State private var infoIsAvailable = true
+    @State private var searchedText = ""
+    @State private var showFilterSheet = false
+    @State private var presentingElement: Element?
+    @State private var elementIDMap: [Element: Int64] = [:]
+    @State private var isCustomGroupBoxActive = false
+    
+    var body: some View {
+        VStack {
+            if let resultElements = searchedElements ?? elements {
+                Group {
+                    if !resultElements.isEmpty {
+                        // FIXME: What
+                        /*
+                        ScrollView {
+                            HStack {
+                                Spacer(minLength: 0)
+                                makeContainer(currentLayout, resultElements,
+                                    AnyView(
+                                        ForEach(resultElements, id: \.self) { element in
+                                            Group {
+                                                // macOS 26 workaround
+                                                if #available(macOS 26.0, *) {
+                                                    Button(action: {
+                                                        showFilterSheet = false
+                                                        presentingElement = element
+                                                    }, label: {
+                                                        // FIXME: What?
+                                                        makeElementLabel(for: element)
+                                                    })
+                                                } else {
+                                                    NavigationLink {
+                                                        makeDestination(element, elements ?? [])
+                                                            .onAppear {
+                                                                showFilterSheet = false
+                                                            }
+                                                    } label: {
+                                                        makeElementLabel(for: element)
+                                                    }
+                                                }
+                                            }
+                                            .buttonStyle(.plain)
+                                            .buttonBorderShape(.roundedRectangle(radius: 20))
+                                        }
+                                    )
+                                ) { element in
+                                    AnyView(
+                                        Group {
+                                            // There's a problem that only presents
+                                            // on macOS 26.0 below, we use a fallback
+                                            // as workaround.
+                                            if #available(macOS 26.0, *) {
+                                                Button(action: {
+                                                    showFilterSheet = false
+                                                    presentingElement = element
+                                                }, label: {
+                                                    makeElementLabel(for: element)
+                                                })
+                                            } else {
+                                                NavigationLink {
+                                                    makeDestination(element, elements ?? [])
+                                                        .onAppear {
+                                                            showFilterSheet = false
+                                                        }
+                                                } label: {
+                                                    makeElementLabel(for: element)
+                                                }
+                                            }
+                                        }
+                                        .buttonStyle(.plain)
+                                        .buttonBorderShape(.roundedRectangle(radius: 20))
+                                    )
+                                }
+                                .padding(.horizontal)
+                                Spacer(minLength: 0)
+                            }
+                        }
+                        */
+                    } else {
+                        ContentUnavailableView("Search.no-results", systemImage: "magnifyingglass", description: Text("Search.no-results.description"))
+                    }
+                }
+            } else {
+                if infoIsAvailable {
+                    ExtendedConstraints {
+                        ProgressView()
+                    }
+                } else {
+                    ExtendedConstraints {
+                        ContentUnavailableView(unavailablePrompt, systemImage: Element.symbol, description: Text("Search.unavailable.description"))
+                            .onTapGesture {
+                                Task {
+                                    await getList()
+                                }
+                            }
+                    }
+                }
+            }
+        }
+        .searchable(text: $searchedText, prompt: searchPlaceholder)
+        .onSubmit {
+            if let elements {
+                searchedElements = elements.search(for: searchedText)
+            }
+        }
+        .navigationTitle(Element.pluralName)
+        .navigationDestination(item: $presentingElement) { element in
+            makeDestination(element, elements ?? [])
+            #if !os(macOS)
+                .wrapIf(true) { content in
+                    if #available(iOS 18.0, *) {
+                        content
+                            .navigationTransition(.zoom(sourceID: element.hashValue, in: navigationAnimationNamespace))
+                            .onDisappear {
+                                elementIDMap.updateValue(
+                                    Int64(CFAbsoluteTimeGetCurrent() * 1000),
+                                    forKey: element
+                                )
+                            }
+                    } else {
+                        content
+                    }
+                }
+            #endif
+        }
+        #if !os(visionOS)
+        .wrapIf(searchedElements != nil) { content in
+            if #available(iOS 26.0, *) {
+                // FIXME: What?
 //                content.navigationSubtitle((searchedText.isEmpty && !filter.isFiltered) ? (getResultCountDescription?(searchedElements!.count) ?? "Search.item.\(searchedElements!.count)") :  "Search.result.\(searchedElements!.count)")
-//            } else {
-//                content
-//            }
-//        }
-//        #endif
-//        .toolbar {
-//            ToolbarItem {
-//                makeLayoutPicker($currentLayout)
-//            }
-//            #if !os(visionOS)
-//            if #available(iOS 26.0, macOS 26.0, *) {
-//                ToolbarSpacer()
-//            }
-//            #endif
-//            ToolbarItemGroup {
-//                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, filterIsFiltering: filter.isFiltered, sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
-//            }
-//        }
-//        .onDisappear {
-//            showFilterSheet = false
-//        }
-//        .withSystemBackground()
-//        #if !os(visionOS)
-//        .wrapIf(sizeClass == .regular) { content in
-//            content
-//                .inspector(isPresented: $showFilterSheet) {
-//                    FilterView(filter: $filter, includingKeys: Set(Element.applicableFilteringKeys))
-//                        .presentationDetents([.medium, .large])
-//                        .presentationDragIndicator(.visible)
-//                        .presentationBackgroundInteraction(.enabled)
-//                }
-//        } else: { content in
-//            content
-//                .sheet(isPresented: $showFilterSheet) {
-//                    FilterView(filter: $filter, includingKeys: Set(Element.applicableFilteringKeys))
-//                        .presentationDetents([.medium, .large])
-//                        .presentationDragIndicator(.visible)
-//                        .presentationBackgroundInteraction(.enabled)
-//                }
-//        }
-//        #else
-//        .ornament(visibility: showFilterSheet ? .visible : .hidden, attachmentAnchor: .scene(.trailing)) {
-//            HStack {
-//                Spacer(minLength: 300)
-//                FilterView(filter: $filter, includingKeys: Set(Element.applicableFilteringKeys))
-//                    .padding(.top)
-//                    .glassBackgroundEffect()
-//                    .frame(width: 300, height: 600)
-//            }
-//            .rotation3DEffect(.degrees(-30), axis: .y)
-//        }
-//        #endif
-//        .withSystemBackground() // This modifier MUST be placed BOTH before
-//                                // and after `inspector` to make it work as expected
-//        .task {
-//            await getList()
-//        }
-//        .onChange(of: filter) {
-//            if let elements {
-//                searchedElements = elements.filter(withDoriFilter: filter).search(for: searchedText, with: nil).sorted(withDoriSorter: sorter)
-//            }
-//        }
-//        .onChange(of: sorter) {
-//            if let elements {
-//                searchedElements = elements.filter(withDoriFilter: filter).search(for: searchedText, with: nil).sorted(withDoriSorter: sorter)
-//            }
-//        }
-//        .onChange(of: searchedText, {
-//            if let elements {
-//                searchedElements = elements.filter(withDoriFilter: filter).search(for: searchedText, with: nil).sorted(withDoriSorter: sorter)
-//            }
-//        })
-//    }
-//    
-//    @ViewBuilder
-//    private func makeElementLabel(for element: Element) -> some View {
-//        // # Why?
-//        // After updating CustomGroupBox to 2, some issue occured here.
-//        //
-//        // # What happened?
-//        // the `matchedTransitionSource(id:in:)` constraints a view's
-//        // viewport to its own frame, that is, our shadows are clipped
-//        // into the frame of the box itself.
-//        //
-//        // # How do we solve it?
-//        // First we add a preference key for custom group boxes,
-//        // if there's any active `CustomGroupBox` in the view
-//        // from `makeSomeContent(_:_:)`, we can receive the info
-//        // by the `onPreferenceChange` call below.
-//        // We suppress the group box in content by setting
-//        // the env value `_suppressCustomGroupBox` to `true`,
-//        // then add a custom group box
-//        // after the `matchedTransitionSource(id:in:)` call
-//        // if needed to solve this problem.
-//        // That's why codes here seem wired.
-//        CustomGroupBox(showGroupBox: isCustomGroupBoxActive) {
-//            makeSomeContent(currentLayout, element)
-//                .highlightKeyword($searchedText)
-//                .environment(\._suppressCustomGroupBox, true)
-//                .onPreferenceChange(CustomGroupBoxActivePreference.self) { isActive in
-//                    isCustomGroupBoxActive = isActive
-//                }
-//                .wrapIf(true) { content in
-//                    if #available(iOS 18.0, macOS 15.0, *) {
-//                        content
-//                            .matchedTransitionSource(id: element.hashValue, in: navigationAnimationNamespace)
-//                    } else {
-//                        content
-//                    }
-//                }
-//        }
-//        .id(elementIDMap[element] ?? Int64(element.hashValue))
-//    }
-//    
-//    private func getList() async {
-//        infoIsAvailable = true
-//        withDoriCache(id: "\(Element.pluralName.key)List_\(filter.identity)", trait: .realTime) {
-//            await updateList()
-//        }.onUpdate {
-//            if let cards = $0 {
-//                self.elements = cards.sorted(withDoriSorter: DoriFrontend.Sorter(keyword: .id, direction: .ascending))
-//                searchedElements = cards.filter(withDoriFilter: filter).search(for: searchedText, with: nil).sorted(withDoriSorter: sorter)
-//            } else {
-//                infoIsAvailable = false
-//            }
-//        }
-//    }
-//}
-//
-//extension SearchViewBase {
-//    func resultCountDescription(content: ((Int) -> LocalizedStringResource)?) -> Self {
-//        var mutable = self
-//        mutable.getResultCountDescription = content
-//        return mutable
-//    }
-//}
-//
+            } else {
+                content
+            }
+        }
+        #endif
+        .toolbar {
+            ToolbarItem {
+                makeLayoutPicker($currentLayout)
+            }
+            #if !os(visionOS)
+            if #available(iOS 26.0, macOS 26.0, *) {
+                ToolbarSpacer()
+            }
+            #endif
+            ToolbarItemGroup {
+                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, filterIsFiltering: filter.isFiltered, sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
+            }
+        }
+        .onDisappear {
+            showFilterSheet = false
+        }
+        .withSystemBackground()
+        #if !os(visionOS)
+        .wrapIf(sizeClass == .regular) { content in
+            content
+                .inspector(isPresented: $showFilterSheet) {
+                    FilterView(filter: $filter, includingKeys: Set(Element.applicableFilteringKeys))
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                        .presentationBackgroundInteraction(.enabled)
+                }
+        } else: { content in
+            content
+                .sheet(isPresented: $showFilterSheet) {
+                    FilterView(filter: $filter, includingKeys: Set(Element.applicableFilteringKeys))
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                        .presentationBackgroundInteraction(.enabled)
+                }
+        }
+        #else
+        .ornament(visibility: showFilterSheet ? .visible : .hidden, attachmentAnchor: .scene(.trailing)) {
+            HStack {
+                Spacer(minLength: 300)
+                FilterView(filter: $filter, includingKeys: Set(Element.applicableFilteringKeys))
+                    .padding(.top)
+                    .glassBackgroundEffect()
+                    .frame(width: 300, height: 600)
+            }
+            .rotation3DEffect(.degrees(-30), axis: .y)
+        }
+        #endif
+        .withSystemBackground() // This modifier MUST be placed BOTH before
+                                // and after `inspector` to make it work as expected
+        .task {
+            await getList()
+        }
+        .onChange(of: filter) {
+            if let elements {
+                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText, with: nil).sorted(withSekaiSorter: sorter)
+            }
+        }
+        .onChange(of: sorter) {
+            if let elements {
+                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText, with: nil).sorted(withSekaiSorter: sorter)
+            }
+        }
+        .onChange(of: searchedText, {
+            if let elements {
+                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText, with: nil).sorted(withSekaiSorter: sorter)
+            }
+        })
+    }
+    
+    @ViewBuilder
+    private func makeElementLabel(for element: Element) -> some View {
+        // # Why?
+        // After updating CustomGroupBox to 2, some issue occured here.
+        //
+        // # What happened?
+        // the `matchedTransitionSource(id:in:)` constraints a view's
+        // viewport to its own frame, that is, our shadows are clipped
+        // into the frame of the box itself.
+        //
+        // # How do we solve it?
+        // First we add a preference key for custom group boxes,
+        // if there's any active `CustomGroupBox` in the view
+        // from `makeSomeContent(_:_:)`, we can receive the info
+        // by the `onPreferenceChange` call below.
+        // We suppress the group box in content by setting
+        // the env value `_suppressCustomGroupBox` to `true`,
+        // then add a custom group box
+        // after the `matchedTransitionSource(id:in:)` call
+        // if needed to solve this problem.
+        // That's why codes here seem wired.
+        CustomGroupBox(showGroupBox: isCustomGroupBoxActive) {
+            makeSomeContent(currentLayout, element)
+                .highlightKeyword($searchedText)
+                .environment(\._suppressCustomGroupBox, true)
+                .onPreferenceChange(CustomGroupBoxActivePreference.self) { isActive in
+                    isCustomGroupBoxActive = isActive
+                }
+                .wrapIf(true) { content in
+                    if #available(iOS 18.0, macOS 15.0, *) {
+                        content
+                            .matchedTransitionSource(id: element.hashValue, in: navigationAnimationNamespace)
+                    } else {
+                        content
+                    }
+                }
+        }
+        .id(elementIDMap[element] ?? Int64(element.hashValue))
+    }
+    
+    private func getList() async {
+        infoIsAvailable = true
+        let cachedList: SekaiCache.Promise<[Element]?> = withSekaiCache(id: "\(Element.pluralName.key)List_\(filter.identity)", trait: .realTime) {
+            await updateList()
+        }
+        cachedList.onUpdate {
+            if let cards = $0 {
+                self.elements = cards.sorted(withSekaiSorter: SekaiSorter(keyword: .id, direction: .ascending))
+                searchedElements = cards.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
+            } else {
+                infoIsAvailable = false
+            }
+        }
+    }
+}
+
+extension SearchViewBase {
+    func resultCountDescription(content: ((Int) -> LocalizedStringResource)?) -> Self {
+        var mutable = self
+        mutable.getResultCountDescription = content
+        return mutable
+    }
+}
+
 struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View>: View {
     var localizedElements: LocalizedData<[Element]>
     var showLocalePicker: Bool

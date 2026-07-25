@@ -56,10 +56,18 @@ struct CharacterDetailOverviewView: View {
                                             Button(action: {
                                                 colorDetailsIsDisplaying = true
                                             }, label: {
-                                                Image(systemName: "info.circle")
+                                                Label("Character.color.show-details", systemImage: "info.circle")
+                                                    .labelStyle(.iconOnly)
                                             })
                                             .buttonStyle(.plain)
                                         }
+                                    }
+                                    .contextMenu {
+                                        Button(action: {
+                                            colorDetailsIsDisplaying = true
+                                        }, label: {
+                                            Label("Character.color.show-details", systemImage: "info.circle")
+                                        })
                                     }
                                 })
                             }
@@ -217,58 +225,74 @@ struct CharacterDetailOverviewView: View {
 
 struct CharacterDetailColorInfo: View {
     var colorInfo: [Character.CharacterColors]
+    
+    @Environment(\.dismiss) var dismiss
     var body: some View {
-        ScrollView {
-            VStack {
-                ForEach(colorInfo, id: \.self) { colors in
-                    CustomGroupBox(cornerRadius: 20) {
-                        VStack {
-                            Group {
-                                ListItem(title: {
-                                    Text("Info.id")
-                                }, value: {
-                                    Text(String(colors.id))
-                                })
-                                ListItem(title: {
-                                    Text("Character.color.unit")
-                                }, value: {
-                                    UnitLabel(unit: colors.unit)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.color.main-color")
-                                }, value: {
-                                    ColorLabel(color: colors.mainColor)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.color.skin-color")
-                                }, value: {
-                                    ColorLabel(color: colors.skinColor)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.color.skin-shadow-color-1")
-                                }, value: {
-                                    ColorLabel(color: colors.skinShadowColor1)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.color.skin-shadow-color-2")
-                                }, value: {
-                                    ColorLabel(color: colors.skinShadowColor2)
-                                })
-                            }
-                            .insert {
-                                Divider()
+        NavigationStack {
+            ScrollView {
+                VStack {
+                    ForEach(colorInfo, id: \.self) { colors in
+                        CustomGroupBox(cornerRadius: 20) {
+                            VStack {
+                                Group {
+                                    ListItem(title: {
+                                        Text("Info.id")
+                                    }, value: {
+                                        Text(String(colors.id))
+                                    })
+                                    ListItem(title: {
+                                        Text("Character.color.unit")
+                                    }, value: {
+                                        UnitLabel(unit: colors.unit)
+                                    })
+                                    
+                                    ListItem(title: {
+                                        Text("Character.color.main-color")
+                                    }, value: {
+                                        ColorLabel(color: colors.mainColor)
+                                    })
+                                    
+                                    ListItem(title: {
+                                        Text("Character.color.skin-color")
+                                    }, value: {
+                                        ColorLabel(color: colors.skinColor)
+                                    })
+                                    
+                                    ListItem(title: {
+                                        Text("Character.color.skin-shadow-color-1")
+                                    }, value: {
+                                        ColorLabel(color: colors.skinShadowColor1)
+                                    })
+                                    
+                                    ListItem(title: {
+                                        Text("Character.color.skin-shadow-color-2")
+                                    }, value: {
+                                        ColorLabel(color: colors.skinShadowColor2)
+                                    })
+                                }
+                                .insert {
+                                    Divider()
+                                }
                             }
                         }
                     }
                 }
+                .padding()
             }
-            .padding()
+            .navigationTitle("Character.color.details")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction, content: {
+                    Button(optionalRole: .cancel, action: {
+                        dismiss()
+                    }, label: {
+                        Label("Character.color.details.close", systemImage: "xmark")
+                            .wrapIf(platform == .macOS, in: {
+                                $0.labelStyle(.titleOnly)
+                            })
+                    })
+                })
+            }
         }
-        .navigationTitle("Character.color.details")
     }
 }
 

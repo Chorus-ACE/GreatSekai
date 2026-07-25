@@ -71,10 +71,10 @@ struct FallbackableWebImage<Content: View>: View {
         self.isAnimating = isAnimating
         self.transaction = transaction
         self.content = content
-        self._currentImageURLIndex = .init(initialValue: !urls.isEmpty ? 0 : nil)
+        self._currentImageURLIndex = State(initialValue: !urls.isEmpty ? 0 : nil)
     }
     
-    @State var currentImageURLIndex: Array.Index?
+    @State var currentImageURLIndex: Array<Content>.Index?
     
     var body: some View {
         _makeView()
