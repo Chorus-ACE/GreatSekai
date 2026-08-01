@@ -222,7 +222,7 @@
 //                }
 //                #endif
 //                ToolbarItemGroup {
-//                    FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, filterIsFiltering: filter.isFiltered, sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
+//                    FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltered, sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
 //                }
 //                #if !os(visionOS)
 //                if #available(iOS 26.0, macOS 26.0, *) {

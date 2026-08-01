@@ -33,6 +33,9 @@
 		E93153452F540A45002D102D /* FilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93153412F540A45002D102D /* FilterView.swift */; };
 		E93153462F540A45002D102D /* DetailArtsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93153432F540A45002D102D /* DetailArtsView.swift */; };
 		E93153472F540A45002D102D /* DetailSectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93153422F540A45002D102D /* DetailSectionsView.swift */; };
+		E960BAD5301DF12000B86B8A /* EventSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E960BAD4301DF12000B86B8A /* EventSearchView.swift */; };
+		E98C84B5301CE604005B6B45 /* CardInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98C84B4301CE5FD005B6B45 /* CardInfoView.swift */; };
+		E98C84CF301D9413005B6B45 /* CardPreviewImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98C84CE301D9413005B6B45 /* CardPreviewImage.swift */; };
 		E9C55F5C2F53F21200DCFD2D /* SekaiKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F5B2F53F21200DCFD2D /* SekaiKit */; };
 		E9C55F9D2F53F27000DCFD2D /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F9C2F53F27000DCFD2D /* SDWebImageSwiftUI */; };
 		E9C55FA02F53F28800DCFD2D /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F9F2F53F28800DCFD2D /* SDWebImageSVGCoder */; };
@@ -47,6 +50,8 @@
 		E9C55FD62F53F3C100DCFD2D /* GreatSekaiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */; };
 		E9CB981F2F5FC20B00F9BBEC /* CharacterDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CB981E2F5FC20200F9BBEC /* CharacterDetailView.swift */; };
 		E9D6676C3014DD2800F6A422 /* FilterSorterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */; };
+		E9D6676E3014EDF100F6A422 /* CardSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */; };
+		E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D667703014EE1800F6A422 /* EventInfoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +80,9 @@
 		E93153412F540A45002D102D /* FilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterView.swift; sourceTree = "<group>"; };
 		E93153422F540A45002D102D /* DetailSectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailSectionsView.swift; sourceTree = "<group>"; };
 		E93153432F540A45002D102D /* DetailArtsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailArtsView.swift; sourceTree = "<group>"; };
+		E960BAD4301DF12000B86B8A /* EventSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSearchView.swift; sourceTree = "<group>"; };
+		E98C84B4301CE5FD005B6B45 /* CardInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardInfoView.swift; sourceTree = "<group>"; };
+		E98C84CE301D9413005B6B45 /* CardPreviewImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPreviewImage.swift; sourceTree = "<group>"; };
 		E9C55F4C2F53F1E700DCFD2D /* GreatSekai.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GreatSekai.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9C55FC02F53F3C100DCFD2D /* CardCollectionCoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardCollectionCoding.swift; sourceTree = "<group>"; };
 		E9C55FC12F53F3C100DCFD2D /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -87,6 +95,8 @@
 		E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreatSekaiApp.swift; sourceTree = "<group>"; };
 		E9CB981E2F5FC20200F9BBEC /* CharacterDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterDetailView.swift; sourceTree = "<group>"; };
 		E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSorterView.swift; sourceTree = "<group>"; };
+		E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardSearchView.swift; sourceTree = "<group>"; };
+		E9D667703014EE1800F6A422 /* EventInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInfoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,6 +162,8 @@
 			isa = PBXGroup;
 			children = (
 				E912E5E82F6FAD7700B7220C /* Character */,
+				E9D6676F3014EDF500F6A422 /* Card */,
+				E9D667723014EE1E00F6A422 /* Event */,
 				E93153442F540A45002D102D /* Other */,
 			);
 			path = Info;
@@ -209,6 +221,25 @@
 				E9C55FC72F53F3C100DCFD2D /* Methods */,
 			);
 			path = GreatSekai;
+			sourceTree = "<group>";
+		};
+		E9D6676F3014EDF500F6A422 /* Card */ = {
+			isa = PBXGroup;
+			children = (
+				E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */,
+				E98C84B4301CE5FD005B6B45 /* CardInfoView.swift */,
+				E98C84CE301D9413005B6B45 /* CardPreviewImage.swift */,
+			);
+			path = Card;
+			sourceTree = "<group>";
+		};
+		E9D667723014EE1E00F6A422 /* Event */ = {
+			isa = PBXGroup;
+			children = (
+				E960BAD4301DF12000B86B8A /* EventSearchView.swift */,
+				E9D667703014EE1800F6A422 /* EventInfoView.swift */,
+			);
+			path = Event;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -298,6 +329,7 @@
 				E9C55FCE2F53F3C100DCFD2D /* CardCollectionCoding.swift in Sources */,
 				E9C55FCF2F53F3C100DCFD2D /* Extensions.swift in Sources */,
 				E9C55FD02F53F3C100DCFD2D /* Functions.swift in Sources */,
+				E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */,
 				E9C55FD12F53F3C100DCFD2D /* QuickLook.swift in Sources */,
 				E9C55FD22F53F3C100DCFD2D /* StableHasher.swift in Sources */,
 				E931520D2F5401D1002D102D /* HomeView.swift in Sources */,
@@ -312,6 +344,7 @@
 				E93152AF2F540621002D102D /* SettingsAdvanced.swift in Sources */,
 				E93152B32F540621002D102D /* AppFlags.swift in Sources */,
 				E90629842F727BD400EDCDC6 /* SettingsDebugView.swift in Sources */,
+				E98C84CF301D9413005B6B45 /* CardPreviewImage.swift in Sources */,
 				E93152B52F540621002D102D /* SettingsView.swift in Sources */,
 				E93152B62F540621002D102D /* SettingsDocument.swift in Sources */,
 				E912E5EA2F6FAD8A00B7220C /* CharacterSearchView.swift in Sources */,
@@ -320,8 +353,11 @@
 				E93153472F540A45002D102D /* DetailSectionsView.swift in Sources */,
 				E93152BB2F540621002D102D /* Acknowledgements.swift in Sources */,
 				E93152BF2F540621002D102D /* SettingsAboutView.swift in Sources */,
+				E960BAD5301DF12000B86B8A /* EventSearchView.swift in Sources */,
 				E93152C02F540621002D102D /* SettingsLocaleView.swift in Sources */,
+				E9D6676E3014EDF100F6A422 /* CardSearchView.swift in Sources */,
 				E93152142F5401D1002D102D /* ContentView.swift in Sources */,
+				E98C84B5301CE604005B6B45 /* CardInfoView.swift in Sources */,
 				E93152152F5401D1002D102D /* ItemSelector.swift in Sources */,
 				E93152162F5401D1002D102D /* WelcomeView.swift in Sources */,
 				E9CB981F2F5FC20B00F9BBEC /* CharacterDetailView.swift in Sources */,

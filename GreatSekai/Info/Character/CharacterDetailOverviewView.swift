@@ -20,6 +20,11 @@ struct CharacterDetailOverviewView: View {
         df.setLocalizedDateFormatFromTemplate("MMM d")
         return df
     }
+    var calendar = {
+        var calendar = Calendar.current
+        calendar.timeZone = .init(identifier: "Asia/Tokyo")!
+        return calendar
+    }
     var body: some View {
         Group {
             VStack {
@@ -91,7 +96,7 @@ struct CharacterDetailOverviewView: View {
                                 Text("Character.birthday")
                                     .bold()
                             }, value: {
-                                if let birthday = information.birthday, let date = Calendar.current.date(from: birthday) {
+                                if let birthday = information.birthday, let date = calendar().date(from: birthday) {
                                     Text(dateFormatter.string(from: date))
                                 } else {
                                     LocalizableText(text: information.literalBirthday)

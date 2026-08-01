@@ -31,7 +31,7 @@ struct FilterView: View {
     @State var lastSelectAllActionIsDeselect: Bool = false
     @State var theItemThatShowsSelectAllTips: SekaiFilter.Key? = nil
     
-    let filterKeysOrder: [SekaiFilter.Key] = [.unit, .cardAttribute]
+    let filterKeysOrder: [SekaiFilter.Key] = [.unit, .attribute]
     
 //    let filterKeysOrder: [SekaiFilter.Key] = [.band, .attribute, .rarity, .character, .server, .timelineStatus, .songAvailability, .released, .cardType, .eventType, .gachaType, .songType, .loginCampaignType, .comicType, .skill, .level]
     
@@ -644,7 +644,7 @@ struct SorterPickerView: View {
             }, label: {
                 Label("Sort", systemImage: "arrow.up.arrow.down")
             })
-            .menuIndicator(.hidden)
+//            .menuIndicator(.hidden)
             #endif
         }
         .accessibilityValue(String("\(sorter.keyword.localizedString(hasEndingDate: sortingItemsHaveEndingDate)), \(sorter.localizedDirectionName())"))

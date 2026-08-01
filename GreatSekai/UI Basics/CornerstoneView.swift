@@ -478,7 +478,7 @@ struct FilterAndSorterPicker: View {
     let hasEndingDate: Bool
     var body: some View {
 #if os(macOS)
-        HStack(spacing: 0) {
+//        HStack(spacing: 0) {
             Button(action: {
                 showFilterSheet.toggle()
             }, label: {
@@ -491,13 +491,13 @@ struct FilterAndSorterPicker: View {
                     }
                     .background {
                         if isFiltering {
-                            Capsule().foregroundStyle(Color.accentColor).scaledToFill().scaleEffect(platform == .macOS ? 1.1 : 1.65)
+                            Capsule().foregroundStyle(Color.accentColor).scaledToFill().scaleEffect(platform == .macOS ? 1.1 : 1.1)
                         }
                     }
             })
             .animation(.easeInOut(duration: 0.2), value: isFiltering)
             SorterPickerView(sorter: $sorter, allOptions: sorterKeywords, sortingItemsHaveEndingDate: hasEndingDate)
-        }
+//        }
 #else
         Button(action: {
             showFilterSheet.toggle()
@@ -539,7 +539,7 @@ struct FilterAndSorterPicker: View {
 //
 // ```swift
 // ToolbarItemGroup {
-//     FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, filterIsFiltering: filter.isFiltered, sorterKeywords: PreviewItem.applicableSortingTypes)
+//     FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltered, sorterKeywords: PreviewItem.applicableSortingTypes)
 // }
 //```
 

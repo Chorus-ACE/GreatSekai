@@ -46,11 +46,11 @@ extension Card: SekaiTypeDescribable {
 //    static var symbol: String { "swatchpalette" }
 //}
 //
-//extension PreviewEvent: DoriTypeDescribable {
-//    static var singularName: LocalizedStringResource { "Type.event.singular" }
-//    static var pluralName: LocalizedStringResource { "Type.event.plural" }
-//    static var symbol: String { "star.hexagon" }
-//}
+extension Event: SekaiTypeDescribable {
+    static var singularName: LocalizedStringResource { "Type.event.singular" }
+    static var pluralName: LocalizedStringResource { "Type.event.plural" }
+    static var symbol: String { "star.hexagon" }
+}
 //
 //extension PreviewGacha: DoriTypeDescribable {
 //    static var singularName: LocalizedStringResource { "Type.gacha.singular" }

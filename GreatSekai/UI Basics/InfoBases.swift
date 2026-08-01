@@ -78,9 +78,9 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
                         LazyVStack(spacing: 35, pinnedViews: .sectionHeaders) {
                             makeContent(information)
                         }
-                        .padding()
                         Spacer(minLength: 0)
                     }
+                    .padding()
                 }
                 .scrollDisablesPopover()
             } else {
@@ -370,8 +370,6 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
             if let resultElements = searchedElements ?? elements {
                 Group {
                     if !resultElements.isEmpty {
-                        // FIXME: What
-                        /*
                         ScrollView {
                             HStack {
                                 Spacer(minLength: 0)
@@ -385,7 +383,6 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
                                                         showFilterSheet = false
                                                         presentingElement = element
                                                     }, label: {
-                                                        // FIXME: What?
                                                         makeElementLabel(for: element)
                                                     })
                                                 } else {
@@ -431,11 +428,10 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
                                         .buttonBorderShape(.roundedRectangle(radius: 20))
                                     )
                                 }
-                                .padding(.horizontal)
+                                .padding()
                                 Spacer(minLength: 0)
                             }
                         }
-                        */
                     } else {
                         ContentUnavailableView("Search.no-results", systemImage: "magnifyingglass", description: Text("Search.no-results.description"))
                     }
@@ -486,8 +482,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         #if !os(visionOS)
         .wrapIf(searchedElements != nil) { content in
             if #available(iOS 26.0, *) {
-                // FIXME: What?
-//                content.navigationSubtitle((searchedText.isEmpty && !filter.isFiltered) ? (getResultCountDescription?(searchedElements!.count) ?? "Search.item.\(searchedElements!.count)") :  "Search.result.\(searchedElements!.count)")
+                content.navigationSubtitle((searchedText.isEmpty && !filter.isFiltered) ? (getResultCountDescription?(searchedElements!.count) ?? "Search.item.\(searchedElements!.count)") :  "Search.result.\(searchedElements!.count)")
             } else {
                 content
             }
@@ -503,7 +498,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
             }
             #endif
             ToolbarItemGroup {
-                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, filterIsFiltering: filter.isFiltered, sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
+                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltered, sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
             }
         }
         .onDisappear {
@@ -547,17 +542,17 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         }
         .onChange(of: filter) {
             if let elements {
-                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText, with: nil).sorted(withSekaiSorter: sorter)
+                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
             }
         }
         .onChange(of: sorter) {
             if let elements {
-                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText, with: nil).sorted(withSekaiSorter: sorter)
+                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
             }
         }
         .onChange(of: searchedText, {
             if let elements {
-                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText, with: nil).sorted(withSekaiSorter: sorter)
+                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
             }
         })
     }

@@ -23,13 +23,13 @@ import SwiftUI
         tabValue: .characters,
         destination: { CharacterSearchView() }
     ),
-//    InfoDestinationItem(
-//        title: "App.info.cards",
-//        symbol: "person.crop.square.on.square.angled",
-//        lightColor: .orange,
-//        tabValue: .cards,
-//        destination: {CardSearchView()}
-//    ),
+    InfoDestinationItem(
+        title: "App.info.cards",
+        symbol: "person.crop.square.on.square.angled",
+        lightColor: .orange,
+        tabValue: .cards,
+        destination: { CardSearchView() }
+    ),
 //    InfoDestinationItem(
 //        title: "App.info.costumes",
 //        symbol: "swatchpalette",
@@ -37,13 +37,13 @@ import SwiftUI
 //        tabValue: .costumes,
 //        destination: {CostumeSearchView()}
 //    ),
-//    InfoDestinationItem(
-//        title: "App.info.events",
-//        symbol: "star.hexagon",
-//        lightColor: .green,
-//        tabValue: .events,
-//        destination: {EventSearchView()}
-//    ),
+    InfoDestinationItem(
+        title: "App.info.events",
+        symbol: "star.hexagon",
+        lightColor: .green,
+        tabValue: .events,
+        destination: { EventSearchView() }
+    ),
 //    InfoDestinationItem(
 //        title: "App.info.gachas",
 //        symbol: "dice",

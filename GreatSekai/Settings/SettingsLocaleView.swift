@@ -41,8 +41,8 @@ struct SettingsLocaleView: View {
     
     
     struct SettingsPrimaryAndSecondaryLocalePicker: View {
-        @State var primaryLocale = SekaiLocale.jp
-        @State var secondaryLocale = SekaiLocale.en
+        @State var primaryLocale = SekaiLocale.primaryLocale
+        @State var secondaryLocale = SekaiLocale.secondaryLocale
         var body: some View {
             Group {
                 LocalePicker($primaryLocale) {
@@ -55,6 +55,7 @@ struct SettingsLocaleView: View {
                     }
                     SekaiLocale.primaryLocale = newValue
                     UserDefaults(suiteName: "group.memz233.Greatdori.Widgets")?.set(newValue.rawValue, forKey: "PreferredLocale")
+//                    SekaiCache.invalidateAll()
                 })
                 
                 LocalePicker($secondaryLocale) {
@@ -67,11 +68,8 @@ struct SettingsLocaleView: View {
                     }
                     SekaiLocale.secondaryLocale = newValue
                     UserDefaults(suiteName: "group.memz233.Greatdori.Widgets")?.set(newValue.rawValue, forKey: "SecondaryLocale")
+//                    SekaiCache.invalidateAll()
                 })
-            }
-            .onAppear {
-                primaryLocale = SekaiLocale.primaryLocale
-                secondaryLocale = SekaiLocale.secondaryLocale
             }
         }
     }
