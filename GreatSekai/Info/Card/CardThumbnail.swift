@@ -10,8 +10,7 @@ import SDWebImageSwiftUI
 import SekaiKit
 import SwiftUI
 
-// MARK: CardPreviewImage
-struct CardPreviewImage: View {
+struct CardThumbnail: View {
     private var card: Card
     private var showTrainedVersion: Bool
     private var sideLength: CGFloat = 72
@@ -28,23 +27,6 @@ struct CardPreviewImage: View {
         self.showNavigationHints = showNavigationHints
     }
     
-//
-//    init(_ card: Card, showTrainedVersion: Bool = false, sideLength: CGFloat = 72, showNavigationHints: Bool = false/*, cardNavigationDestinationID: Binding<Int?>*/) {
-//        self.cardID = card.id
-//        self.thumbNormalImageURL = card.thumbNormalImageURL
-//        self.thumbTrainedImageURL = card.thumbAfterTrainingImageURL
-//        self.cardType = card.type
-//        self.attribute = card.attribute
-//        self.rarity = card.rarity
-//        self.bandIconImageURL = URL(string: "https://bestdori.com/res/icon/band_\(DoriCache.preCache.characters.first { $0.id == card.characterID }?.bandID ?? 0).svg")!
-//        self.showTrainedVersion = showTrainedVersion
-//        self.sideLength = sideLength
-//        self.showNavigationHints = showNavigationHints
-//        self.cardTitle = card.cardName
-//        self.characterID = card.characterID
-//        //        self._cardNavigationDestinationID = cardNavigationDestinationID
-//    }
-    
     @Environment(\.disablePopover) private var disablePopover
     
     var body: some View {
@@ -52,19 +34,15 @@ struct CardPreviewImage: View {
             // Cover
             WebImage(url: (card.canTrain && showTrainedVersion) ? card.afterTrainingThumbnailURL! : card.beforeTrainingThumbnailURL) { image in
                 image
+                    .interpolation(.high)
             } placeholder: {
-                RoundedRectangle(cornerRadius: 10)
-                //                    .fill(Color.gray.opacity(0.15))
+                Rectangle()
                     .fill(getPlaceholderColor())
                     .aspectRatio(1, contentMode: .fit)
             }
             .resizable()
-            .interpolation(.high)
-            .antialiased(true)
-            //.scaledToFill()
-            //.cornerRadius(2)
             .clipped()
-            .frame(width: 67/72*sideLength, height: 67/72*sideLength)
+            .frame(width: sideLength, height: sideLength)
             
             // Frame
             Image("CardFrameSmall\(card.rarity.borderNameSuffix)")
@@ -74,37 +52,32 @@ struct CardPreviewImage: View {
             // Icons
             VStack(spacing: 0) {
                 HStack {
-                    WebImage(url: card.unit.iconImageURL)
+                    Image("Attribute\(card.attribute.rawValue.capitalized)Small")
                         .resizable()
-                        .interpolation(.high)
-                        .antialiased(true)
-                        .frame(width: 20/72*sideLength, height: 20/72*sideLength, alignment: .topLeading)
+                        .frame(width: 0.225*sideLength, height: 0.225*68/64*sideLength, alignment: .topTrailing)
+                        .offset(x: 1)
                     Spacer()
-                    WebImage(url: card.attribute.selectorImageURL)
-                        .resizable()
-                        .interpolation(.high)
-                        .antialiased(true)
-                        .frame(width: 18/72*sideLength, height: 18/72*sideLength, alignment: .topTrailing)
-                        .offset(x: -1)
                 }
                 
                 Spacer(minLength: 0)
                 HStack {
-                    VStack(alignment: .leading, spacing: -2) {
+                    HStack(spacing: 1) {
                         if let rarityInteger = card.rarity.integer {
                             ForEach(1...rarityInteger, id: \.self) { _ in
                                 Image((card.canTrain && showTrainedVersion) ? .rarityStarTrained : .rarityStarRegular)
                                     .resizable()
-                                    .frame(width: 12/72*sideLength, height: 12/72*sideLength)
+                                    .frame(width: 0.17*sideLength, height: 0.17*sideLength)
                             }
                         } else {
                             Image(.rarityBirthday)
                                 .resizable()
-                                .frame(width: 12/72*sideLength, height: 12/72*sideLength)
+                                .frame(width: 0.17*sideLength, height: 0.17*sideLength)
                         }
                     }
+                    .offset(x: 1)
                     Spacer()
                 }
+                .offset(y: -4)
             }
             .frame(width: sideLength, height: sideLength)
         }
@@ -179,7 +152,7 @@ struct CardPreviewImage: View {
                 .popover(isPresented: $isHovering, arrowEdge: .bottom) {
                     VStack {
                         if let title = card.title.majorValue,
-                           let character = SekaiCache.preCache.characters.first(where: { $0.id == card.characterID })?.fullName.forPreferredLocale(),
+                           let character = SekaiCache.preCache.character(id: card.characterID)?.fullName.forPreferredLocale(),
                            let sourceType = card.sourceType
                            {
                             Group {

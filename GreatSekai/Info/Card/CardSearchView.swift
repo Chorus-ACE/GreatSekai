@@ -26,7 +26,6 @@ struct CardSearchView: View {
                 }
             }
         } eachContent: { layout, element in
-//            Text("\(element.name)")
             CardInfo(element, layoutType: layout)
         } destination: { element, list in
 //            CardDetailView(id: element.id, allCards: list)

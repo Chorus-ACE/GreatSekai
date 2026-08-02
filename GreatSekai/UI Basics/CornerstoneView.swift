@@ -24,8 +24,8 @@ import SekaiKit
 import SwiftUI
 
 // MARK: Constants
-let bannerWidth: CGFloat = platform == .macOS ? 370 : 420
-let bannerSpacing: CGFloat = platform == .macOS ? 10 : 15
+let bannerWidth: CGFloat = platform == .macOS ? 300 : 320
+let bannerSpacing: CGFloat = platform == .macOS ? 10 : 10
 let imageButtonSize: CGFloat = platform == .macOS ? 30 : 35
 let cardThumbnailSideLength: CGFloat = platform == .macOS ? 64 : 72
 let filterItemHeight: CGFloat = platform == .macOS ? 25 : 35

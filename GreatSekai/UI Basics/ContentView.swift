@@ -182,11 +182,6 @@ struct ContentView: View {
                 if AppVersion.appHadUpdated(ignoreBuildNumber: false) ?? false && UserDefaults.standard.integer(forKey: "LastSeenWhatsNewHash") != stableHashOfWhatsNew() && !whatsNew.isEmpty || forceDisplayWhatsNewSheet {
                     showWhatsNewSheet = true
                 }
-#if !DORIKIT_ENABLE_PRECACHE
-                if !isFirstLaunch {
-                    showPreCacheAlert = true
-                }
-#endif
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     startUpSucceeded = true
                 }

@@ -453,12 +453,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
                 }
             }
         }
-        .searchable(text: $searchedText, prompt: searchPlaceholder)
-        .onSubmit {
-            if let elements {
-                searchedElements = elements.search(for: searchedText)
-            }
-        }
+        
         .navigationTitle(Element.pluralName)
         .navigationDestination(item: $presentingElement) { element in
             makeDestination(element, elements ?? [])
@@ -535,6 +530,12 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
             .rotation3DEffect(.degrees(-30), axis: .y)
         }
         #endif
+        .searchable(text: $searchedText, prompt: searchPlaceholder)
+        .onSubmit {
+            if let elements {
+                searchedElements = elements.search(for: searchedText)
+            }
+        }
         .withSystemBackground() // This modifier MUST be placed BOTH before
                                 // and after `inspector` to make it work as expected
         .task {

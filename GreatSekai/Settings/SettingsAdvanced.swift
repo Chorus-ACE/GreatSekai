@@ -93,17 +93,7 @@ struct SettingsAdvancedImageSection: View {
                 }
             }
             if #available(iOS 26.0, macOS 26.0, *) {
-                if !disablePowerConsumingFeatures {
                     Toggle(isOn: $useImageUpscaler) {
-                        VStack(alignment: .leading) {
-                            Text("Settings.advanced.image.use-super-resolution")
-                            Text("Settings.advanced.image.use-super-resolution.description")
-                                .foregroundStyle(.secondary)
-                                .font(.footnote)
-                        }
-                    }
-                } else {
-                    Toggle(isOn: .constant(false)) {
                         VStack(alignment: .leading) {
                             Text("Settings.advanced.image.use-super-resolution")
                             Text("Settings.advanced.image.use-super-resolution.description")
@@ -111,7 +101,7 @@ struct SettingsAdvancedImageSection: View {
                         }.foregroundStyle(.secondary)
                     }
                     .disabled(true)
-                }
+                    .disabled(disablePowerConsumingFeatures)
             }
         } header: {
             Text("Settings.advanced.image")

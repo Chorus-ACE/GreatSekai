@@ -35,7 +35,9 @@
 		E93153472F540A45002D102D /* DetailSectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93153422F540A45002D102D /* DetailSectionsView.swift */; };
 		E960BAD5301DF12000B86B8A /* EventSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E960BAD4301DF12000B86B8A /* EventSearchView.swift */; };
 		E98C84B5301CE604005B6B45 /* CardInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98C84B4301CE5FD005B6B45 /* CardInfoView.swift */; };
-		E98C84CF301D9413005B6B45 /* CardPreviewImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98C84CE301D9413005B6B45 /* CardPreviewImage.swift */; };
+		E98C84CF301D9413005B6B45 /* CardThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98C84CE301D9413005B6B45 /* CardThumbnail.swift */; };
+		E99FB7B4301F030E00020F06 /* CardImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99FB7B3301F030E00020F06 /* CardImage.swift */; };
+		E99FB7B6301F227700020F06 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E99FB7B5301F227700020F06 /* AppIcon.icon */; };
 		E9C55F5C2F53F21200DCFD2D /* SekaiKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F5B2F53F21200DCFD2D /* SekaiKit */; };
 		E9C55F9D2F53F27000DCFD2D /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F9C2F53F27000DCFD2D /* SDWebImageSwiftUI */; };
 		E9C55FA02F53F28800DCFD2D /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F9F2F53F28800DCFD2D /* SDWebImageSVGCoder */; };
@@ -82,7 +84,9 @@
 		E93153432F540A45002D102D /* DetailArtsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailArtsView.swift; sourceTree = "<group>"; };
 		E960BAD4301DF12000B86B8A /* EventSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSearchView.swift; sourceTree = "<group>"; };
 		E98C84B4301CE5FD005B6B45 /* CardInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardInfoView.swift; sourceTree = "<group>"; };
-		E98C84CE301D9413005B6B45 /* CardPreviewImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPreviewImage.swift; sourceTree = "<group>"; };
+		E98C84CE301D9413005B6B45 /* CardThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardThumbnail.swift; sourceTree = "<group>"; };
+		E99FB7B3301F030E00020F06 /* CardImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardImage.swift; sourceTree = "<group>"; };
+		E99FB7B5301F227700020F06 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		E9C55F4C2F53F1E700DCFD2D /* GreatSekai.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GreatSekai.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9C55FC02F53F3C100DCFD2D /* CardCollectionCoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardCollectionCoding.swift; sourceTree = "<group>"; };
 		E9C55FC12F53F3C100DCFD2D /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -213,6 +217,7 @@
 			isa = PBXGroup;
 			children = (
 				E9C55FC82F53F3C100DCFD2D /* Assets.xcassets */,
+				E99FB7B5301F227700020F06 /* AppIcon.icon */,
 				E90629812F727BA900EDCDC6 /* Localizable.xcstrings */,
 				E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */,
 				E931520C2F5401D1002D102D /* UI Basics */,
@@ -228,7 +233,8 @@
 			children = (
 				E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */,
 				E98C84B4301CE5FD005B6B45 /* CardInfoView.swift */,
-				E98C84CE301D9413005B6B45 /* CardPreviewImage.swift */,
+				E99FB7B3301F030E00020F06 /* CardImage.swift */,
+				E98C84CE301D9413005B6B45 /* CardThumbnail.swift */,
 			);
 			path = Card;
 			sourceTree = "<group>";
@@ -316,6 +322,7 @@
 			files = (
 				E90629822F727BA900EDCDC6 /* Localizable.xcstrings in Resources */,
 				E9C55FCC2F53F3C100DCFD2D /* Assets.xcassets in Resources */,
+				E99FB7B6301F227700020F06 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -329,6 +336,7 @@
 				E9C55FCE2F53F3C100DCFD2D /* CardCollectionCoding.swift in Sources */,
 				E9C55FCF2F53F3C100DCFD2D /* Extensions.swift in Sources */,
 				E9C55FD02F53F3C100DCFD2D /* Functions.swift in Sources */,
+				E99FB7B4301F030E00020F06 /* CardImage.swift in Sources */,
 				E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */,
 				E9C55FD12F53F3C100DCFD2D /* QuickLook.swift in Sources */,
 				E9C55FD22F53F3C100DCFD2D /* StableHasher.swift in Sources */,
@@ -344,7 +352,7 @@
 				E93152AF2F540621002D102D /* SettingsAdvanced.swift in Sources */,
 				E93152B32F540621002D102D /* AppFlags.swift in Sources */,
 				E90629842F727BD400EDCDC6 /* SettingsDebugView.swift in Sources */,
-				E98C84CF301D9413005B6B45 /* CardPreviewImage.swift in Sources */,
+				E98C84CF301D9413005B6B45 /* CardThumbnail.swift in Sources */,
 				E93152B52F540621002D102D /* SettingsView.swift in Sources */,
 				E93152B62F540621002D102D /* SettingsDocument.swift in Sources */,
 				E912E5EA2F6FAD8A00B7220C /* CharacterSearchView.swift in Sources */,

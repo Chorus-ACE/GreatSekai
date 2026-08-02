@@ -9,7 +9,7 @@ import SekaiKit
 import SDWebImageSwiftUI
 import SwiftUI
 
-let bannerHeight: CGFloat = 140
+let bannerHeight: CGFloat = 120
 //let bannerWidth: CGFloat = bannerHeight * bannerRatio
 let bannerRatio: CGFloat = 2.346
 

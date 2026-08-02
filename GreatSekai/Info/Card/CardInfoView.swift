@@ -29,7 +29,7 @@ struct CardInfo: View {
         self.layoutType = layoutType
         self.displayType = displayType
         
-        self.characterName = SekaiCache.preCache.characters.first(where: { $0.id == card.characterID })?.fullName
+        self.characterName = SekaiCache.preCache.character(id: card.characterID)?.fullName
     }
     
     var body: some View {
@@ -38,20 +38,18 @@ struct CardInfo: View {
                 if layoutType != 3 {
                     HStack(spacing: 5) {
                         if /*isNormalCardAvailable && */displayType != .trainedOnly {
-                            CardPreviewImage(card)
-//                            Text(verbatim: "1")
+                            CardThumbnail(card)
                         }
                         if card.afterTrainingThumbnailURL != nil && displayType != .normalOnly {
-//                            CardPreviewImage(previewCard, showTrainedVersion: true)
-                            CardPreviewImage(card, showTrainedVersion: true)
+                            CardThumbnail(card, showTrainedVersion: true)
                         }
                     }
                     .wrapIf(sizeClass == .regular) { content in
                         content.frame(maxWidth: 200)
                     }
                 } else {
-                    Text(verbatim: "CardCoverImage")
-//                    CardCoverImage(previewCard, band: band)
+                    CardImage(card)
+                        .cornerRadius(2)
                     #if os(iOS)
                         .allowsHitTesting(false)
                     #endif
