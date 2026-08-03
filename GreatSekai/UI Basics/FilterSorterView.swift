@@ -19,29 +19,28 @@ import SwiftUI
 import UIKit
 #endif
 
+let filterItemHeight: CGFloat = platform == .macOS ? 25 : 35
+let filerKeysWithSmallerIcons = ["unit", "rarity"] // "attribute",
+
 let flowLayoutDefaultVerticalSpacing: CGFloat = 3
 let flowLayoutDefaultHorizontalSpacing: CGFloat = 3
 let capsuleDefaultCornerRadius: CGFloat = platform == .macOS ? 6 : 10
 
+
 struct FilterView: View {
-    @Environment(\.horizontalSizeClass) var sizeClass
     @Binding var filter: SekaiFilter
-    var includingKeys: Set<SekaiFilter.Key>
+    var keys: [SekaiFilter.Key]
     
-    @State var lastSelectAllActionIsDeselect: Bool = false
-    @State var theItemThatShowsSelectAllTips: SekaiFilter.Key? = nil
+    let hiddenKeys: [String] = []
     
-    let filterKeysOrder: [SekaiFilter.Key] = [.unit, .attribute]
-    
-//    let filterKeysOrder: [SekaiFilter.Key] = [.band, .attribute, .rarity, .character, .server, .timelineStatus, .songAvailability, .released, .cardType, .eventType, .gachaType, .songType, .loginCampaignType, .comicType, .skill, .level]
+    @Environment(\.horizontalSizeClass) var sizeClass
     
     var body: some View {
         Form {
             Section(content: {
-                // Some keys should be displayed indirectly, hence we don't traverse `includingKeys`.
-                ForEach(filterKeysOrder, id: \.self) { key in
-                    if includingKeys.contains(key) {
-                        FilterItemView(filter: $filter, allKeys: includingKeys, key: key)
+                ForEach(keys) { key in
+                    if !hiddenKeys.contains(key.id) {
+                        FilterItemView(filter: $filter, key: key, allKeys: keys)
                     }
                 }
             }, header: {
@@ -55,35 +54,34 @@ struct FilterView: View {
             
             Section {
                 Button(action: {
-                    filter.clearAll()
+                    filter = SekaiFilter(forKeys: keys)
                 }, label: {
                     Text("Filter.clear-all")
                 })
-                .disabled(!filter.isFiltered)
+                .disabled(!filter.isFiltering(referencing: keys))
             }
         }
         .geometryGroup()
     }
 }
 
-
 struct FilterItemView: View {
     @Binding var filter: SekaiFilter
-    let allKeys: Set<SekaiFilter.Key>
     let key: SekaiFilter.Key
+    let allKeys: [SekaiFilter.Key]
     
-    @State var isHovering = false
-    @State var characterRequiresMatchAll = false
-    @State var skill: SekaiFilter.Skill? = nil
-    @State var levelSliderIsEnabled = false
-    @State var level: Double = 5
+//    @State var isHovering = false
+//    @State var characterRequiresMatchAll = false
+//    @State var skill: SekaiFilter.Skill? = nil
+//    @State var levelSliderIsEnabled = false
+//    @State var level: Double = 5
     var body: some View {
         VStack(alignment: .leading) {
-            if key.selector.type == .multiple {
+            if key.allowMultipleSelection {
                 // MARK: Title Part
                 HStack {
                     VStack {
-                        Text(key.localizedName)
+                        Text(key.title)
                             .bold()
                             .accessibilityHeading(.h2)
                     }
@@ -117,339 +115,266 @@ struct FilterItemView: View {
                         })
                         .accessibilityLabel(Text(getAttributedStringForMatchAll(isAllSelected: characterRequiresMatchAll)))
                     }
+                     */
                     Spacer()
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.05)) {
-                            let allCases = key.selector.items.map { $0.item.value }
-                            if let filterSet = filter[key] as? Set<AnyHashable> {
-                                if filterSet.count == 0 {
-                                    filter[key] = Set(allCases)
-                                    if key == .band && allKeys.contains(.bandMatchesOthers) {
-                                        filter.bandMatchesOthers = .includeOthers
-                                    } else if key == .character && allKeys.contains(.characterMatchesOthers) {
-                                        filter.characterMatchesOthers = .includeOthers
-                                    }
-                                } else {
-                                    if var filterSet = filter[key] as? Set<AnyHashable> {
-                                        filterSet.removeAll()
-                                        filter[key] = filterSet
-                                        if key == .band && allKeys.contains(.bandMatchesOthers) {
-                                            filter.bandMatchesOthers = .excludeOthers
-                                        } else if key == .character && allKeys.contains(.characterMatchesOthers) {
-                                            filter.characterMatchesOthers = .excludeOthers
-                                        }
-                                    }
-                                }
+                            if (filter[key.id]?.count ?? 0) == 0 {
+                                filter[key.id] = Set(key.allCasesID)
+                            } else {
+                                filter[key.id] = Set()
                             }
+//                            let allCases = key.allCasesID
+//                            if let filterSet = filter[key] as? Set<AnyHashable> {
+//                                if filterSet.count == 0 {
+//                                    filter[key] = Set(allCases)
+////                                    if key == .band && allKeys.contains(.bandMatchesOthers) {
+////                                        filter.bandMatchesOthers = .includeOthers
+////                                    } else if key == .character && allKeys.contains(.characterMatchesOthers) {
+////                                        filter.characterMatchesOthers = .includeOthers
+////                                    }
+//                                } else {
+//                                    if var filterSet = filter[key] as? Set<AnyHashable> {
+//                                        filterSet.removeAll()
+//                                        filter[key] = filterSet
+////                                        if key == .band && allKeys.contains(.bandMatchesOthers) {
+////                                            filter.bandMatchesOthers = .excludeOthers
+////                                        } else if key == .character && allKeys.contains(.characterMatchesOthers) {
+////                                            filter.characterMatchesOthers = .excludeOthers
+////                                        }
+//                                    }
+//                                }
+//                            }
                         }
                     }, label: {
                         Group {
-                            let allCases = key.selector.items.map { $0.item.value }
-                            if let filterSet = filter[key] as? Set<AnyHashable> {
-                                if key == .band && allKeys.contains(.bandMatchesOthers) || key == .character && allKeys.contains(.characterMatchesOthers) {
-                                    let includeOthers = key == .band ? filter.bandMatchesOthers == .includeOthers : filter.characterMatchesOthers == .includeOthers
-                                    
-                                    let selectionStatus = (filterSet.count == allCases.count && includeOthers) ? true : (filterSet.count == 0 && !includeOthers ? false : nil)
-                                    CompactToggle(isLit: selectionStatus)
-                                        .accessibilityValue({
-                                            if selectionStatus == true {
-                                                return "Accessibility.filter.selections-toggle.value.all-selected"
-                                            } else if selectionStatus == false {
-                                                return "Accessibility.filter.selections-toggle.value.none-selected"
-                                            } else {
-                                                return "Accessibility.filter.selections-toggle.value.partially-selected"
-                                            }
-                                        }())
-                                    #if !os(visionOS)
-                                        .accessibilityHint({
-                                            if selectionStatus == false {
-                                                return "Accessibility.filter.selections-toggle.hint.select-all"
-                                            } else {
-                                                return "Accessibility.filter.selections-toggle.hint.deselect-all"
-                                            }
-                                        }())
-                                    #endif
-                                } else {
-                                    let selectionStatus = (filterSet.count == allCases.count) ? true : (filterSet.count == 0 ? false : nil)
-                                    CompactToggle(isLit: selectionStatus)
-                                        .accessibilityValue({
-                                            if selectionStatus == true {
-                                                return "Accessibility.filter.selections-toggle.value.all-selected"
-                                            } else if selectionStatus == false {
-                                                return "Accessibility.filter.selections-toggle.value.none-selected"
-                                            } else {
-                                                return "Accessibility.filter.selections-toggle.value.partially-selected"
-                                            }
-                                        }())
-                                    #if !os(visionOS)
-                                        .accessibilityHint({
-                                            if selectionStatus == false {
-                                                return "Accessibility.filter.selections-toggle.hint.select-all"
-                                            } else {
-                                                return "Accessibility.filter.selections-toggle.hint.deselect-all"
-                                            }
-                                        }())
-                                    #endif
-                                }
-                            }
+                            let filterSelectionCount = filter[key.id]?.count ?? 0
+                            let selectionStatus = (filterSelectionCount == key.options.count) ? true : (filterSelectionCount == 0 ? false : nil)
+                            CompactToggle(isLit: selectionStatus)
+                                .filterToggleAccessibility(selectionStatus: selectionStatus)
+                            
+                            
+//                            let allCases = key.selector.items.map { $0.item.value }
+//                            if let filterSet = filter[key] as? Set<AnyHashable> {
+//                                if key == .band && allKeys.contains(.bandMatchesOthers) || key == .character && allKeys.contains(.characterMatchesOthers) {
+//                                    let includeOthers = key == .band ? filter.bandMatchesOthers == .includeOthers : filter.characterMatchesOthers == .includeOthers
+//                                    
+////                                    let selectionStatus = (filterSet.count == allCases.count && includeOthers) ? true : (filterSet.count == 0 && !includeOthers ? false : nil)
+//                                    CompactToggle(isLit: selectionStatus)
+//                                        .filterToggleAccessibility(selectionStatus: selectionStatus)
+//                                } else {
+//                                    let selectionStatus = (filterSet.count == allCases.count) ? true : (filterSet.count == 0 ? false : nil)
+//                                    CompactToggle(isLit: selectionStatus)
+//                                        .filterToggleAccessibility(selectionStatus: selectionStatus)
+//                                }
+//                            }
                         }
                         .foregroundStyle(.secondary)
-                        .accessibilityLabel("Accessibility.filter.selections-toggle")
+                        .accessibilityLabel("Filter.selections-toggle")
                     })
                     .buttonStyle(.plain)
-                     */
                 }
                 
                 // MARK: Picker Part
                 // Multiple Selection
                 
-                // FIXME: Server
-                if key.selector.items.first?.imageURL != nil /*&& key != .server*/ {
-                    // `.server` is not expected to use flags in Greatdori!.
+                if key.options.first?.selectorImage != nil {
                     // MARK: Image Selection
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: filterItemHeight))]/*, spacing: 3*/) {
                         // FIXME: MatchesOthers
-                        /*
-                        ForEach(key.selector.items + ((key == .band && allKeys.contains(.bandMatchesOthers)) ? [SekaiFilter.Key.bandMatchesOthers.selector.items.first!] : []) + ((key == .character && allKeys.contains(.characterMatchesOthers)) ? [SekaiFilter.Key.characterMatchesOthers.selector.items.first!] : []), id: \.self) { item in
+                        ForEach(key.options, id: \.self) { option in
                             Group {
-                                if item != SekaiFilter.Key.bandMatchesOthers.selector.items.first! && item != SekaiFilter.Key.characterMatchesOthers.selector.items.first! {
-                                    Button(action: {
-                                        withAnimation(.easeInOut(duration: 0.05)) {
-                                            if var filterSet = filter[key] as? Set<AnyHashable> {
-                                                if filterSet.contains(item.item.value) {
-                                                    filterSet.remove(item.item.value)
-                                                } else {
-                                                    filterSet.insert(item.item.value)
-                                                }
-                                                filter[key] = filterSet
-                                            }
+                                Button(action: {
+//                                    withAnimation(.easeInOut(duration: 0.05)) {
+                                        var options = filter[key.id] ?? Set([])
+                                        if options.contains(option.id) {
+                                            options.remove(option.id)
+                                        } else {
+                                            options.insert(option.id)
                                         }
-                                    }, label: {
-                                        ZStack {
-                                            Circle()
-                                                .stroke(Color.accent, lineWidth: 2)
-                                                .frame(width: filterItemHeight, height: filterItemHeight)
-                                                .opacity(((filter[key] as? Set<AnyHashable>)?.contains(item.item.value) == true) ? 1 : 0)
-                                            WebImage(url: item.imageURL)
-                                                .antialiased(true)
-                                                .resizable()
-                                                .frame(width: filterItemHeight, height: filterItemHeight)
-                                                .scaleEffect([SekaiFilter.Key.attribute, SekaiFilter.Key.character].contains(key) ? 0.9 : 0.75)
-                                        }
-                                        .contentShape(Circle())
-                                    })
-                                    .wrapIf(((filter[key] as? Set<AnyHashable>)?.contains(item.item.value) == true), in: {
-                                        $0.accessibilityValue("Accessibility.filter.activated")
-                                    })
-                                } else {
-                                    Button(action: {
-                                        withAnimation(.easeInOut(duration: 0.05)) {
-                                            if key == .band {
-                                                if filter.bandMatchesOthers == .includeOthers {
-                                                    filter.bandMatchesOthers = .excludeOthers
-                                                } else {
-                                                    filter.bandMatchesOthers = .includeOthers
-                                                }
-                                            } else {
-                                                if filter.characterMatchesOthers == .includeOthers {
-                                                    filter.characterMatchesOthers = .excludeOthers
-                                                } else {
-                                                    filter.characterMatchesOthers = .includeOthers
-                                                }
-                                            }
-                                        }
-                                    }, label: {
-                                        ZStack {
-                                            Circle()
-                                                .stroke(Color.accent, lineWidth: 2)
-                                                .frame(width: filterItemHeight, height: filterItemHeight)
-                                                .opacity((key == .band ? filter.bandMatchesOthers == .includeOthers : filter.characterMatchesOthers == .includeOthers) ? 1 : 0)
-                                            if item.imageURL != nil {
-                                                WebImage(url: item.imageURL)
-                                                    .antialiased(true)
-                                                    .resizable()
-                                                    .frame(width: filterItemHeight, height: filterItemHeight)
-                                                    .scaleEffect([SekaiFilter.Key.attribute, SekaiFilter.Key.character].contains(key) ? 0.9 : 0.75)
-                                            } else {
-                                                Image(systemName: .personFill)
-                                                    .frame(width: filterItemHeight*0.95, height: filterItemHeight*0.95)
-                                            }
-                                        }
-                                        .contentShape(Circle())
-                                    })
-                                    .wrapIf((key == .band ? filter.bandMatchesOthers == .includeOthers : filter.characterMatchesOthers == .includeOthers), in: {
-                                        $0.accessibilityValue("Accessibility.filter.activated")
-                                    })
-                                }
+                                        filter[key.id] = options
+//                                    }
+                                }, label: {
+                                    ZStack {
+                                        Circle()
+                                            .stroke(Color.accent, lineWidth: 2)
+                                            .frame(width: filterItemHeight, height: filterItemHeight)
+                                            .opacity(filter[key.id]?.contains(option.id) ?? false ? 1 : 0)
+                                            
+                                        WebImage(url: option.selectorImage)
+                                            .resizable()
+                                            .interpolation(.high)
+                                            .frame(width: filterItemHeight, height: filterItemHeight)
+                                            .scaleEffect(filerKeysWithSmallerIcons.contains(key.id) ? 0.75 : 0.9)
+                                            .mask(Circle())
+                                    }
+                                    .contentShape(Circle())
+                                })
+                                .accessibilityValue(filter[key.id]?.contains(option.id) ?? false ? "Filter.activated" : "")
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel(Text(item.text))
-                            .accessibilityHint("Accessibility.filter.tap-to-toggle")
+                            .accessibilityLabel(Text(option.selectorName))
+                            .accessibilityHint("Filter.tap-to-toggle")
                         }
-                         */
                     }
                 } else {
                     // MARK: Text Selection
-                    FlowLayout(items: key.selector.items, verticalSpacing: flowLayoutDefaultVerticalSpacing, horizontalSpacing: flowLayoutDefaultHorizontalSpacing) { item in
+                    FlowLayout(items: key.options, verticalSpacing: flowLayoutDefaultVerticalSpacing, horizontalSpacing: flowLayoutDefaultHorizontalSpacing) { option in
                         Button(action: {
-                            //                                withAnimation(.easeInOut(duration: 0.05)) {
-                            if var filterSet = filter[key] as? Set<AnyHashable> {
-                                if filterSet.contains(item.item.value) {
-                                    filterSet.remove(item.item.value)
+//                            withAnimation(.easeInOut(duration: 0.05)) {
+                                var options = filter[key.id] ?? Set([])
+                                if options.contains(option.id) {
+                                    options.remove(option.id)
                                 } else {
-                                    filterSet.insert(item.item.value)
+                                    options.insert(option.id)
                                 }
-                                filter[key] = filterSet
-                            }
-                            //                                }
+                                filter[key.id] = options
+//                            }
                         }, label: {
-                            FilterSelectionCapsuleView(isActive: ((filter[key] as? Set<AnyHashable>)?.contains(item.item.value) == true), content: {
-                                Text(item.text)
+                            FilterSelectionCapsuleView(isActive: filter[key.id]?.contains(option.id) ?? false, content: {
+                                Text(option.selectorName)
                             })
-                            //                                .animation(.easeInOut(duration: 0.05))
+                            .animation(.easeInOut(duration: 0.05))
                         })
                         .buttonStyle(.plain)
-                        .wrapIf(((filter[key] as? Set<AnyHashable>)?.contains(item.item.value) == true), in: {
-                            $0.accessibilityValue("Accessibility.filter.activated")
-                        })
-                        .accessibilityHint("Accessibility.filter.tap-to-toggle")
+                        .accessibilityValue(filter[key.id]?.contains(option.id) ?? false ? "Filter.activated" : "")
+                        .accessibilityHint("Filter.tap-to-toggle")
                     }
                 }
             } else {
-                // MARK: Single Selection
-                if key == .skill {
-                    Group {
-#if os(iOS)
-                        VStack(alignment: .leading) {
-                            Text(key.localizedString)
-                                .bold()
-                            //                                        .offset(y: 5)
-                            Picker(selection: $skill, content: {
-                                // Optional "Any" to clear the filter
-                                Text("Filter.skill.any")
-                                    .tag(Optional<SekaiFilter.Skill>.none)
-                                
-                                ForEach(key.selector.items, id: \.self) { item in
-                                    if let value = item.item.value as? SekaiFilter.Skill {
-                                        // Use the skill's simpleDescription (localized) instead of selectorText
-                                        //                                    let label = value.simpleDescription.forPreferredLocale() ?? ""
-                                        //                                    let label = value.description.forPreferredLocale() ?? ""
-                                        Text(item.text)
-                                            .tag(Optional(value))
-                                    }
-                                }
-                            }, label: {
-                                Text(key.localizedString)
-                                    .bold()
-                            }, optionalCurrentValueLabel: {
-                                HStack {
-                                    Text(skill?.selectorText ?? String(localized: "Filter.skill.any"))
-                                    Spacer()
-                                    //                                                .multilineTextAlignment(.trailing)
-                                }
-                            })
-                            .labelsHidden()
-                            .padding(.vertical, -4)
-                            .padding(.leading, -5)
-                            //                                    .border(.red)
-                            .offset(y: -5)
-                        }
-#else
-                        Picker(selection: $skill, content: {
-                            // Optional "Any" to clear the filter
-                            Text("Filter.skill.any")
-                                .tag(Optional<SekaiFilter.Skill>.none)
-                            
-                            ForEach(key.selector.items, id: \.self) { item in
-                                if let value = item.item.value as? SekaiFilter.Skill {
-                                    // Use the skill's simpleDescription (localized) instead of selectorText
-                                    //                                    let label = value.simpleDescription.forPreferredLocale() ?? ""
-                                    //                                    let label = value.description.forPreferredLocale() ?? ""
-                                    Text(item.text)
-                                        .tag(Optional(value))
-                                }
-                            }
-                        }, label: {
-                            Text(key.localizedName)
-                                .bold()
-                                .lineLimit(nil)
-                        })
-#endif
-                    }
-                    .pickerStyle(.menu)
-                    .onChange(of: skill) { _, newValue in
-                        filter.skill = newValue
-                    }
-                } else if /*key == .level*/ false { // FIXME: Level
-                    VStack {
-                        Toggle(isOn: $levelSliderIsEnabled, label: {
-                            HStack {
-                                Text(key.localizedName)
-                                    .bold()
-                                Spacer()
-                                if levelSliderIsEnabled {
-                                    Text("\(Int(level))")
-                                    // .contentTransition(.numericText())
-                                    // .animation(.default, value: level)
-                                    Stepper("", value: $level, in: 5...35, step: 1, onEditingChanged: { value in
-                                        // FIXME: Level
-//                                        filter.level = Int(level)
-                                    })
-                                    .labelsHidden()
-                                    .accessibilityHidden(true)
-                                }
-                                
-                            }
-                        })
-                        .toggleStyle(.switch)
-                        .tint(Color.accentColor)
-                        //                            .foregroundStyle(Color.tint)
-                        if levelSliderIsEnabled {
-                            Slider(value: $level, in: 5...35, step: 1, label: {
-                                Text("")
-                            }, onEditingChanged: { value in
-                                if !value {
-                                    // FIXME: Level
-//                                    filter.level = Int(level)
-                                }
-                            })
-                            .labelsHidden()
-                            .disabled(!levelSliderIsEnabled)
-                        }
-                    }
-//                    .onChange(of: levelSliderIsEnabled) { _, isEnabledNow in
-//                        if isEnabledNow {
-//                            filter.level = Int(level)
-//                        } else {
-//                            filter.level = nil
-//                        }
-//                    }
-                }
+                /*
+                 // MARK: Single Selection
+                 if key == .skill {
+                 Group {
+                 #if os(iOS)
+                 VStack(alignment: .leading) {
+                 Text(key.localizedString)
+                 .bold()
+                 //                                        .offset(y: 5)
+                 Picker(selection: $skill, content: {
+                 // Optional "Any" to clear the filter
+                 Text("Filter.skill.any")
+                 .tag(Optional<SekaiFilter.Skill>.none)
+                 
+                 ForEach(key.selector.items, id: \.self) { item in
+                 if let value = item.item.value as? SekaiFilter.Skill {
+                 // Use the skill's simpleDescription (localized) instead of selectorText
+                 //                                    let label = value.simpleDescription.forPreferredLocale() ?? ""
+                 //                                    let label = value.description.forPreferredLocale() ?? ""
+                 Text(item.text)
+                 .tag(Optional(value))
+                 }
+                 }
+                 }, label: {
+                 Text(key.localizedString)
+                 .bold()
+                 }, optionalCurrentValueLabel: {
+                 HStack {
+                 Text(skill?.selectorText ?? String(localized: "Filter.skill.any"))
+                 Spacer()
+                 //                                                .multilineTextAlignment(.trailing)
+                 }
+                 })
+                 .labelsHidden()
+                 .padding(.vertical, -4)
+                 .padding(.leading, -5)
+                 //                                    .border(.red)
+                 .offset(y: -5)
+                 }
+                 #else
+                 Picker(selection: $skill, content: {
+                 // Optional "Any" to clear the filter
+                 Text("Filter.skill.any")
+                 .tag(Optional<SekaiFilter.Skill>.none)
+                 
+                 ForEach(key.selector.items, id: \.self) { item in
+                 if let value = item.item.value as? SekaiFilter.Skill {
+                 // Use the skill's simpleDescription (localized) instead of selectorText
+                 //                                    let label = value.simpleDescription.forPreferredLocale() ?? ""
+                 //                                    let label = value.description.forPreferredLocale() ?? ""
+                 Text(item.text)
+                 .tag(Optional(value))
+                 }
+                 }
+                 }, label: {
+                 Text(key.localizedName)
+                 .bold()
+                 .lineLimit(nil)
+                 })
+                 #endif
+                 }
+                 .pickerStyle(.menu)
+                 .onChange(of: skill) { _, newValue in
+                 filter.skill = newValue
+                 }
+                 } else if /*key == .level*/ false { // FIXME: Level
+                 VStack {
+                 Toggle(isOn: $levelSliderIsEnabled, label: {
+                 HStack {
+                 Text(key.localizedName)
+                 .bold()
+                 Spacer()
+                 if levelSliderIsEnabled {
+                 Text("\(Int(level))")
+                 // .contentTransition(.numericText())
+                 // .animation(.default, value: level)
+                 Stepper("", value: $level, in: 5...35, step: 1, onEditingChanged: { value in
+                 // FIXME: Level
+                 //                                        filter.level = Int(level)
+                 })
+                 .labelsHidden()
+                 .accessibilityHidden(true)
+                 }
+                 
+                 }
+                 })
+                 .toggleStyle(.switch)
+                 .tint(Color.accentColor)
+                 //                            .foregroundStyle(Color.tint)
+                 if levelSliderIsEnabled {
+                 Slider(value: $level, in: 5...35, step: 1, label: {
+                 Text("")
+                 }, onEditingChanged: { value in
+                 if !value {
+                 // FIXME: Level
+                 //                                    filter.level = Int(level)
+                 }
+                 })
+                 .labelsHidden()
+                 .disabled(!levelSliderIsEnabled)
+                 }
+                 }
+                 //                    .onChange(of: levelSliderIsEnabled) { _, isEnabledNow in
+                 //                        if isEnabledNow {
+                 //                            filter.level = Int(level)
+                 //                        } else {
+                 //                            filter.level = nil
+                 //                        }
+                 //                    }
+                 }
+                 */
             }
         }
-        .onHover(perform: { isHovered in
-            isHovering = isHovered
-        })
         // FIXME: Level & Skill
-//        .onAppear {
-//            skill = filter.skill
-//            if let filterLevel = filter.level {
-//                levelSliderIsEnabled = true
-//                level = Double(filterLevel)
-//            } else {
-//                levelSliderIsEnabled = false
-//            }
-//        }
-//        .onChange(of: filter.skill) {
-//            if skill == nil {
-//                skill = filter.skill
-//            }
-//        }
-//        .onChange(of: filter.level) {
-//            if filter.level == nil {
-//                levelSliderIsEnabled = false
-//            }
-//        }
+        //        .onAppear {
+        //            skill = filter.skill
+        //            if let filterLevel = filter.level {
+        //                levelSliderIsEnabled = true
+        //                level = Double(filterLevel)
+        //            } else {
+        //                levelSliderIsEnabled = false
+        //            }
+        //        }
+        //        .onChange(of: filter.skill) {
+        //            if skill == nil {
+        //                skill = filter.skill
+        //            }
+        //        }
+        //        .onChange(of: filter.level) {
+        //            if filter.level == nil {
+        //                levelSliderIsEnabled = false
+        //            }
+        //        }
     }
     struct FilterSelectionCapsuleView<Content: View>: View {
         @Environment(\.horizontalSizeClass) var sizeClass
@@ -648,5 +573,30 @@ struct SorterPickerView: View {
             #endif
         }
         .accessibilityValue(String("\(sorter.keyword.localizedString(hasEndingDate: sortingItemsHaveEndingDate)), \(sorter.localizedDirectionName())"))
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func filterToggleAccessibility(selectionStatus: Bool?) -> some View {
+        self
+        .accessibilityValue({
+            if selectionStatus == true {
+                return "Filter.selections-toggle.value.all-selected"
+            } else if selectionStatus == false {
+                return "Filter.selections-toggle.value.none-selected"
+            } else {
+                return "Filter.selections-toggle.value.partially-selected"
+            }
+        }())
+    #if !os(visionOS)
+        .accessibilityHint({
+            if selectionStatus == false {
+                return "Filter.selections-toggle.hint.select-all"
+            } else {
+                return "Filter.selections-toggle.hint.deselect-all"
+            }
+        }())
+    #endif
     }
 }

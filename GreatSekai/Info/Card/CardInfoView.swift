@@ -59,11 +59,11 @@ struct CardInfo: View {
 //            .accessibialityHidden(true)
         } detail: {
             Group {
-                Text(characterName?.forPreferredLocale() ?? String(localized: "Character.unknown")) + Text("Typography.bold-dot-seperater").bold() + Text(card.sourceType?.localizedName ?? String(localized: "Info.unknown"))
+                Text(characterName?.forPreferredLocale() ?? String(localized: "Info.unknown")) + Text("Typography.bold-dot-seperater").bold() + Text(card.sourceType.localizedName)
             }
             .foregroundStyle(.secondary)
             .font(platform == .macOS ? .body : .caption)
-            .accessibilityLabel(String("\(characterName?.forPreferredLocale() ?? String(localized: "Character.unknown")), \(card.sourceType?.localizedName ?? String(localized: "Info.unknown"))"))
+            .accessibilityLabel(String("\(characterName?.forPreferredLocale() ?? String(localized: "Info.unknown")), \(card.sourceType.localizedName)"))
         }
         .onAppear {
 //            if cardCharacterName == nil { // First appear

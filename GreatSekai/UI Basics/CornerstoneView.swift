@@ -28,7 +28,6 @@ let bannerWidth: CGFloat = platform == .macOS ? 300 : 320
 let bannerSpacing: CGFloat = platform == .macOS ? 10 : 10
 let imageButtonSize: CGFloat = platform == .macOS ? 30 : 35
 let cardThumbnailSideLength: CGFloat = platform == .macOS ? 64 : 72
-let filterItemHeight: CGFloat = platform == .macOS ? 25 : 35
 let infoContentMaxWidth: CGFloat = 600
 
 // MARK: Banner

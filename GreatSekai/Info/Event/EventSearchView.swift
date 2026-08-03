@@ -25,7 +25,7 @@ struct EventSearchView: View {
                                 eachContent(event)
                                 if eventGroup.count == 1 && events[0].count != 1 {
                                     Rectangle()
-                                        .frame(maxWidth: bannerHeight*bannerRatio, maxHeight: bannerHeight)
+                                        .frame(maxWidth: bannerWidth*bannerRatio, maxHeight: bannerHeight)
                                         .opacity(0)
                                 }
                             }

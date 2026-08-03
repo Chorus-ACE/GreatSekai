@@ -52,7 +52,7 @@ struct EventInfo: View {
             .cornerRadius(10)
         } detail: {
             Group {
-                HighlightableText(event.eventType.rawValue, itemID: event.id)
+                HighlightableText(event.eventType.localizedName, itemID: event.id)
             }
             
             if let subtitle {

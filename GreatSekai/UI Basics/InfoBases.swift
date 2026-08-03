@@ -347,7 +347,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         self._currentLayout = .init(initialValue: initialLayout)
         self.unavailablePrompt = "Search.unavailable.\(Element.singularName)"
         self.searchPlaceholder = "Search.prompt.\(Element.pluralName)"
-        self._filter = .init(initialValue: .recoverable(id: Element.pluralName.key))
+        self._filter = .init(initialValue: .init(forKeys: Element.filterKeys))
     }
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -453,7 +453,6 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
                 }
             }
         }
-        
         .navigationTitle(Element.pluralName)
         .navigationDestination(item: $presentingElement) { element in
             makeDestination(element, elements ?? [])
@@ -477,7 +476,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         #if !os(visionOS)
         .wrapIf(searchedElements != nil) { content in
             if #available(iOS 26.0, *) {
-                content.navigationSubtitle((searchedText.isEmpty && !filter.isFiltered) ? (getResultCountDescription?(searchedElements!.count) ?? "Search.item.\(searchedElements!.count)") :  "Search.result.\(searchedElements!.count)")
+                content.navigationSubtitle((searchedText.isEmpty && !filter.isFiltering()) ? (getResultCountDescription?(searchedElements!.count) ?? "Search.item.\(searchedElements!.count)") :  "Search.result.\(searchedElements!.count)")
             } else {
                 content
             }
@@ -493,7 +492,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
             }
             #endif
             ToolbarItemGroup {
-                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltered, sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
+                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltering(), sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
             }
         }
         .onDisappear {
@@ -504,7 +503,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         .wrapIf(sizeClass == .regular) { content in
             content
                 .inspector(isPresented: $showFilterSheet) {
-                    FilterView(filter: $filter, includingKeys: Set(Element.applicableFilteringKeys))
+                    FilterView(filter: $filter, keys: Element.filterKeys)
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
                         .presentationBackgroundInteraction(.enabled)
@@ -512,7 +511,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         } else: { content in
             content
                 .sheet(isPresented: $showFilterSheet) {
-                    FilterView(filter: $filter, includingKeys: Set(Element.applicableFilteringKeys))
+                    FilterView(filter: $filter, keys: Element.filterKeys)
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
                         .presentationBackgroundInteraction(.enabled)
@@ -600,13 +599,13 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
     
     private func getList() async {
         infoIsAvailable = true
-        let cachedList: SekaiCache.Promise<[Element]?> = withSekaiCache(id: "\(Element.pluralName.key)List_\(filter.identity)", trait: .realTime) {
+        let cachedList: SekaiCache.Promise<[Element]?> = withSekaiCache(id: "\(Element.pluralName.key)List", trait: .realTime) {
             await updateList()
         }
         cachedList.onUpdate {
-            if let cards = $0 {
-                self.elements = cards.sorted(withSekaiSorter: SekaiSorter(keyword: .id, direction: .ascending))
-                searchedElements = cards.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
+            if let items = $0 {
+                self.elements = items.sorted(withSekaiSorter: SekaiSorter(keyword: .id, direction: .ascending))
+                searchedElements = items.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
             } else {
                 infoIsAvailable = false
             }

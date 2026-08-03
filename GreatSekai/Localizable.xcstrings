@@ -28,6 +28,7 @@
       "shouldTranslate" : false
     },
     "Accessibility.filter.activated" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -44,6 +45,7 @@
       }
     },
     "Accessibility.filter.tap-to-toggle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -686,6 +688,7 @@
       }
     },
     "Character.unknown" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1002,6 +1005,9 @@
         }
       }
     },
+    "Filter.activated" : {
+
+    },
     "Filter.clear-all" : {
       "localizations" : {
         "en" : {
@@ -1018,7 +1024,26 @@
         }
       }
     },
+    "Filter.selections-toggle" : {
+
+    },
+    "Filter.selections-toggle.hint.deselect-all" : {
+
+    },
+    "Filter.selections-toggle.hint.select-all" : {
+
+    },
+    "Filter.selections-toggle.value.all-selected" : {
+
+    },
+    "Filter.selections-toggle.value.none-selected" : {
+
+    },
+    "Filter.selections-toggle.value.partially-selected" : {
+
+    },
     "Filter.skill.any" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1033,6 +1058,9 @@
           }
         }
       }
+    },
+    "Filter.tap-to-toggle" : {
+
     },
     "Filter.view.banner-and-details" : {
       "localizations" : {

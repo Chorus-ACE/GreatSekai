@@ -152,13 +152,12 @@ struct CardThumbnail: View {
                 .popover(isPresented: $isHovering, arrowEdge: .bottom) {
                     VStack {
                         if let title = card.title.majorValue,
-                           let character = SekaiCache.preCache.character(id: card.characterID)?.fullName.forPreferredLocale(),
-                           let sourceType = card.sourceType
+                           let character = SekaiCache.preCache.character(id: card.characterID)?.fullName.forPreferredLocale()
                            {
                             Group {
                                 Text(title)
                                 Group {
-                                    Text("\(character)") + Text("Typography.bold-dot-seperater").bold() +  Text(sourceType.localizedName)
+                                    Text("\(character)") + Text("Typography.bold-dot-seperater").bold() +  Text(card.sourceType.localizedName)
                                 }
                                 .font(.caption)
                             }
