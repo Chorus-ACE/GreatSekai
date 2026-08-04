@@ -25,6 +25,7 @@ let filerKeysWithSmallerIcons = ["unit", "rarity"] // "attribute",
 let flowLayoutDefaultVerticalSpacing: CGFloat = 3
 let flowLayoutDefaultHorizontalSpacing: CGFloat = 3
 let capsuleDefaultCornerRadius: CGFloat = platform == .macOS ? 6 : 10
+let filterOptionAnimationDuration: CGFloat = 0.1
 
 
 struct FilterView: View {
@@ -62,6 +63,7 @@ struct FilterView: View {
             }
         }
         .geometryGroup()
+        .scrollIndicators(.hidden)
     }
 }
 
@@ -118,7 +120,6 @@ struct FilterItemView: View {
                      */
                     Spacer()
                     Button(action: {
-                        withAnimation(.easeInOut(duration: 0.05)) {
                             if (filter[key.id]?.count ?? 0) == 0 {
                                 filter[key.id] = Set(key.allCasesID)
                             } else {
@@ -145,7 +146,6 @@ struct FilterItemView: View {
 //                                    }
 //                                }
 //                            }
-                        }
                     }, label: {
                         Group {
                             let filterSelectionCount = filter[key.id]?.count ?? 0
@@ -170,7 +170,7 @@ struct FilterItemView: View {
 //                            }
                         }
                         .foregroundStyle(.secondary)
-                        .accessibilityLabel("Filter.selections-toggle")
+//                        .accessibilityLabel("Filter.selections-toggle")
                     })
                     .buttonStyle(.plain)
                 }
@@ -185,7 +185,6 @@ struct FilterItemView: View {
                         ForEach(key.options, id: \.self) { option in
                             Group {
                                 Button(action: {
-//                                    withAnimation(.easeInOut(duration: 0.05)) {
                                         var options = filter[key.id] ?? Set([])
                                         if options.contains(option.id) {
                                             options.remove(option.id)
@@ -193,14 +192,13 @@ struct FilterItemView: View {
                                             options.insert(option.id)
                                         }
                                         filter[key.id] = options
-//                                    }
                                 }, label: {
                                     ZStack {
                                         Circle()
                                             .stroke(Color.accent, lineWidth: 2)
                                             .frame(width: filterItemHeight, height: filterItemHeight)
                                             .opacity(filter[key.id]?.contains(option.id) ?? false ? 1 : 0)
-                                            
+                                            .animation(.easeInOut(duration: filterOptionAnimationDuration), value: filter)
                                         WebImage(url: option.selectorImage)
                                             .resizable()
                                             .interpolation(.high)
@@ -209,12 +207,14 @@ struct FilterItemView: View {
                                             .mask(Circle())
                                     }
                                     .contentShape(Circle())
+                                    .help(option.selectorName)
                                 })
-                                .accessibilityValue(filter[key.id]?.contains(option.id) ?? false ? "Filter.activated" : "")
                             }
+                           
                             .buttonStyle(.plain)
                             .accessibilityLabel(Text(option.selectorName))
-                            .accessibilityHint("Filter.tap-to-toggle")
+//                            .accessibilityHint("Filter.tap-to-toggle")
+                            .accessibilityValue(filter[key.id]?.contains(option.id) ?? false ? "Filter.activated" : "")
                         }
                     }
                 } else {
@@ -234,7 +234,7 @@ struct FilterItemView: View {
                             FilterSelectionCapsuleView(isActive: filter[key.id]?.contains(option.id) ?? false, content: {
                                 Text(option.selectorName)
                             })
-                            .animation(.easeInOut(duration: 0.05))
+//                            .animation(.easeInOut(duration: filterOptionAnimationDuration), value: filter)
                         })
                         .buttonStyle(.plain)
                         .accessibilityValue(filter[key.id]?.contains(option.id) ?? false ? "Filter.activated" : "")
@@ -401,7 +401,7 @@ struct FilterItemView: View {
                     })
                 //FIXME: Text padding to much in macOS
             }
-            .animation(.easeInOut(duration: 0.05), value: isActive)
+            .animation(.easeInOut(duration: filterOptionAnimationDuration), value: isActive)
         }
     }
     func getAttributedStringForMatchAll(isAllSelected: Bool = false, isCompact: Bool = false) -> AttributedString {
@@ -500,7 +500,7 @@ struct SorterPickerView: View {
                         sorter.keyword = $0
                     }
                 }), content: {
-                    ForEach(DoriFrontend.Sorter.Keyword.allCases, id: \.self) { item in
+                    ForEach(SekaiSorter.Keyword.allCases, id: \.self) { item in
                         // Super weird fix. Thanks to https://jeffverkoeyen.com/blog/2024/08/16/SwiftUI-Menu-subtitle-shenanigans/ for inspiration.
                         if allOptions.contains(item) {
                             Button(action: {}, label: {
@@ -514,7 +514,7 @@ struct SorterPickerView: View {
                                 $0
                                     .accessibilityLabel(String("\(sorter.keyword.localizedString(hasEndingDate: sortingItemsHaveEndingDate)), \(sorter.localizedDirectionName())"))
 //                                    .accessibilityLabel(String("\(sorter.localizedString(hasEndingDate: sortingItemsHaveEndingDate))"))
-                                    .accessibilityHint("Accessibility.sorter.reverse-direction")
+                                    .accessibilityHint("Sorter.reverse-direction")
                             }
 //                            .accessibilityValue(Text(sorter.localizedDirectionName()), isEnabled: sorter.keyword == item)
 //                            .accessibilityHint("Accessibility.sorter.reverse-direction")
@@ -580,6 +580,7 @@ extension View {
     @ViewBuilder
     func filterToggleAccessibility(selectionStatus: Bool?) -> some View {
         self
+            .animation(.easeInOut(duration: 0.1), value: selectionStatus)
         .accessibilityValue({
             if selectionStatus == true {
                 return "Filter.selections-toggle.value.all-selected"

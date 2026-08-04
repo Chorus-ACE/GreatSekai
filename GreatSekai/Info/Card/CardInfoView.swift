@@ -56,7 +56,6 @@ struct CardInfo: View {
                 }
             }
             .accessibilityHidden(true)
-//            .accessibialityHidden(true)
         } detail: {
             Group {
                 Text(characterName?.forPreferredLocale() ?? String(localized: "Info.unknown")) + Text("Typography.bold-dot-seperater").bold() + Text(card.sourceType.localizedName)
@@ -65,19 +64,10 @@ struct CardInfo: View {
             .font(platform == .macOS ? .body : .caption)
             .accessibilityLabel(String("\(characterName?.forPreferredLocale() ?? String(localized: "Info.unknown")), \(card.sourceType.localizedName)"))
         }
-        .onAppear {
-//            if cardCharacterName == nil { // First appear
-//                Task {
-//                    isNormalCardAvailable = await DoriURLValidator.reachability(
-//                        of: layoutType != 3 ? previewCard.thumbNormalImageURL : previewCard.coverNormalImageURL
-//                    )
-//                }
-//            }
-        }
-//        .accessibilityCustomContent("Card.rarity", "\(previewCard.rarity)")
-//        .accessibilityCustomContent("Card.attribute", previewCard.attribute.selectorText)
-//        .accessibilityCustomContent("Card.band", band?.bandName.forPreferredLocale() ?? "")
-//        .accessibilityCustomContent("Card.type", previewCard.type.selectorText)
+        .accessibilityCustomContent("Card.rarity", Text(card.rarity.localizedName))
+        .accessibilityCustomContent("Card.attribute", card.attribute.rawValue.uppercased())
+        .accessibilityCustomContent("Card.band", card.unit.localizedName)
+        .accessibilityCustomContent("Card.type", card.sourceType.localizedName)
     }
 }
 

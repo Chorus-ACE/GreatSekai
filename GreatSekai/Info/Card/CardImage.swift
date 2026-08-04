@@ -30,17 +30,19 @@ struct CardImage: View {
     private var showNavigationHints: Bool
     
     @State var showCardDetailView: Bool = false
+    
+    @State var normalCardIsOnHover = false
+    @State var trainedCardIsOnHover = false
+    
     init(_ card: Card, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both) {
         self.card = card
         
         self.showNavigationHints = showNavigationHints
         self.displayType = displayType
     }
-    
-    @State var isHovering: Bool = false
     var body: some View {
         ZStack {
-            CardCoverImageBorder(card, showNavigationHints: showNavigationHints, displayType: displayType)
+            CardCoverImageBorder(card, showNavigationHints: showNavigationHints, displayType: displayType, normalCardIsOnHover: $normalCardIsOnHover, trainedCardIsOnHover: $trainedCardIsOnHover)
             
             // The Image may not be in expected ratio. Gosh.
             // Why the heck will the image has a different ratio with the border???
@@ -82,18 +84,34 @@ struct CardImage: View {
             .aspectRatio(expectedCardRatio, contentMode: .fit)
         }
         .accessibilityElement(children: .combine)
-//        .accessibilityLabel("Accessibility.card.\(card.cardName.forPreferredLocale() ?? "")")
-//        .accessibilityCustomContent("Card.character", Text(SekaiCache.preCache?.forPreferredLocale() ?? ""), importance: .high)
-//        .accessibilityCustomContent("Card.rarity", "\(card.rarity)")
-//        .accessibilityCustomContent("Card.attribute", card.attribute.selectorText)
-//        .accessibilityCustomContent("Card.band", band?.bandName.forPreferredLocale() ?? "")
-//        .accessibilityCustomContent("Card.type", card.type.selectorText)
-        .imageContextMenu([
-            .init(url: card.beforeTrainingArtURL, description: "Image.card.normal"),
-            card.canTrain ? .init(url: card.afterTrainingArtURL!, description: "Image.card.trained") : nil
-        ].compactMap { $0 }) {
+        .accessibilityLabel(String(localized: Card.singularName) + (card.name.majorValue ?? ""))
+        .accessibilityCustomContent("Card.character", Text(SekaiCache.preCache.character(id: card.characterID)?.fullName.forPreferredLocale() ?? ""), importance: .high)
+        .accessibilityCustomContent("Card.rarity", card.rarity.localizedName)
+        .accessibilityCustomContent("Card.attribute", card.attribute.rawValue.uppercased())
+        .accessibilityCustomContent("Card.unit", card.unit.localizedName)
+        .accessibilityCustomContent("Card.type", card.sourceType.localizedName)
+        .imageContextMenu({
+            var result: [ImageInfo?] = []
+            let beforeTraining = ImageInfo(url: card.beforeTrainingArtURL, description: "Image.card.normal")
+            let afterTraining = card.canTrain ? ImageInfo(url: card.afterTrainingArtURL!, description: "Image.card.trained") : nil
+            
+            if normalCardIsOnHover {
+                result.append(beforeTraining)
+            } else if trainedCardIsOnHover {
+                result.append(afterTraining)
+            } else {
+                result = [beforeTraining, afterTraining]
+            }
+            
+            return result.compactMap({ $0 })
+        }()) {
             if showNavigationHints {
                 CardCoverNavigationHints(showCardDetailView: $showCardDetailView, card: card)
+                if normalCardIsOnHover {
+                    Label("Image.image.untrained", systemImage: "star")
+                } else if trainedCardIsOnHover {
+                    Label("Image.image.trained", systemImage: "star.fill")
+                }
             }
         }
         .navigationDestination(isPresented: $showCardDetailView, destination: {
@@ -107,23 +125,25 @@ struct CardImage: View {
 
 // MARK: CardCoverImageBorder
 struct CardCoverImageBorder: View {
-    private var card: Card
-    private var displayType: CardImageDisplayType
-    private var showNavigationHints: Bool
+    var card: Card
+    var displayType: CardImageDisplayType
+    var showNavigationHints: Bool
+    
+    @Binding var normalCardIsOnHover: Bool
+    @Binding var trainedCardIsOnHover: Bool
     
     @State var showCardDetailView: Bool = false
-    init(_ card: Card, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both) {
+    
+    init(_ card: Card, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both, normalCardIsOnHover: Binding<Bool>, trainedCardIsOnHover: Binding<Bool>) {
         self.card = card
-        
         self.showNavigationHints = showNavigationHints
         self.displayType = displayType
+        
+        self._normalCardIsOnHover = normalCardIsOnHover
+        self._trainedCardIsOnHover = trainedCardIsOnHover
     }
     
     @Namespace var hoverGroup
-    @State var normalCardIsOnHover = false
-    @State var trainedCardIsOnHover = false
-    
-    @State var isHovering: Bool = false
     var body: some View {
         // MARK: Border
         Group {
@@ -255,11 +275,12 @@ struct CardCoverNavigationHints: View {
                 showCardDetailView = true
             }, label: {
 #if os(iOS)
-                if let title = card.cardName.forPreferredLocale(), let character = characterName?.forPreferredLocale() {
+                if let title = card.title.majorValue,
+                    let character = SekaiCache.preCache.character(id: card.characterID)?.fullName {
                     Group {
                         Text(title)
                         Group {
-                            Text("\(character)") + Text("Typography.bold-dot-seperater").bold() +  Text(card.type.localizedString)
+                            Text("\(character)") + Text("Typography.bold-dot-seperater").bold() + Text(card.sourceType.localizedName)
                         }
                         .font(.caption)
                     }

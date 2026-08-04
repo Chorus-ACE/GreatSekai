@@ -46,7 +46,7 @@ private struct SystemBackgroundModifier: ViewModifier {
 
 extension View {
     func imageContextMenu<V: View>(
-        _ info: [_ImageContextMenuModifier<V>.ImageInfo],
+        _ info: [ImageInfo],
         otherContentAt placement: _ImageContextMenuModifier<V>.ContentPlacement = .start,
         @ViewBuilder otherContent: @escaping () -> V = { EmptyView() }
     ) -> some View {
@@ -54,12 +54,14 @@ extension View {
             .modifier(_ImageContextMenuModifier(imageInfo: info, otherContentPlacement: placement, otherContent: otherContent))
     }
 }
+
 struct _ImageContextMenuModifier<V: View>: ViewModifier {
-    @State var imageInfo: [ImageInfo]
+    var imageInfo: [ImageInfo]
     var otherContentPlacement: ContentPlacement
     var otherContent: (() -> V)?
     @State private var isFileExporterPresented = false
     @State private var exportingImageDocument: _ImageFileDocument?
+    
     func body(content: Content) -> some View {
         content
             .contextMenu {
@@ -167,13 +169,13 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
             .fileExporter(isPresented: $isFileExporterPresented, document: exportingImageDocument, contentType: .image) { _ in
                 exportingImageDocument = nil
             }
-            .onAppear {
-                for (index, info) in imageInfo.enumerated() where info.data == nil {
-                    Task {
-                        imageInfo[index].data = await info.resolvedData()
-                    }
-                }
-            }
+//            .onChange(of: imageInfo, initial: true) {
+//                for (index, info) in imageInfo.enumerated() where info.data == nil {
+//                    Task {
+//                        imageInfo[index].data = await info.resolvedData()
+//                    }
+//                }
+//            }
     }
     
     @ViewBuilder
@@ -201,32 +203,34 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
         case start
         case end
     }
-    struct ImageInfo: Hashable, Sendable {
-        var url: URL
-        var data: Data?
-        var description: LocalizedStringResource?
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(url)
-            hasher.combine(data)
-            if let description {
-                hasher.combine(String(localized: description))
-            }
+}
+
+struct ImageInfo: Hashable, Sendable {
+    var url: URL
+    var data: Data?
+    var description: LocalizedStringResource?
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(url)
+        hasher.combine(data)
+        if let description {
+            hasher.combine(String(localized: description))
         }
-        
-        func resolvedData() async -> Data? {
-            if let data {
-                return data
-            }
-            return await withCheckedContinuation { continuation in
-                DispatchQueue(label: "com.memz233.Greatdori.Resolve-Image-From-URL", qos: .userInitiated).async {
-                    let data = try? Data(contentsOf: url)
-                    continuation.resume(returning: data)
-                }
+    }
+    
+    func resolvedData() async -> Data? {
+        if let data {
+            return data
+        }
+        return await withCheckedContinuation { continuation in
+            DispatchQueue(label: "com.memz233.Greatdori.Resolve-Image-From-URL", qos: .userInitiated).async {
+                let data = try? Data(contentsOf: url)
+                continuation.resume(returning: data)
             }
         }
     }
 }
+
 struct _ImageFileDocument: FileDocument {
     static let readableContentTypes: [UTType] = [.image]
     

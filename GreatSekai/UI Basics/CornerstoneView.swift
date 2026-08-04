@@ -528,7 +528,7 @@ struct FilterAndSorterPicker: View {
         })
         .animation(.easeInOut(duration: 0.2), value: isFiltering)
         .accessibilityLabel("Filter")
-        .accessibilityValue(isFiltering ? "Accessibility.filter.active" : "Accessibility.filter.not-active")
+        .accessibilityValue(isFiltering ? "Filter.active" : "Filter.not-active")
         SorterPickerView(sorter: $sorter, allOptions: sorterKeywords, sortingItemsHaveEndingDate: hasEndingDate)
 #endif
     }
@@ -875,7 +875,7 @@ struct MultilingualText: View {
                             .textSelection(.enabled)
                             .typesettingLanguage(.explicit(locale.nsLocale.language))
                     })
-                    .accessibilityHint("Accessibility.copiable")
+                    .accessibilityHint("Message.copiable")
                 }
             }, label: {
                 ZStack(alignment: .trailing, content: {
@@ -1302,27 +1302,24 @@ struct LocalizableText: View {
 
 // MARK: ListItem
 struct ListItem<Content1: View, Content2: View>: View {
-    @Environment(\.horizontalSizeClass) var sizeClass
-    @Environment(\.listItemLayout) var layout
-    @Environment(\.listItemTextStyle) var textStyle
-    @Environment(\.listItemValueIsLeading) var allowValueLeading
-    @Environment(\.listItemTextSelectionIsEnabled) var allowTextSelection
     let title: Content1
     let value: Content2
     @State private var totalAvailableWidth: CGFloat = 0
     @State private var titleAvailableWidth: CGFloat = 0
     @State private var valueAvailableWidth: CGFloat = 0
     
+    @Environment(\.horizontalSizeClass) var sizeClass
+    @Environment(\.listItemLayout) var layout
+    @Environment(\.listItemTextStyle) var textStyle
+    @Environment(\.listItemValueIsLeading) var allowValueLeading
+    @Environment(\.listItemTextSelectionIsEnabled) var allowTextSelection
+    @Environment(\.defaultMinListRowHeight) var defaultMinListRowHeight
+    
     init(@ViewBuilder title: () -> Content1, @ViewBuilder value: () -> Content2) {
         self.title = title()
         self.value = value()
     }
     
-//    @available(*, deprecated, message: "Use modifiers instead of parameters")
-//    init(allowValueLeading: Bool = false, displayMode: ListItemLayout = .automatic, allowTextSelection: Bool = true, @ViewBuilder title: () -> Content1, @ViewBuilder value: () -> Content2) {
-//        self.init(allowValueLeading: allowValueLeading, title: { title() }, value: { value() })
-//    }
-//    
     var body: some View {
         Group {
             if (layout == .compactOnly  || (layout == .basedOnUISizeClass && sizeClass == .regular) || (totalAvailableWidth - titleAvailableWidth - valueAvailableWidth) > 5) && layout != .expandedOnly { // HStack (SHORT)
@@ -1380,6 +1377,7 @@ struct ListItem<Content1: View, Content2: View>: View {
         .onFrameChange(perform: { geometry in
             totalAvailableWidth = geometry.size.width
         })
+        .frame(minHeight: defaultMinListRowHeight)
         .accessibilityElement(children: .contain)
         .accessibilityElement(children: .combine)
         

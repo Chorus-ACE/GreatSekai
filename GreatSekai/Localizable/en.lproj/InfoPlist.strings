@@ -1,0 +1,9 @@
+/* 
+  Localizable.strings
+  GreatSekai
+
+  Created by ThreeManager785 on 2026/8/4.
+  
+*/
+
+"Privacy.photo-library.add-only.description" = "GreatSekai needs permission to add photos to your Photos library.";

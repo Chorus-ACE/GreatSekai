@@ -47,9 +47,11 @@ struct HomeView: View {
                     Task {
                         SekaiCache.invalidateAll()
                         
-                        let char = await Character(id: 3)
+                        await SDImageCache.shared.clearDiskOnCompletion()
                         
-                        print(char)
+//                        let char = await Character(id: 3)
+//                        
+//                        print(char)
                     }
                 }, label: {
                     Text(verbatim: "1")

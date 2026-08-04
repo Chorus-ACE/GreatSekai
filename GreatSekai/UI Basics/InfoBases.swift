@@ -476,7 +476,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         #if !os(visionOS)
         .wrapIf(searchedElements != nil) { content in
             if #available(iOS 26.0, *) {
-                content.navigationSubtitle((searchedText.isEmpty && !filter.isFiltering()) ? (getResultCountDescription?(searchedElements!.count) ?? "Search.item.\(searchedElements!.count)") :  "Search.result.\(searchedElements!.count)")
+                content.navigationSubtitle((searchedText.isEmpty && !filter.isFiltering(referencing: Element.filterKeys)) ? (getResultCountDescription?(searchedElements!.count) ?? "Search.item.\(searchedElements!.count)") :  "Search.result.\(searchedElements!.count)")
             } else {
                 content
             }
@@ -492,7 +492,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
             }
             #endif
             ToolbarItemGroup {
-                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltering(), sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
+                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltering(referencing: Element.filterKeys), sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
             }
         }
         .onDisappear {

@@ -37,6 +37,7 @@
 		E98C84CF301D9413005B6B45 /* CardThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98C84CE301D9413005B6B45 /* CardThumbnail.swift */; };
 		E99FB7B4301F030E00020F06 /* CardImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99FB7B3301F030E00020F06 /* CardImage.swift */; };
 		E99FB7B6301F227700020F06 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E99FB7B5301F227700020F06 /* AppIcon.icon */; };
+		E9BCABBA3021F5270076FAA5 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E9BCABB83021F5270076FAA5 /* InfoPlist.strings */; };
 		E9C55F5C2F53F21200DCFD2D /* SekaiKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F5B2F53F21200DCFD2D /* SekaiKit */; };
 		E9C55F9D2F53F27000DCFD2D /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F9C2F53F27000DCFD2D /* SDWebImageSwiftUI */; };
 		E9C55FA02F53F28800DCFD2D /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F9F2F53F28800DCFD2D /* SDWebImageSVGCoder */; };
@@ -85,6 +86,9 @@
 		E98C84CE301D9413005B6B45 /* CardThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardThumbnail.swift; sourceTree = "<group>"; };
 		E99FB7B3301F030E00020F06 /* CardImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardImage.swift; sourceTree = "<group>"; };
 		E99FB7B5301F227700020F06 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		E9BCABB63021F48C0076FAA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		E9BCABB93021F5270076FAA5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E9BCABBB3021F5D20076FAA5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		E9C55F4C2F53F1E700DCFD2D /* GreatSekai.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GreatSekai.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9C55FC02F53F3C100DCFD2D /* CardCollectionCoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardCollectionCoding.swift; sourceTree = "<group>"; };
 		E9C55FC12F53F3C100DCFD2D /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -180,6 +184,15 @@
 			path = Other;
 			sourceTree = "<group>";
 		};
+		E9BCABB73021F5130076FAA5 /* Localizable */ = {
+			isa = PBXGroup;
+			children = (
+				E90629812F727BA900EDCDC6 /* Localizable.xcstrings */,
+				E9BCABB83021F5270076FAA5 /* InfoPlist.strings */,
+			);
+			path = Localizable;
+			sourceTree = "<group>";
+		};
 		E9C55F432F53F1E700DCFD2D = {
 			isa = PBXGroup;
 			children = (
@@ -213,9 +226,10 @@
 		E9C55FCB2F53F3C100DCFD2D /* GreatSekai */ = {
 			isa = PBXGroup;
 			children = (
+				E9BCABB63021F48C0076FAA5 /* Info.plist */,
 				E9C55FC82F53F3C100DCFD2D /* Assets.xcassets */,
 				E99FB7B5301F227700020F06 /* AppIcon.icon */,
-				E90629812F727BA900EDCDC6 /* Localizable.xcstrings */,
+				E9BCABB73021F5130076FAA5 /* Localizable */,
 				E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */,
 				E931520C2F5401D1002D102D /* UI Basics */,
 				E93152AE2F540621002D102D /* Settings */,
@@ -318,6 +332,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E90629822F727BA900EDCDC6 /* Localizable.xcstrings in Resources */,
+				E9BCABBA3021F5270076FAA5 /* InfoPlist.strings in Resources */,
 				E9C55FCC2F53F3C100DCFD2D /* Assets.xcassets in Resources */,
 				E99FB7B6301F227700020F06 /* AppIcon.icon in Resources */,
 			);
@@ -373,6 +388,18 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		E9BCABB83021F5270076FAA5 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E9BCABB93021F5270076FAA5 /* en */,
+				E9BCABBB3021F5D20076FAA5 /* zh-Hans */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		E9C55F552F53F1E800DCFD2D /* Debug */ = {
@@ -502,8 +529,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MU2GGQV46U;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_FILE_ACCESS_DOWNLOADS_FOLDER = readwrite;
 				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
@@ -514,8 +542,10 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GreatSekai/Info.plist;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Privacy.photo-library.add-only.description";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -557,8 +587,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MU2GGQV46U;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_FILE_ACCESS_DOWNLOADS_FOLDER = readwrite;
 				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
@@ -569,8 +600,10 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GreatSekai/Info.plist;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Privacy.photo-library.add-only.description";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

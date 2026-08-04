@@ -12,6 +12,7 @@ import SDWebImageSwiftUI
 struct EventSearchView: View {
     let gridLayoutItemWidth: CGFloat = 225
     
+    @Environment(\.horizontalSizeClass) var sizeClass
     @Namespace var eventNamespace
     var body: some View {
         SearchViewBase(forType: Event.self, initialLayout: true, layoutOptions: bannerLayouts) { showDetails, elements, content, eachContent in
@@ -42,7 +43,9 @@ struct EventSearchView: View {
             .animation(.spring(duration: 0.3, bounce: 0.1, blendDuration: 0), value: showDetails)
         } eachContent: { showDetails, element in
             EventInfo(element, showDetails: showDetails)
-                .frame(maxWidth: bannerWidth)
+                .wrapIf(sizeClass == .regular, in: {
+                    $0.frame(maxWidth: bannerWidth)
+                })
         } destination: { element, list in
 //            EventDetailView(id: element.id, allEvents: list)
         }

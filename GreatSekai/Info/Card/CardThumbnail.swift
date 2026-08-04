@@ -36,7 +36,7 @@ struct CardThumbnail: View {
                 image
                     .interpolation(.high)
             } placeholder: {
-                Rectangle()
+                RoundedRectangle(cornerRadius: 3)
                     .fill(getPlaceholderColor())
                     .aspectRatio(1, contentMode: .fit)
             }
@@ -90,14 +90,15 @@ struct CardThumbnail: View {
                         //                            CardDetailView(id: cardID)
                         //                        }, label: {
                         Button(action: {
-                            cardNavigationDestinationID = cardID
+                            cardNavigationDestinationID = card.id
                             showCardDetailView = true
                         }, label: {
-                            if let title = cardTitle.forPreferredLocale(), let character = cardCharacterName?.forPreferredLocale() {
+                            if let title = card.title.majorValue,
+                                let character = SekaiCache.preCache.character(id: card.characterID)?.fullName.forPreferredLocale() {
                                 Group {
                                     Text(title)
                                     Group {
-                                        Text("\(character)") + Text("Typography.bold-dot-seperater").bold() +  Text(cardType.localizedString)
+                                        Text("\(character)") + Text("Typography.bold-dot-seperater").bold() +  Text(card.sourceType.localizedName)
                                     }
                                     .font(.caption)
                                 }
@@ -113,7 +114,8 @@ struct CardThumbnail: View {
                                 
                             }
                         })
-                        .disabled(cardTitle.forPreferredLocale() == nil ||  cardCharacterName?.forPreferredLocale() == nil)
+                        .disabled(card.title.majorValue == nil)
+//                        .disabled(cardTitle.forPreferredLocale() == nil ||  cardCharacterName?.forPreferredLocale() == nil)
                     }
                 })
 #else
@@ -157,7 +159,7 @@ struct CardThumbnail: View {
                             Group {
                                 Text(title)
                                 Group {
-                                    Text("\(character)") + Text("Typography.bold-dot-seperater").bold() +  Text(card.sourceType.localizedName)
+                                    Text("\(character)") + Text("Typography.bold-dot-seperater").bold() + Text(card.sourceType.localizedName)
                                 }
                                 .font(.caption)
                             }

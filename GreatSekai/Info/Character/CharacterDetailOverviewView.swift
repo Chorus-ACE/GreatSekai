@@ -11,9 +11,12 @@ import SwiftUI
 
 
 struct CharacterDetailOverviewView: View {
-    @AppStorage("showCharacterDetails") var showCharacterDetails = false
     let information: Character
+    
     @State var colorDetailsIsDisplaying = false
+    
+    @AppStorage("showCharacterDetails") var showCharacterDetails = false
+    
     var dateFormatter: DateFormatter {
         let df = DateFormatter()
         df.timeZone = .init(identifier: "Asia/Tokyo")!
