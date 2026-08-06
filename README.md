@@ -6,7 +6,7 @@ Data from SekaiViewer with permission.
 
 Will be similar to Greatdori!.
 
-# Acknowledgement
+## Acknowledgement
 
 Thanks for [SekaiViewer](https://sekai.best) ([@DNAroma](https://github.com/dnaroma)) for allowing this project. Almost all data is from SekaiViewer.
 
