@@ -66,7 +66,7 @@ struct CardInfo: View {
         }
         .accessibilityCustomContent("Card.rarity", Text(card.rarity.localizedName))
         .accessibilityCustomContent("Card.attribute", card.attribute.name)
-        .accessibilityCustomContent("Card.band", card.unit.localizedName)
+        .accessibilityCustomContent("Card.unit", card.unit.localizedName)
         .accessibilityCustomContent("Card.type", card.sourceType.localizedName)
     }
 }

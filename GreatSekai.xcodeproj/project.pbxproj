@@ -115,6 +115,19 @@
 		E9D667703014EE1800F6A422 /* EventInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInfoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		E95A81D4302752C30017DE54 /* zh-Hans.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "zh-Hans.lproj";
+			sourceTree = "<group>";
+		};
+		E95A81E7302752CB0017DE54 /* en.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = en.lproj;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		E9C55F492F53F1E700DCFD2D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -194,6 +207,15 @@
 			path = Other;
 			sourceTree = "<group>";
 		};
+		E95A81C73027528E0017DE54 /* Documents */ = {
+			isa = PBXGroup;
+			children = (
+				E95A81D4302752C30017DE54 /* zh-Hans.lproj */,
+				E95A81E7302752CB0017DE54 /* en.lproj */,
+			);
+			path = Documents;
+			sourceTree = "<group>";
+		};
 		E9BCABB73021F5130076FAA5 /* Localizable */ = {
 			isa = PBXGroup;
 			children = (
@@ -237,13 +259,14 @@
 			children = (
 				E9BCABB63021F48C0076FAA5 /* Info.plist */,
 				E9C55FC82F53F3C100DCFD2D /* Assets.xcassets */,
-				E99FB7B5301F227700020F06 /* AppIcon.icon */,
 				E90629812F727BA900EDCDC6 /* Localizable.xcstrings */,
+				E99FB7B5301F227700020F06 /* AppIcon.icon */,
 				E9BCABB73021F5130076FAA5 /* Localizable */,
 				E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */,
 				E931520C2F5401D1002D102D /* UI Basics */,
 				E93152AE2F540621002D102D /* Settings */,
 				E93153402F540A40002D102D /* Info */,
+				E95A81C73027528E0017DE54 /* Documents */,
 				E9C55FC72F53F3C100DCFD2D /* Methods */,
 			);
 			path = GreatSekai;
@@ -288,6 +311,10 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E95A81D4302752C30017DE54 /* zh-Hans.lproj */,
+				E95A81E7302752CB0017DE54 /* en.lproj */,
 			);
 			name = GreatSekai;
 			packageProductDependencies = (

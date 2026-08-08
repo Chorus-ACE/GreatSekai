@@ -63,17 +63,17 @@ struct SettingsAboutDetailIconView: View {
     let appIconSideLength: CGFloat = platform == .macOS ? 80 : 100
     var body: some View {
         VStack {
-            Image(decorative: "MacAppIcon\(colorScheme == .dark ? "Dark" : "")")
+            Image(decorative: "AppIconLight")
                 .resizable()
                 .frame(width: appIconSideLength, height: appIconSideLength)
-            Text(verbatim: "Greatdori!")
+            Text(verbatim: "GreatSekai")
                 .bold()
                 .font(.largeTitle)
             Group {
                 if AppFlag.DEBUG {
                     Text("Settings.about.version.\(appVersion)") + Text(verbatim: " - ") + Text(verbatim: "DEBUG")
                 } else if isSayuruVersion {
-                    Text("Settings.about.version.\(appVersion)") + Text(verbatim: " - ") + Text(verbatim: "Sayuru")
+                    Text("Settings.about.version.\(appVersion)") + Text(verbatim: " - ") + Text(verbatim: "Botan")
                 } else {
                     Text("Settings.about.version.\(appVersion)")
                 }
@@ -130,8 +130,9 @@ struct SettingsAboutDetailIconView: View {
 struct SettingsAboutDetailListView: View {
     @Environment(\.locale) private var locale
     var body: some View {
+        Text("Settings.about.chorus-ace")
         Text(verbatim: "Licensed under Apache License 2.0")
-        Link(destination: URL(string: "https://github.com/Greatdori")!) {
+        Link(destination: URL(string: "https://github.com/Chorus-ACE/GreatSekai")!) {
             HStack {
                 Text("Settings.about.github")
                 Spacer()
@@ -141,7 +142,7 @@ struct SettingsAboutDetailListView: View {
             .contentShape(Rectangle())
         }
         .foregroundStyle(.primary)
-        Link(destination: URL(string: "https://github.com/Greatdori/Greatdori/issues")!) {
+        Link(destination: URL(string: "https://github.com/Chorus-ACE/GreatSekai/issues")!) {
             HStack {
                 Text("Settings.about.report-a-problem")
                 Spacer()

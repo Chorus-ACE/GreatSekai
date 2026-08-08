@@ -124,11 +124,11 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
             currentID = initialID
             await getInformation(id: currentID)
             if let previewList {
-                allPreviewIDs = previewList.map({ $0.id }).sorted(by: <)
-            } else if let ListGettableType = Information.self as? (any (Sendable & Identifiable & ListGettable).Type) {
-                // We can always assume that the ID of elements are `Int`
-                // because it has been constrainted in the generic decls
-                allPreviewIDs = await ListGettableType.all()?.map { $0.id as! Int } ?? []
+                allPreviewIDs = previewList.map({ $0.id })
+            } else if let ListGettableType = Information.self as? (any (Sendable & Identifiable & ListGettable & SekaiTypeDescribable & SekaiCachable).Type) {
+                allPreviewIDs = await SekaiCache.withDirectCache(id: "All\(ListGettableType.cacheID)", invocation: {
+                    await ListGettableType.all() as? [Information]
+                })?.map { $0.id } ?? []
             }
         }
         .toolbar {

@@ -38,10 +38,18 @@ struct EventDetailOverviewView: View {
         DetailInfoBase {
             DetailInfoItem("Event.title", localizableText: information.event.title)
             DetailInfoItem("Event.type", text: information.event.eventType.localizedName)
-            // Countdown
+            DetailInfoItem("Event.countdown", content: {
+                CountdownText(information.event)
+            })
             
             DetailInfoItem("Event.start-date", date: information.event.startDate)
-            DetailInfoItem("Event.end-date", date: information.event.closedDate)
+            DetailInfoItem("Event.end-date", date: information.event.endDate)
+            
+            if let unit = information.event.unit {
+                DetailInfoItem("Event.unit", content: {
+                    UnitLabel(unit: unit)
+                })
+            }
             
             if let attribute = information.event.attribute, let attributeBonus = information.event.attributeBonus {
                 DetailInfoItem("Event.attribute") {

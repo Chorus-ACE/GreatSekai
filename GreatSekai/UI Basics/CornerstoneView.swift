@@ -344,7 +344,7 @@ struct DetailsIDSwitcher<Content: View>: View {
     var allIDs: [Int]
     init(currentID: Binding<Int>, allIDs: [Int], @ViewBuilder destination: @escaping () -> Content) {
         self._currentID = currentID
-        self.allIDs = allIDs
+        self.allIDs = allIDs.sorted(by: <)
         self.destination = destination
     }
     
@@ -994,187 +994,187 @@ struct LocalizableText: View {
     }
 }
 
-//// MARK: MultilingualTextForCountdown
-//struct MultilingualTextForCountdown: View {
-//    let startDate: LocalizedData<Date>
-//    let endDate: LocalizedData<Date>
-//    let aggregateEndDate: LocalizedData<Date>?
-//    let distributionStartDate: LocalizedData<Date>?
-//    
-//    @State var isHovering = false
-//    @State var allAvailableLocales: [SekaiLocale] = []
-//    @State var primaryDisplayLocale: SekaiLocale?
-//    @State var showCopyMessage = false
-//    
-//    init(
-//        startDate: LocalizedData<Date>,
-//        endDate: LocalizedData<Date>,
-//        aggregateEndDate: LocalizedData<Date>? = nil,
-//        distributionStartDate: LocalizedData<Date>? = nil
-//    ) {
-//        self.startDate = startDate
-//        self.endDate = endDate
-//        self.aggregateEndDate = aggregateEndDate
-//        self.distributionStartDate = distributionStartDate
-//    }
-//    init(_ source: Event) {
-//        self.startDate = source.startAt
-//        self.endDate = source.endAt
-//        self.aggregateEndDate = source.aggregateEndAt
-//        self.distributionStartDate = source.distributionStartAt
-//    }
+// MARK: MultilingualTextForCountdown
+struct CountdownText: View {
+    let startDate: LocalizedData<Date>
+    let endDate: LocalizedData<Date>
+    let aggregateEndDate: LocalizedData<Date>?
+    let distributionStartDate: LocalizedData<Date>?
+    
+    @State var isHovering = false
+    @State var allAvailableLocales: [SekaiLocale] = []
+    @State var primaryDisplayLocale: SekaiLocale?
+    @State var showCopyMessage = false
+    
+    init(
+        startDate: LocalizedData<Date>,
+        endDate: LocalizedData<Date>,
+        aggregateEndDate: LocalizedData<Date>? = nil,
+        distributionStartDate: LocalizedData<Date>? = nil
+    ) {
+        self.startDate = startDate
+        self.endDate = endDate
+        self.aggregateEndDate = aggregateEndDate
+        self.distributionStartDate = distributionStartDate
+    }
+    init(_ source: Event) {
+        self.startDate = source.startDate.localizedData  ?? LocalizedData(repeating: Date.distantPast)
+        self.endDate = source.rankingAnnouncementDate.localizedData ?? LocalizedData(repeating: Date.distantPast)
+        self.aggregateEndDate = source.aggregateDate.localizedData
+        self.distributionStartDate = source.distributionStartDate.localizedData
+    }
 //    init(_ source: Gacha) {
 //        self.startDate = source.publishedAt
 //        self.endDate = source.closedAt
 //        self.aggregateEndDate = nil
 //        self.distributionStartDate = nil
 //    }
-//    
-//    var body: some View {
-//        Group {
-//#if os(iOS)
-//            Menu(content: {
-//                VStack(alignment: .trailing) {
-//                    ForEach(allAvailableLocales, id: \.self) { localeValue in
-//                        Button(action: {
-//                            showCopyMessage = true
-//                        }, label: {
-//                            MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: localeValue)
-//                        })
-//                        .accessibilityRemoveTraits(.isButton)
-//                    }
-//                }
-//            }, label: {
-//                ZStack(alignment: .trailing, content: {
-//                    Label("Message.copy.unavailable.for.countdown", systemImage: "exclamationmark.circle")
-//                        .offset(y: 2)
-//                        .opacity(showCopyMessage ? 1 : 0)
-//                    MultilingualTextForCountdownInternalLabel(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, allAvailableLocales: allAvailableLocales)
-//                        .opacity(showCopyMessage ? 0 : 1)
-//                })
-//                .animation(.easeIn(duration: 0.2), value: showCopyMessage)
-//                .onChange(of: showCopyMessage, {
-//                    if showCopyMessage {
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-//                            showCopyMessage = false
-//                        }
-//                    }
-//                })
-//            })
-//            .menuStyle(.button)
-//            .buttonStyle(.borderless)
-//            .menuIndicator(.hidden)
-//            .foregroundStyle(.primary)
-//#else
-//            MultilingualTextForCountdownInternalLabel(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, allAvailableLocales: allAvailableLocales)
-//                .onHover { isHovering in
-//                    self.isHovering = isHovering
-//                }
-//                .popover(isPresented: $isHovering, arrowEdge: .bottom) {
-//                    VStack(alignment: .trailing) {
-//                        ForEach(allAvailableLocales, id: \.self) { localeValue in
-//                            MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: localeValue)
-//                        }
-//                    }
-//                    .padding()
-//                }
-//#endif
-//        }
-//        .onAppear {
-//            allAvailableLocales = []
-//            for lang in SekaiLocale.allCases {
-//                if startDate.availableInLocale(lang) {
-//                    allAvailableLocales.append(lang)
-//                }
-//            }
-//        }
-//        .accessibilityElement(children: .ignore)
-//        .wrapIf(true, in: {
-//            if #available(iOS 18.0, macOS 15.0, *) {
-//                $0.accessibilityLabel(content: { _ in
-//                    MultilingualTextForCountdownInternalLabel(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, allAvailableLocales: allAvailableLocales)
-//                })
-//            } else {
-//                $0
-//            }
-//        })
-//        .accessibilityHint("Accessibility.multilingual")
-//    }
-//    struct MultilingualTextForCountdownInternalLabel: View {
-//        let startDate: LocalizedData<Date>
-//        let endDate: LocalizedData<Date>
-//        let aggregateEndDate: LocalizedData<Date>?
-//        let distributionStartDate: LocalizedData<Date>?
-//        let allAvailableLocales: [SekaiLocale]
-//        let allowTextSelection: Bool = true
-//        @State var primaryDisplayingLocale: SekaiLocale? = nil
-//        var body: some View {
-//            VStack(alignment: .trailing) {
-//                if allAvailableLocales.contains(SekaiLocale.primaryLocale) {
-//                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: SekaiLocale.primaryLocale)
-//                        .onAppear {
-//                            primaryDisplayingLocale = SekaiLocale.primaryLocale
-//                        }
-//                } else if allAvailableLocales.contains(SekaiLocale.secondaryLocale) {
-//                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: SekaiLocale.secondaryLocale)
-//                        .onAppear {
-//                            primaryDisplayingLocale = SekaiLocale.secondaryLocale
-//                        }
-//                } else if allAvailableLocales.contains(.jp) {
-//                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: .jp)
-//                        .onAppear {
-//                            primaryDisplayingLocale = .jp
-//                        }
-//                } else if !allAvailableLocales.isEmpty {
-//                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: allAvailableLocales.first!)
-//                        .onAppear {
-//                            print(allAvailableLocales)
-//                            primaryDisplayingLocale = allAvailableLocales.first!
-//                        }
-//                }
-//                
-//                if allAvailableLocales.contains(SekaiLocale.secondaryLocale), SekaiLocale.secondaryLocale != primaryDisplayingLocale {
-//                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: SekaiLocale.secondaryLocale)
-//                        .foregroundStyle(.secondary)
-//                } else if allAvailableLocales.contains(.jp), .jp != primaryDisplayingLocale {
-//                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: .jp)
-//                        .foregroundStyle(.secondary)
-//                }
-//            }
-//            .wrapIf(allowTextSelection, in: { content in
-//                content
-//                    .textSelection(.enabled)
-//            }, else: { content in
-//                content
-//                    .textSelection(.disabled)
-//            })
-//        }
-//    }
-//    struct MultilingualTextForCountdownInternalNumbersView: View {
-////        let event: DoriFrontend.Event.Event
-//        let startDate: LocalizedData<Date>
-//        let endDate: LocalizedData<Date>
-//        let aggregateEndDate: LocalizedData<Date>?
-//        let distributionStartDate: LocalizedData<Date>?
-//        let locale: SekaiLocale
-//        var body: some View {
-//            if let startDate = startDate.forLocale(locale),
-//               let endDate = endDate.forLocale(locale) {
-//                if startDate > .now {
-//                    Text("Countdown.start-at.\(Text(startDate, style: .relative)).\(locale.rawValue.uppercased())")
-//                } else if endDate > .now {
-//                    Text("Countdown.end-at.\(Text(endDate, style: .relative)).\(locale.rawValue.uppercased())")
-//                } else if let aggregateEndDate = aggregateEndDate?.forLocale(locale), aggregateEndDate > .now {
-//                    Text("Countdown.results-in.\(Text(aggregateEndDate, style: .relative)).\(locale.rawValue.uppercased())")
-//                } else if let distributionStartDate = distributionStartDate?.forLocale(locale), distributionStartDate > .now {
-//                    Text("Countdown.rewards-in.\(Text(distributionStartDate, style: .relative)).\(locale.rawValue.uppercased())")
-//                } else {
-//                    Text("Countdown.completed.\(locale.rawValue.uppercased())")
-//                }
-//            }
-//        }
-//    }
-//}
+    
+    var body: some View {
+        Group {
+#if os(iOS)
+            Menu(content: {
+                VStack(alignment: .trailing) {
+                    ForEach(allAvailableLocales, id: \.self) { localeValue in
+                        Button(action: {
+                            showCopyMessage = true
+                        }, label: {
+                            MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: localeValue)
+                        })
+                        .accessibilityRemoveTraits(.isButton)
+                    }
+                }
+            }, label: {
+                ZStack(alignment: .trailing, content: {
+                    Label("Message.copy.unavailable.for.countdown", systemImage: "exclamationmark.circle")
+                        .offset(y: 2)
+                        .opacity(showCopyMessage ? 1 : 0)
+                    MultilingualTextForCountdownInternalLabel(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, allAvailableLocales: allAvailableLocales)
+                        .opacity(showCopyMessage ? 0 : 1)
+                })
+                .animation(.easeIn(duration: 0.2), value: showCopyMessage)
+                .onChange(of: showCopyMessage, {
+                    if showCopyMessage {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            showCopyMessage = false
+                        }
+                    }
+                })
+            })
+            .menuStyle(.button)
+            .buttonStyle(.borderless)
+            .menuIndicator(.hidden)
+            .foregroundStyle(.primary)
+#else
+            MultilingualTextForCountdownInternalLabel(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, allAvailableLocales: allAvailableLocales)
+                .onHover { isHovering in
+                    self.isHovering = isHovering
+                }
+                .popover(isPresented: $isHovering, arrowEdge: .bottom) {
+                    VStack(alignment: .trailing) {
+                        ForEach(allAvailableLocales, id: \.self) { localeValue in
+                            MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: localeValue)
+                        }
+                    }
+                    .padding()
+                }
+#endif
+        }
+        .onAppear {
+            allAvailableLocales = []
+            for lang in SekaiLocale.allCases {
+                if startDate.availableInLocale(lang) {
+                    allAvailableLocales.append(lang)
+                }
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .wrapIf(true, in: {
+            if #available(iOS 18.0, macOS 15.0, *) {
+                $0.accessibilityLabel(content: { _ in
+                    MultilingualTextForCountdownInternalLabel(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, allAvailableLocales: allAvailableLocales)
+                })
+            } else {
+                $0
+            }
+        })
+        .accessibilityHint("Message.multilingual")
+    }
+    struct MultilingualTextForCountdownInternalLabel: View {
+        let startDate: LocalizedData<Date>
+        let endDate: LocalizedData<Date>
+        let aggregateEndDate: LocalizedData<Date>?
+        let distributionStartDate: LocalizedData<Date>?
+        let allAvailableLocales: [SekaiLocale]
+        let allowTextSelection: Bool = true
+        @State var primaryDisplayingLocale: SekaiLocale? = nil
+        var body: some View {
+            VStack(alignment: .trailing) {
+                if allAvailableLocales.contains(SekaiLocale.primaryLocale) {
+                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: SekaiLocale.primaryLocale)
+                        .onAppear {
+                            primaryDisplayingLocale = SekaiLocale.primaryLocale
+                        }
+                } else if allAvailableLocales.contains(SekaiLocale.secondaryLocale) {
+                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: SekaiLocale.secondaryLocale)
+                        .onAppear {
+                            primaryDisplayingLocale = SekaiLocale.secondaryLocale
+                        }
+                } else if allAvailableLocales.contains(.jp) {
+                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: .jp)
+                        .onAppear {
+                            primaryDisplayingLocale = .jp
+                        }
+                } else if !allAvailableLocales.isEmpty {
+                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: allAvailableLocales.first!)
+                        .onAppear {
+                            print(allAvailableLocales)
+                            primaryDisplayingLocale = allAvailableLocales.first!
+                        }
+                }
+                
+                if allAvailableLocales.contains(SekaiLocale.secondaryLocale), SekaiLocale.secondaryLocale != primaryDisplayingLocale {
+                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: SekaiLocale.secondaryLocale)
+                        .foregroundStyle(.secondary)
+                } else if allAvailableLocales.contains(.jp), .jp != primaryDisplayingLocale {
+                    MultilingualTextForCountdownInternalNumbersView(startDate: startDate, endDate: endDate, aggregateEndDate: aggregateEndDate, distributionStartDate: distributionStartDate, locale: .jp)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .wrapIf(allowTextSelection, in: { content in
+                content
+                    .textSelection(.enabled)
+            }, else: { content in
+                content
+                    .textSelection(.disabled)
+            })
+        }
+    }
+    struct MultilingualTextForCountdownInternalNumbersView: View {
+//        let event: DoriFrontend.Event.Event
+        let startDate: LocalizedData<Date>
+        let endDate: LocalizedData<Date>
+        let aggregateEndDate: LocalizedData<Date>?
+        let distributionStartDate: LocalizedData<Date>?
+        let locale: SekaiLocale
+        var body: some View {
+            if let startDate = startDate.forLocale(locale),
+               let endDate = endDate.forLocale(locale) {
+                if startDate > .now {
+                    Text("Countdown.start-at.\(Text(startDate, style: .relative)).\(locale.rawValue.uppercased())")
+                } else if endDate > .now {
+                    Text("Countdown.end-at.\(Text(endDate, style: .relative)).\(locale.rawValue.uppercased())")
+                } else if let aggregateEndDate = aggregateEndDate?.forLocale(locale), aggregateEndDate > .now {
+                    Text("Countdown.results-in.\(Text(aggregateEndDate, style: .relative)).\(locale.rawValue.uppercased())")
+                } else if let distributionStartDate = distributionStartDate?.forLocale(locale), distributionStartDate > .now {
+                    Text("Countdown.rewards-in.\(Text(distributionStartDate, style: .relative)).\(locale.rawValue.uppercased())")
+                } else {
+                    Text("Countdown.completed.\(locale.rawValue.uppercased())")
+                }
+            }
+        }
+    }
+}
 
 //// MARK: MultilingualTextForCountdownAlt
 //struct MultilingualTextForCountdownAlt: View {

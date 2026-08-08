@@ -34,7 +34,7 @@ struct WelcomeView: View {
     var body: some View {
         #if os(macOS)
         VStack(alignment: .leading) {
-            Image("MacAppIcon\(colorScheme == .dark ? "Dark" : "")")
+            Image(decorative: "AppIcon\(colorScheme == .dark ? "Dark" : "Light")")
                 .resizable()
                 .antialiased(true)
                 .frame(width: 64, height: 64)
@@ -116,7 +116,7 @@ struct WelcomeView: View {
                     LazyVStack {
                         // MARK: Pentagonal View
                         ZStack {
-                            Image("MacAppIcon\(colorScheme == .dark ? "Dark" : "")")
+                            Image("AppIcon\(colorScheme == .dark ? "Dark" : "")")
                                 .resizable()
                                 .frame(width: 80, height: 80)
                                 .shadow(radius: 6, x: 1, y: 1)
