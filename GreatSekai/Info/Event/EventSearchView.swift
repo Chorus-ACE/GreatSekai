@@ -47,7 +47,7 @@ struct EventSearchView: View {
                     $0.frame(maxWidth: bannerWidth)
                 })
         } destination: { element, list in
-//            EventDetailView(id: element.id, allEvents: list)
+            EventDetailView(id: element.id, allEvents: list)
         }
         .resultCountDescription { count in
             "Event.count.\(count)"

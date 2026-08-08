@@ -32,7 +32,7 @@ struct FilterView: View {
     @Binding var filter: SekaiFilter
     var keys: [SekaiFilter.Key]
     
-    let hiddenKeys: [String] = []
+    let hiddenKeys: [String] = ["characterMatchingStrategy"]
     
     @Environment(\.horizontalSizeClass) var sizeClass
     
@@ -73,7 +73,7 @@ struct FilterItemView: View {
     let allKeys: [SekaiFilter.Key]
     
 //    @State var isHovering = false
-//    @State var characterRequiresMatchAll = false
+    @State var characterMatchingStrategy = 0
 //    @State var skill: SekaiFilter.Skill? = nil
 //    @State var levelSliderIsEnabled = false
 //    @State var level: Double = 5
@@ -89,14 +89,13 @@ struct FilterItemView: View {
                     }
                     
                     // FIXME: Match All
-                    /*
-                    if key == .character && allKeys.contains(.characterRequiresMatchAll) {
+                    if key.id == "character" && allKeys.map(\.id).contains("characterMatchingStrategy") {
                         Menu(content: {
-                            Picker(selection: $characterRequiresMatchAll, content: {
-                                Text("Filter.match-all.any-selected")
-                                    .tag(false)
-                                Text("Filter.match-all.all-selected")
-                                    .tag(true)
+                            Picker(selection: $characterMatchingStrategy, content: {
+                                Text("Filter.matching-strategy.match-any")
+                                    .tag(0)
+                                Text("Filter.matching-strategy.match-all")
+                                    .tag(1)
                             }, label: {
                                 Text("")
                             })
@@ -105,23 +104,24 @@ struct FilterItemView: View {
                             .multilineTextAlignment(.leading)
                         }, label: {
                             ViewThatFits {
-                                Text(getAttributedStringForMatchAll(isAllSelected: characterRequiresMatchAll))
-                                Text(getAttributedStringForMatchAll(isAllSelected: characterRequiresMatchAll, isCompact: true))
+                                Text(getAttributedStringForMatchAll(status: characterMatchingStrategy))
+                                Text(getAttributedStringForMatchAll(status: characterMatchingStrategy, isCompact: true))
                             }
                         })
                         .menuIndicator(.hidden)
                         .menuStyle(.borderlessButton)
                         .buttonStyle(.plain)
-                        .onChange(of: characterRequiresMatchAll, {
-                            filter.characterRequiresMatchAll = characterRequiresMatchAll
+                        .onChange(of: characterMatchingStrategy, {
+                            filter["characterMatchingStrategy"] = Set([characterMatchingStrategy])
                         })
-                        .accessibilityLabel(Text(getAttributedStringForMatchAll(isAllSelected: characterRequiresMatchAll)))
+                        .accessibilityLabel(Text(getAttributedStringForMatchAll(status: characterMatchingStrategy)))
                     }
-                     */
+                    
+                    
                     Spacer()
                     Button(action: {
                             if (filter[key.id]?.count ?? 0) == 0 {
-                                filter[key.id] = Set(key.allCasesID)
+                                filter[key.id] = Set(key.allOptionsID)
                             } else {
                                 filter[key.id] = Set()
                             }
@@ -199,12 +199,19 @@ struct FilterItemView: View {
                                             .frame(width: filterItemHeight, height: filterItemHeight)
                                             .opacity(filter[key.id]?.contains(option.id) ?? false ? 1 : 0)
                                             .animation(.easeInOut(duration: filterOptionAnimationDuration), value: filter)
-                                        WebImage(url: option.selectorImage)
-                                            .resizable()
-                                            .interpolation(.high)
-                                            .frame(width: filterItemHeight, height: filterItemHeight)
-                                            .scaleEffect(filerKeysWithSmallerIcons.contains(key.id) ? 0.75 : 0.9)
-                                            .mask(Circle())
+                                        Group {
+                                            if let selectorImage = option.selectorImage {
+                                                WebImage(url: selectorImage)
+                                                    .resizable()
+                                                    .interpolation(.high)
+                                                    .scaleEffect(filerKeysWithSmallerIcons.contains(key.id) ? 0.75 : 0.9)
+                                            } else {
+                                                Image(systemName: "ellipsis")
+//                                                    .font(.title3)
+                                            }
+                                        }
+                                        .frame(width: filterItemHeight, height: filterItemHeight)
+                                        .mask(Circle())
                                     }
                                     .contentShape(Circle())
                                     .help(option.selectorName)
@@ -404,12 +411,22 @@ struct FilterItemView: View {
             .animation(.easeInOut(duration: filterOptionAnimationDuration), value: isActive)
         }
     }
-    func getAttributedStringForMatchAll(isAllSelected: Bool = false, isCompact: Bool = false) -> AttributedString {
+    func getAttributedStringForMatchAll(status: Int, isCompact: Bool = false) -> AttributedString {
+        let isAllSelected = status == 1
+        
         var attrString = AttributedString()
         if isCompact {
-            attrString = AttributedString(String(localized: isAllSelected ? "Filter.match-all.all-selected.abbr" : "Filter.match-all.any-selected.abbr"))
+            if isAllSelected {
+                attrString = AttributedString(String(localized: "Filter.matching-strategy.match-all.abbr"))
+            } else {
+                attrString = AttributedString(String(localized: "Filter.matching-strategy.match-any.abbr"))
+            }
         } else {
-            attrString = AttributedString(String(localized: isAllSelected ? "Filter.match-all.all-selected" : "Filter.match-all.any-selected"))
+            if isAllSelected {
+                attrString = AttributedString(String(localized: "Filter.matching-strategy.match-all"))
+            } else {
+                attrString = AttributedString(String(localized: "Filter.matching-strategy.match-any"))
+            }
         }
         attrString.font = .system(.body, weight: .thin)
         attrString.foregroundColor = .secondary

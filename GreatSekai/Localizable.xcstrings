@@ -27,39 +27,8 @@
     "%lld" : {
       "shouldTranslate" : false
     },
-    "Accessibility.filter.activated" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activated"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已激活"
-          }
-        }
-      }
-    },
-    "Accessibility.filter.tap-to-toggle" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap to Toggle"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "轻点以切换"
-          }
-        }
-      }
+    "+%lld%%" : {
+      "shouldTranslate" : false
     },
     "App.home" : {
       "localizations" : {
@@ -192,13 +161,34 @@
       }
     },
     "Card.attribute" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attribute"
+          }
+        }
+      }
     },
     "Card.band" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Band"
+          }
+        }
+      }
     },
     "Card.character" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Character"
+          }
+        }
+      }
     },
     "Card.count.%lld" : {
       "comment" : "Pluralization key for \"Card.count\" localization key. The argument is the number of cards.",
@@ -236,14 +226,75 @@
         }
       }
     },
+    "Card.gacha-phrase" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gacha Phrase"
+          }
+        }
+      }
+    },
     "Card.rarity" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rarity"
+          }
+        }
+      }
+    },
+    "Card.release-date" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Release Date"
+          }
+        }
+      }
+    },
+    "Card.support-unit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support Unit"
+          }
+        }
+      }
+    },
+    "Card.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title"
+          }
+        }
+      }
     },
     "Card.type" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type"
+          }
+        }
+      }
     },
     "Card.unit" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unit"
+          }
+        }
+      }
     },
     "Character" : {
       "localizations" : {
@@ -503,22 +554,6 @@
         }
       }
     },
-    "Character.color.unit" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unit"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "组合"
-          }
-        }
-      }
-    },
     "Character.disliked-food" : {
       "localizations" : {
         "en" : {
@@ -739,23 +774,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld个组合"
-          }
-        }
-      }
-    },
-    "Character.unknown" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unknown"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未知"
           }
         }
       }
@@ -1039,6 +1057,26 @@
         }
       }
     },
+    "Event.attribute" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attribute"
+          }
+        }
+      }
+    },
+    "Event.character" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Characters"
+          }
+        }
+      }
+    },
     "Event.count.%lld" : {
       "localizations" : {
         "en" : {
@@ -1069,6 +1107,56 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Event.end-date" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End Date"
+          }
+        }
+      }
+    },
+    "Event.start-date" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Date"
+          }
+        }
+      }
+    },
+    "Event.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title"
+          }
+        }
+      }
+    },
+    "Event.type" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type"
+          }
+        }
+      }
+    },
+    "External-link.sekai-viewer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekai Viewer"
           }
         }
       }
@@ -1133,6 +1221,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "还原到默认选项"
+          }
+        }
+      }
+    },
+    "Filter.matching-strategy.match-all" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match All"
+          }
+        }
+      }
+    },
+    "Filter.matching-strategy.match-all.abbr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
+    "Filter.matching-strategy.match-any" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match Any"
+          }
+        }
+      }
+    },
+    "Filter.matching-strategy.match-any.abbr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any"
           }
         }
       }
@@ -1213,23 +1341,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目前已选择部分。"
-          }
-        }
-      }
-    },
-    "Filter.skill.any" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Any"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "任意"
           }
         }
       }
@@ -1396,6 +1507,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "[DEBUG][CRITICAL] Pre-Cache不可用"
+          }
+        }
+      }
+    },
+    "ID" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID"
           }
         }
       }

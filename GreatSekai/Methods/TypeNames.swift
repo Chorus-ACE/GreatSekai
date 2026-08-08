@@ -18,12 +18,14 @@ import SekaiKit
 protocol SekaiTypeDescribable {
     static var singularName: LocalizedStringResource { get }
     static var pluralName: LocalizedStringResource { get }
+    static var cacheID: String { get }
     static var symbol: String { get }
 }
 
 extension Character: SekaiTypeDescribable {
     static var singularName: LocalizedStringResource { "Type.character.singular" }
     static var pluralName: LocalizedStringResource { "Type.character.plural" }
+    static var cacheID: String { "Characters" }
     static var symbol: String { "person.2" }
 }
 
@@ -31,6 +33,7 @@ extension Character: SekaiTypeDescribable {
 extension Card: SekaiTypeDescribable {
     static var singularName: LocalizedStringResource { "Type.card.singular" }
     static var pluralName: LocalizedStringResource { "Type.card.plural" }
+    static var cacheID: String { "Cards" }
     static var symbol: String { "person.crop.square.on.square.angled" }
 }
 
@@ -49,6 +52,7 @@ extension Card: SekaiTypeDescribable {
 extension Event: SekaiTypeDescribable {
     static var singularName: LocalizedStringResource { "Type.event.singular" }
     static var pluralName: LocalizedStringResource { "Type.event.plural" }
+    static var cacheID: String { "Events" }
     static var symbol: String { "star.hexagon" }
 }
 //

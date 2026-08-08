@@ -15,10 +15,11 @@
 import SekaiKit
 import SwiftUI
 
-struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & TitleDescribable & SekaiTypeDescribable,
+struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & TitleDescribable,
+                      PreviewInformation: Identifiable & SekaiTypeDescribable,
                       Content: View,
-                      SwitcherDestination: View>: View where Information.ID == Int {
-    var previewList: [Information]?
+                      SwitcherDestination: View>: View where Information.ID == Int, PreviewInformation.ID == Int {
+    var previewList: [PreviewInformation]?
     var initialID: Int
     var updateInformation: @Sendable (Int) async -> Information?
     var makeContent: (Information) -> Content
@@ -26,18 +27,19 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
     var unavailablePrompt: LocalizedStringResource
     
     init(
-        previewList: [Information]?,
+        previewList: [PreviewInformation]?,
         initialID: Int,
         @ViewBuilder content: @escaping (Information) -> Content,
         @ViewBuilder switcherDestination: @escaping () -> SwitcherDestination
-    ) where Information: GettableByID {
+    ) where Information: GettableByID, PreviewInformation: ExtendedTypeConvertible, PreviewInformation.ExtendedType == Information {
         self.init(previewList: previewList, initialID: initialID, updateInformation: {
-            await Information.init(id: $0)
+            await PreviewInformation.ExtendedType.init(id: $0)
         }, content: content, switcherDestination: switcherDestination)
     }
+    
     init(
         forType infoType: Information.Type,
-        previewList: [Information]?,
+        previewList: [PreviewInformation]?,
         initialID: Int,
         @ViewBuilder content: @escaping (Information) -> Content,
         @ViewBuilder switcherDestination: @escaping () -> SwitcherDestination
@@ -47,7 +49,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
         }, content: content, switcherDestination: switcherDestination)
     }
     init(
-        previewList: [Information]?,
+        previewList: [PreviewInformation]?,
         initialID: Int,
         updateInformation: @Sendable @escaping (_ id: Int) async -> Information?,
         @ViewBuilder content: @escaping (Information) -> Content,
@@ -58,7 +60,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
         self.updateInformation = updateInformation
         self.makeContent = content
         self.makeSwitcherDestination = switcherDestination
-        self.unavailablePrompt = "Content.unavailable.\(Information.singularName)"
+        self.unavailablePrompt = "Content.unavailable.\(PreviewInformation.singularName)"
     }
     
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -102,7 +104,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
                 }
             }
         }
-        .navigationTitle(Text(information?.title.majorValue ?? (platform == .macOS ? String(localized: String.LocalizationValue(Information.singularName.key)) : "")))
+        .navigationTitle(Text(information?.title.majorValue ?? (platform == .macOS ? String(localized: String.LocalizationValue(PreviewInformation.singularName.key)) : "")))
         #if os(iOS)
         .wrapIf(showSubtitle) { content in
             if #available(iOS 26, macOS 14.0, *) {
@@ -122,7 +124,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
             currentID = initialID
             await getInformation(id: currentID)
             if let previewList {
-                allPreviewIDs = previewList.map { $0.id }
+                allPreviewIDs = previewList.map({ $0.id }).sorted(by: <)
             } else if let ListGettableType = Information.self as? (any (Sendable & Identifiable & ListGettable).Type) {
                 // We can always assume that the ID of elements are `Int`
                 // because it has been constrainted in the generic decls
@@ -146,7 +148,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
     private func getInformation(id: Int) async {
         infoIsAvailable = true
         informationLoadPromise?.cancel()
-        informationLoadPromise = SekaiCache.withCache(id: "\(Information.singularName.key)Detail_\(id)", trait: .realTime) {
+        informationLoadPromise = SekaiCache.withCache(id: "\(PreviewInformation.cacheID)Detail_\(id)", trait: .realTime) {
             await updateInformation(id)
         } .onUpdate {
             if let information = $0 {
@@ -256,6 +258,7 @@ private struct _CompactHiddenModifier: ViewModifier {
         }
     }
 }
+
 extension EnvironmentValues {
     @Entry fileprivate var isCompactHidden: Bool = false
     @Entry var searchedKeyword: Binding<String>? = nil
@@ -599,7 +602,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
     
     private func getList() async {
         infoIsAvailable = true
-        let cachedList: SekaiCache.Promise<[Element]?> = withSekaiCache(id: "\(Element.pluralName.key)List", trait: .realTime) {
+        let cachedList: SekaiCache.Promise<[Element]?> = withSekaiCache(id: "All\(Element.cacheID)", trait: .realTime) {
             await updateList()
         }
         cachedList.onUpdate {
@@ -623,24 +626,38 @@ extension SearchViewBase {
 
 struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View>: View {
     var localizedElements: LocalizedData<[Element]>
+    var isLoading: Bool
     var showLocalePicker: Bool
     var makeEachContent: (Element) -> Content
     
     init(
-        elements: [Element],
+        elements: [Element]?,
         showLocalePicker: Bool = false,
         @ViewBuilder eachContent: @escaping (Element) -> Content
     ) {
-        self.localizedElements = .init(repeating: elements)
+        if let elements {
+            self.localizedElements = .init(repeating: elements)
+            self.isLoading = false
+        } else {
+            self.localizedElements = .init(repeating: [])
+            self.isLoading = true
+        }
         self.showLocalePicker = showLocalePicker
         self.makeEachContent = eachContent
     }
     init(
-        elements: LocalizedData<[Element]>,
+        elements: LocalizedData<[Element]>?,
+        isLoading: Bool = false,
         showLocalePicker: Bool = true,
         @ViewBuilder eachContent: @escaping (Element) -> Content
     ) {
-        self.localizedElements = elements
+        if let elements {
+            self.localizedElements = elements
+            self.isLoading = false
+        } else {
+            self.localizedElements = .init(repeating: [])
+            self.isLoading = true
+        }
         self.showLocalePicker = showLocalePicker
         self.makeEachContent = eachContent
     }
@@ -653,18 +670,28 @@ struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View
     var body: some View {
         Section {
             VStack {
-                if !(localizedElements.forLocale(locale)?.isEmpty ?? true) || appendingView != nil {
-                    if let elements = localizedElements.forLocale(locale) {
-                        ForEach((showAll ? elements : Array(elements.prefix(3))), id: \.self) { item in
-                            makeEachContent(item)
-                                .buttonStyle(.plain)
+                if !isLoading {
+                    if !(localizedElements.forLocale(locale)?.isEmpty ?? true) || appendingView != nil {
+                        if let elements = localizedElements.forLocale(locale) {
+                            ForEach((showAll ? elements : Array(elements.prefix(3))), id: \.self) { item in
+                                makeEachContent(item)
+                                    .buttonStyle(.plain)
+                            }
                         }
-                    }
-                    if let appendingView {
-                        appendingView()
+                        if let appendingView {
+                            appendingView()
+                        }
+                    } else {
+                        DetailUnavailableView(title: "Details.unavailable.\(Element.singularName)", symbol: Element.symbol)
                     }
                 } else {
-                    DetailUnavailableView(title: "Details.unavailable.\(Element.singularName)", symbol: Element.symbol)
+                    CustomGroupBox {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                    }
                 }
             }
             .frame(maxWidth: infoContentMaxWidth)
@@ -699,7 +726,7 @@ struct DetailInfoBase<Head: View>: View {
     
     init(
         @DetailInfoBuilder content: () -> [DetailInfoItem],
-        @ViewBuilder head: @escaping () -> Head
+        @ViewBuilder head: @escaping () -> Head = { EmptyView() }
     ) {
         self.detailInfo = content()
         self.makeHead = head
@@ -749,11 +776,12 @@ extension DetailInfoItem {
             Text(text)
         }
     }
-//    init(_ titleKey: LocalizedStringResource, text: LocalizedData<String>) {
-//        self.init(titleKey) {
-//            MultilingualText(text)
-//        }
-//    }
+    
+    init(_ titleKey: LocalizedStringResource, localizableText: LocalizableData<String>, showLocaleKey: Bool = false) {
+        self.init(titleKey) {
+            LocalizableText(localizableText, showLocaleKey: showLocaleKey)
+        }
+    }
     
     init(_ titleKey: LocalizedStringResource, date: Date) {
         let df = DateFormatter()
@@ -761,12 +789,13 @@ extension DetailInfoItem {
         df.timeStyle = .short
         self.init(titleKey, text: df.string(from: date))
     }
-//    init(_ titleKey: LocalizedStringResource, date: LocalizedData<Date>) {
-//        let df = DateFormatter()
-//        df.dateStyle = .long
-//        df.timeStyle = .short
-//        self.init(titleKey, text: date.map { $0 != nil ? df.string(from: $0!) : nil })
-//    }
+    
+    init(_ titleKey: LocalizedStringResource, date: LocalizableData<Date>, showLocaleKey: Bool = true) {
+        let df = DateFormatter()
+        df.dateStyle = .long
+        df.timeStyle = .short
+        self.init(titleKey, localizableText: date.map { $0 != nil ? df.string(from: $0!) : nil }, showLocaleKey: showLocaleKey)
+    }
 }
 
 extension DetailInfoItem {

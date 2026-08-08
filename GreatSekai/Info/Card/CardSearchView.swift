@@ -28,7 +28,7 @@ struct CardSearchView: View {
         } eachContent: { layout, element in
             CardInfo(element, layoutType: layout)
         } destination: { element, list in
-//            CardDetailView(id: element.id, allCards: list)
+            CardDetailView(id: element.id, allCards: list)
         }
         .resultCountDescription { count in
             "Card.count.\(count)"

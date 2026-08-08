@@ -65,7 +65,7 @@ struct CardInfo: View {
             .accessibilityLabel(String("\(characterName?.forPreferredLocale() ?? String(localized: "Info.unknown")), \(card.sourceType.localizedName)"))
         }
         .accessibilityCustomContent("Card.rarity", Text(card.rarity.localizedName))
-        .accessibilityCustomContent("Card.attribute", card.attribute.rawValue.uppercased())
+        .accessibilityCustomContent("Card.attribute", card.attribute.name)
         .accessibilityCustomContent("Card.band", card.unit.localizedName)
         .accessibilityCustomContent("Card.type", card.sourceType.localizedName)
     }

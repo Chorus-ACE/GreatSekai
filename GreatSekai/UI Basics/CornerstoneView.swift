@@ -850,7 +850,11 @@ struct MultilingualText: View {
         var _reducedStrings: [SekaiLocale: String] = [:]
         var seenValues: [String] = []
         for locale in text.allAvailableLocales {
-            let value = text[locale] ?? ""
+            var value = text[locale] ?? ""
+            if showLocaleKey {
+                value = value.appending(" (\(locale.rawValue.uppercased()))")
+            }
+            
             if !seenValues.contains(value) {
                 seenValues.append(value)
                 _reducedStrings.updateValue(value, forKey: locale)
@@ -966,6 +970,12 @@ struct LocalizableText: View {
     var text: LocalizableData<String>
     var showSecondaryText = true
     var showLocaleKey = false
+    
+    init(_ text: LocalizableData<String>, showSecondaryText: Bool = true, showLocaleKey: Bool = false) {
+        self.text = text
+        self.showSecondaryText = showSecondaryText
+        self.showLocaleKey = showLocaleKey
+    }
     
     var body: some View {
         Group {

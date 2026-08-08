@@ -29,263 +29,146 @@ struct CharacterDetailOverviewView: View {
         return calendar
     }
     var body: some View {
-        Group {
-            VStack {
-                CustomGroupBox(cornerRadius: 20) {
-                    VStack {
-                        Group {
-                            ListItem(title: {
-                                Text("Character.name")
-                            }, value: {
-                                LocalizableText(text: information.fullName)
-                            })
-                            
-                            ListItem(title: {
-                                Text("Character.furigana")
-                            }, value: {
-                                LocalizableText(text: information.fullNameRuby)
-                            })
-                            
-                            if !information.characterVoice.isEmpty {
-                                ListItem(title: {
-                                    Text("Character.character-voice")
-                                }, value: {
-                                    LocalizableText(text: information.characterVoice)
-                                })
-                            }
-                            
-                            if let color = information.color {
-                                ListItem(title: {
-                                    Text("Character.color")
-                                }, value: {
-                                    HStack {
-                                        ColorLabel(color: color)
-                                        if showCharacterDetails {
-                                            Button(action: {
-                                                colorDetailsIsDisplaying = true
-                                            }, label: {
-                                                Label("Character.color.show-details", systemImage: "info.circle")
-                                                    .labelStyle(.iconOnly)
-                                            })
-                                            .buttonStyle(.plain)
-                                        }
-                                    }
-                                    .contextMenu {
-                                        Button(action: {
-                                            colorDetailsIsDisplaying = true
-                                        }, label: {
-                                            Label("Character.color.show-details", systemImage: "info.circle")
-                                        })
-                                    }
-                                })
-                            }
-                            
-                            if showCharacterDetails {
-                                ListItem(title: {
-                                    Text("Character.gender")
-                                }, value: {
-                                    Text(information.gender.localizedName)
-                                })
-                            }
-                            
-                            ListItem(title: {
-                                Text("Character.unit")
-                            }, value: {
-                                UnitLabel(unit: information.unit)
-                            })
-                            
-                            
-                            ListItem(title: {
-                                Text("Character.birthday")
-                                    .bold()
-                            }, value: {
-                                if let birthday = information.birthday, let date = calendar().date(from: birthday) {
-                                    Text(dateFormatter.string(from: date))
-                                } else {
-                                    LocalizableText(text: information.literalBirthday)
-                                }
-                            })
-                            
-                            ListItem(title: {
-                                Text("Character.height")
-                                    .bold()
-                            }, value: {
-                                Text(information.height, format: .measurement(width: .narrow, usage: .personHeight))
-                            })
-                            
-                            if !information.school.isEmpty {
-                                
-                                ListItem(title: {
-                                    Text("Character.school")
-                                        .bold()
-                                }, value: {
-                                    LocalizableText(text: information.school)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.class")
-                                }, value: {
-                                    LocalizableText(text: information.schoolClass)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.special-skill")
-                                        .bold()
-                                }, value: {
-                                    LocalizableText(text: information.specialSkill)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.hobby")
-                                        .bold()
-                                }, value: {
-                                    LocalizableText(text: information.hobby)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.favorite-food")
-                                        .bold()
-                                }, value: {
-                                    LocalizableText(text: information.favoriteFood)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.disliked-food")
-                                        .bold()
-                                }, value: {
-                                    LocalizableText(text: information.dislikedFood)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.weakness")
-                                        .bold()
-                                }, value: {
-                                    LocalizableText(text: information.weakness)
-                                })
-                            }
-                            
-                            ListItem(title: {
-                                Text("Character.introduction")
-                            }, value: {
-                                LocalizableText(text: information.introduction, showSecondaryText: false)
-                                    .environment(\.disablePopover, true)
-                            })
-                            .listItemLayout(.basedOnUISizeClass)
-                            
-                            ListItem(title: {
-                                Text("Info.id")
-                            }, value: {
-                                Text("\(String(information.id))")
-                            })
-                        }
-                        .insert {
-                            Divider()
-                        }
-                    }
-                }
-                
-                if showCharacterDetails {
-                    CustomGroupBox(cornerRadius: 20) {
-                        VStack {
-                            Group {
-                                ListItem(title: {
-                                    Text("Character.advanced.figure")
-                                }, value: {
-                                    Text(information.figure.rawValue)
-                                        .fontDesign(.monospaced)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.advanced.breast-size")
-                                }, value: {
-                                    Text(information.breastSize.rawValue)
-                                        .fontDesign(.monospaced)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.advanced.live2d-height-adjustment-value")
-                                }, value: {
-                                    Text("\(information.live2DHeightAdjustment)")
-                                        .fontDesign(.monospaced)
-                                })
-                                
-                                ListItem(title: {
-                                    Text("Character.advanced.support-unit-type")
-                                }, value: {
-                                    Text(information.supportUnitType.rawValue)
-                                        .fontDesign(.monospaced)
-                                })
-                            }
-                            .insert {
-                                Divider()
-                            }
-                        }
-                    }
-                }
+        DetailInfoBase(content: {
+            DetailInfoItem("Character.name", localizableText: information.fullName)
+            DetailInfoItem("Character.furigana", localizableText: information.fullNameRuby)
+            
+            if !information.characterVoice.isEmpty {
+                DetailInfoItem("Character.character-voice", localizableText: information.characterVoice)
             }
-        }
-        .frame(maxWidth: infoContentMaxWidth)
+            
+            if let color = information.color {
+                DetailInfoItem("Character.color", content: {
+                    HStack {
+                        ColorLabel(color: color)
+                        if showCharacterDetails {
+                            Button(action: {
+                                colorDetailsIsDisplaying = true
+                            }, label: {
+                                Label("Character.color.show-details", systemImage: "info.circle")
+                                    .labelStyle(.iconOnly)
+                            })
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .contextMenu {
+                        Button(action: {
+                            colorDetailsIsDisplaying = true
+                        }, label: {
+                            Label("Character.color.show-details", systemImage: "info.circle")
+                        })
+                    }
+                })
+            }
+            
+            DetailInfoItem("Character.unit", content: {
+                UnitLabel(unit: information.unit)
+            })
+            
+            if showCharacterDetails {
+                DetailInfoItem("Character.advanced.support-unit-type", content: {
+                    Text(information.supportUnitType.rawValue)
+                        .fontDesign(.monospaced)
+                })
+            }
+            
+            if showCharacterDetails {
+                DetailInfoItem("Character.gender", text: information.gender.localizedName)
+            }
+            
+            DetailInfoItem("Character.birthday", content: {
+                if let birthday = information.birthday, let date = calendar().date(from: birthday) {
+                    Text(dateFormatter.string(from: date))
+                } else {
+                    LocalizableText(information.literalBirthday)
+                }
+            })
+            
+            DetailInfoItem("Character.height", content: {
+                Text(information.height, format: .measurement(width: .narrow, usage: .personHeight))
+            })
+            
+            if showCharacterDetails {
+                DetailInfoItem("Character.advanced.live2d-height-adjustment-value", content: {
+                    Text("\(information.live2DHeightAdjustment)")
+                        .fontDesign(.monospaced)
+                })
+            }
+            
+            if !information.school.isEmpty {
+                DetailInfoItem("Character.school", localizableText: information.school)
+                DetailInfoItem("Character.class", localizableText: information.schoolClass)
+                DetailInfoItem("Character.special-skill", localizableText: information.specialSkill)
+                DetailInfoItem("Character.hobby", localizableText: information.hobby)
+                DetailInfoItem("Character.favorite-food", localizableText: information.favoriteFood)
+                DetailInfoItem("Character.disliked-food", localizableText: information.dislikedFood)
+                DetailInfoItem("Character.weakness", localizableText: information.weakness)
+            }
+            
+            DetailInfoItem("Character.advanced.figure", content: {
+                Text(information.figure.rawValue)
+                    .fontDesign(.monospaced)
+            })
+            
+            DetailInfoItem("Character.advanced.breast-size", content: {
+                Text(information.breastSize.rawValue)
+                    .fontDesign(.monospaced)
+            })
+            
+            DetailInfoItem("Character.introduction", content: {
+                LocalizableText(information.introduction, showSecondaryText: false)
+                    .listItemLayout(.basedOnUISizeClass)
+                    .environment(\.disablePopover, true)
+            })
+            DetailInfoItem("Info.id", text: "\(String(information.id))")
+        })
         .sheet(isPresented: $colorDetailsIsDisplaying, content: {
-            CharacterDetailColorInfo(colorInfo: information.colorInfo)
+            CharacterDetailColorInfo(colorInfo: information.colorInfo.first)
         })
     }
 }
 
 struct CharacterDetailColorInfo: View {
-    var colorInfo: [Character.CharacterColors]
+    var colorInfo: Character.CharacterColors?
     
     @Environment(\.dismiss) var dismiss
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack {
-                    ForEach(colorInfo, id: \.self) { colors in
-                        CustomGroupBox(cornerRadius: 20) {
-                            VStack {
-                                Group {
-                                    ListItem(title: {
-                                        Text("Info.id")
-                                    }, value: {
-                                        Text(String(colors.id))
-                                    })
-                                    ListItem(title: {
-                                        Text("Character.color.unit")
-                                    }, value: {
-                                        UnitLabel(unit: colors.unit)
-                                    })
-                                    
-                                    ListItem(title: {
-                                        Text("Character.color.main-color")
-                                    }, value: {
-                                        ColorLabel(color: colors.mainColor)
-                                    })
-                                    
-                                    ListItem(title: {
-                                        Text("Character.color.skin-color")
-                                    }, value: {
-                                        ColorLabel(color: colors.skinColor)
-                                    })
-                                    
-                                    ListItem(title: {
-                                        Text("Character.color.skin-shadow-color-1")
-                                    }, value: {
-                                        ColorLabel(color: colors.skinShadowColor1)
-                                    })
-                                    
-                                    ListItem(title: {
-                                        Text("Character.color.skin-shadow-color-2")
-                                    }, value: {
-                                        ColorLabel(color: colors.skinShadowColor2)
-                                    })
-                                }
-                                .insert {
-                                    Divider()
-                                }
-                            }
-                        }
+            Group {
+                if let colorInfo {
+                    Form {
+                        ListItem(title: {
+                            Text("Character.color.main-color")
+                                .bold(false)
+                        }, value: {
+                            ColorLabel(color: colorInfo.mainColor)
+                        })
+                        
+                        ListItem(title: {
+                            Text("Character.color.skin-color")
+                                .bold(false)
+                        }, value: {
+                            ColorLabel(color: colorInfo.skinColor)
+                        })
+                        
+                        ListItem(title: {
+                            Text("Character.color.skin-shadow-color-1")
+                                .bold(false)
+                        }, value: {
+                            ColorLabel(color: colorInfo.skinShadowColor1)
+                        })
+                        
+                        ListItem(title: {
+                            Text("Character.color.skin-shadow-color-2")
+                                .bold(false)
+                        }, value: {
+                            ColorLabel(color: colorInfo.skinShadowColor2)
+                        })
                     }
+                    .formStyle(.grouped)
+                } else {
+                    Text(verbatim: "111")
                 }
-                .padding()
             }
             .navigationTitle("Character.color.details")
             .toolbar {

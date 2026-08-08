@@ -115,11 +115,8 @@ struct CardImage: View {
             }
         }
         .navigationDestination(isPresented: $showCardDetailView, destination: {
-//            CardDetailView(id: card.id)
+            CardDetailView(id: card.id)
         })
-//        .onChange(of: card.id) {
-//            isNormalImageUnavailable = false
-//        }
     }
 }
 

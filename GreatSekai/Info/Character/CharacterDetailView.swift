@@ -18,7 +18,7 @@ struct CharacterDetailView: View {
     
     @Environment(\.horizontalSizeClass) var sizeClass
     var body: some View {
-        DetailViewBase(previewList: allCharacters, initialID: id) { information in
+        DetailViewBase(forType: Character.self, previewList: allCharacters, initialID: id) { information in
             HStack {
                 Spacer(minLength: 0)
                 VStack {
@@ -34,7 +34,7 @@ struct CharacterDetailView: View {
                     }
                     if randomCard != nil {
                         Button(action: {
-                            randomCard = allCards.filter({ $0.characterID == id }).randomElement()
+                            randomCard = allCards.filter({ $0.characterID == information.id }).randomElement()
                         }, label: {
                             Label("Character.random-card", systemImage: "arrow.clockwise")
                         })
@@ -97,7 +97,7 @@ struct CharacterDetailView: View {
         .onAppear {
             if allCards.isEmpty {
                 Task {
-                    SekaiCache.withCache(id: "\(Card.pluralName.key)List", invocation: {
+                    SekaiCache.withCache(id: "AllCards", invocation: {
                         await Card.all()
                     }) .onUpdate { result in
                         if let result {

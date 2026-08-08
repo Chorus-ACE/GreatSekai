@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B705231F3022A4EC004D6CDF /* CardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B705231E3022A4EC004D6CDF /* CardDetailView.swift */; };
+		B70523213022A626004D6CDF /* CardDetailOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70523203022A626004D6CDF /* CardDetailOverviewView.swift */; };
+		B716232D3025566C00228E92 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B716232C3025566900228E92 /* EventDetailView.swift */; };
+		B716232F3025583300228E92 /* EventDetailOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B716232E3025583300228E92 /* EventDetailOverviewView.swift */; };
+		E904D24C3026FBDA0012FDAD /* DetailsCardsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E904D24B3026FBDA0012FDAD /* DetailsCardsSection.swift */; };
 		E90629822F727BA900EDCDC6 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E90629812F727BA900EDCDC6 /* Localizable.xcstrings */; };
 		E90629842F727BD400EDCDC6 /* SettingsDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90629832F727BD200EDCDC6 /* SettingsDebugView.swift */; };
 		E912B29A2F6FE2C200B7220C /* CharacterDetailOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E912B2992F6FE2BB00B7220C /* CharacterDetailOverviewView.swift */; };
@@ -57,6 +62,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B705231E3022A4EC004D6CDF /* CardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDetailView.swift; sourceTree = "<group>"; };
+		B70523203022A626004D6CDF /* CardDetailOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDetailOverviewView.swift; sourceTree = "<group>"; };
+		B716232C3025566900228E92 /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
+		B716232E3025583300228E92 /* EventDetailOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailOverviewView.swift; sourceTree = "<group>"; };
+		E904D24B3026FBDA0012FDAD /* DetailsCardsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsCardsSection.swift; sourceTree = "<group>"; };
 		E90629812F727BA900EDCDC6 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E90629832F727BD200EDCDC6 /* SettingsDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDebugView.swift; sourceTree = "<group>"; };
 		E912B2992F6FE2BB00B7220C /* CharacterDetailOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterDetailOverviewView.swift; sourceTree = "<group>"; };
@@ -187,7 +197,6 @@
 		E9BCABB73021F5130076FAA5 /* Localizable */ = {
 			isa = PBXGroup;
 			children = (
-				E90629812F727BA900EDCDC6 /* Localizable.xcstrings */,
 				E9BCABB83021F5270076FAA5 /* InfoPlist.strings */,
 			);
 			path = Localizable;
@@ -229,6 +238,7 @@
 				E9BCABB63021F48C0076FAA5 /* Info.plist */,
 				E9C55FC82F53F3C100DCFD2D /* Assets.xcassets */,
 				E99FB7B5301F227700020F06 /* AppIcon.icon */,
+				E90629812F727BA900EDCDC6 /* Localizable.xcstrings */,
 				E9BCABB73021F5130076FAA5 /* Localizable */,
 				E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */,
 				E931520C2F5401D1002D102D /* UI Basics */,
@@ -242,8 +252,11 @@
 		E9D6676F3014EDF500F6A422 /* Card */ = {
 			isa = PBXGroup;
 			children = (
+				B705231E3022A4EC004D6CDF /* CardDetailView.swift */,
+				B70523203022A626004D6CDF /* CardDetailOverviewView.swift */,
 				E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */,
 				E98C84B4301CE5FD005B6B45 /* CardInfoView.swift */,
+				E904D24B3026FBDA0012FDAD /* DetailsCardsSection.swift */,
 				E99FB7B3301F030E00020F06 /* CardImage.swift */,
 				E98C84CE301D9413005B6B45 /* CardThumbnail.swift */,
 			);
@@ -255,6 +268,8 @@
 			children = (
 				E960BAD4301DF12000B86B8A /* EventSearchView.swift */,
 				E9D667703014EE1800F6A422 /* EventInfoView.swift */,
+				B716232C3025566900228E92 /* EventDetailView.swift */,
+				B716232E3025583300228E92 /* EventDetailOverviewView.swift */,
 			);
 			path = Event;
 			sourceTree = "<group>";
@@ -352,6 +367,7 @@
 				E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */,
 				E9C55FD12F53F3C100DCFD2D /* QuickLook.swift in Sources */,
 				E9C55FD22F53F3C100DCFD2D /* StableHasher.swift in Sources */,
+				B705231F3022A4EC004D6CDF /* CardDetailView.swift in Sources */,
 				E931520D2F5401D1002D102D /* HomeView.swift in Sources */,
 				E931520E2F5401D1002D102D /* WhatsNewView.swift in Sources */,
 				E912B29A2F6FE2C200B7220C /* CharacterDetailOverviewView.swift in Sources */,
@@ -359,10 +375,12 @@
 				E93152102F5401D1002D102D /* InfoBases.swift in Sources */,
 				E9D6676C3014DD2800F6A422 /* FilterSorterView.swift in Sources */,
 				E93152112F5401D1002D102D /* CornerstoneView.swift in Sources */,
+				B70523213022A626004D6CDF /* CardDetailOverviewView.swift in Sources */,
 				E93152122F5401D1002D102D /* FallbackableWebImage.swift in Sources */,
 				E93152132F5401D1002D102D /* NavigationComponentsView.swift in Sources */,
 				E93152AF2F540621002D102D /* SettingsAdvanced.swift in Sources */,
 				E93152B32F540621002D102D /* AppFlags.swift in Sources */,
+				B716232D3025566C00228E92 /* EventDetailView.swift in Sources */,
 				E90629842F727BD400EDCDC6 /* SettingsDebugView.swift in Sources */,
 				E98C84CF301D9413005B6B45 /* CardThumbnail.swift in Sources */,
 				E93152B52F540621002D102D /* SettingsView.swift in Sources */,
@@ -379,8 +397,10 @@
 				E98C84B5301CE604005B6B45 /* CardInfoView.swift in Sources */,
 				E93152152F5401D1002D102D /* ItemSelector.swift in Sources */,
 				E93152162F5401D1002D102D /* WelcomeView.swift in Sources */,
+				B716232F3025583300228E92 /* EventDetailOverviewView.swift in Sources */,
 				E9CB981F2F5FC20B00F9BBEC /* CharacterDetailView.swift in Sources */,
 				E93152172F5401D1002D102D /* ExternalLinks.swift in Sources */,
+				E904D24C3026FBDA0012FDAD /* DetailsCardsSection.swift in Sources */,
 				E9C55FD32F53F3C100DCFD2D /* TypeNames.swift in Sources */,
 				E9C55FD42F53F3C100DCFD2D /* ViewModifiers.swift in Sources */,
 				E9C55FD62F53F3C100DCFD2D /* GreatSekaiApp.swift in Sources */,
