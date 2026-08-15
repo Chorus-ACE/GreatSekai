@@ -76,6 +76,7 @@ struct SongDetailOverviewView: View {
                 .interpolation(.high)
                 .frame(width: sizeClass == .regular ? coverSideLengthRegular : coverSideLengthCompact, height: sizeClass == .regular ? coverSideLengthRegular : coverSideLengthCompact)
                 .shadow(radius: 5, y: 4)
+                .imageContextMenu([.init(url: information.song.coverImageURL)])
                 //                Rectangle()
                 //                    .opacity(0)
                 //                    .frame(height: 2)
@@ -87,89 +88,5 @@ struct SongDetailOverviewView: View {
                 //                }
             }
         })
-        
-        /*
-         VStack {
-         Group {
-         // MARK: Title Image
-         Group {
-         
-         }
-         //
-         
-         
-         // MARK: Info
-         CustomGroupBox(cornerRadius: 20) {
-         LazyVStack {
-         // MARK: Title
-         Group {
-         ListItem(title: {
-         Text("Song.title")
-         .bold()
-         }, value: {
-         MultilingualText(information.musicTitle)
-         })
-         Divider()
-         }
-         
-         // MARK: Type
-         Group {
-         ListItem(title: {
-         Text("Song.type")
-         .bold()
-         }, value: {
-         Text(information.tag.localizedString)
-         })
-         Divider()
-         }
-         
-         // MARK: Lyrics
-         Group {
-         ListItem(title: {
-         Text("Song.lyrics")
-         .bold()
-         }, value: {
-         MultilingualText(information.lyricist)
-         })
-         Divider()
-         }
-         
-         // MARK: Composer
-         Group {
-         ListItem(title: {
-         Text("Song.composer")
-         .bold()
-         }, value: {
-         MultilingualText(information.composer)
-         })
-         Divider()
-         }
-         
-         // MARK: Arrangement
-         Group {
-         ListItem(title: {
-         Text("Song.arrangement")
-         .bold()
-         }, value: {
-         MultilingualText(information.arranger)
-         })
-         Divider()
-         }
-         
-         // MARK: ID
-         Group {
-         ListItem(title: {
-         Text("ID")
-         .bold()
-         }, value: {
-         Text("\(String(information.id))")
-         })
-         }
-         }
-         }
-         }
-         }
-         .frame(maxWidth: infoContentMaxWidth)
-         */
     }
 }

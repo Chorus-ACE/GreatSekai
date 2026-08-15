@@ -63,64 +63,64 @@ private func _packageAcknowledgements() -> [AcknowledgementItem] {
         content: cmarkGfmLicense
     )
     
-    AcknowledgementItem(
-        "Cryptor",
-        licenseName: "Apache License 2.0",
-        content: Apache_License_2_0
-    )
+//    AcknowledgementItem(
+//        "Cryptor",
+//        licenseName: "Apache License 2.0",
+//        content: Apache_License_2_0
+//    )
     
-    AcknowledgementItem(
-        "CryptorECC",
-        licenseName: "Apache License 2.0",
-        content: Apache_License_2_0
-    )
-    
-    AcknowledgementItem(
-        "CryptorRSA",
-        licenseName: "Apache License 2.0",
-        content: Apache_License_2_0
-    )
-    
-    AcknowledgementItem(
-        "EFQRCode",
-        licenseName: "MIT License",
-        content: MIT_License(
-            year: "2017-2025",
-            name: "EyreFree <eyrefree@eyrefree.org>"
-        )
-    )
-    
-    AcknowledgementItem(
-        "KituraContracts",
-        licenseName: "Apache License 2.0",
-        content: Apache_License_2_0
-    )
-    
-    AcknowledgementItem(
-        "LoggerAPI",
-        licenseName: "Apache License 2.0 License",
-        content: Apache_License_2_0
-    )
-    
-    AcknowledgementItem(
-        "LRUCache",
-        licenseName: "MIT License",
-        content: "MIT License\n\n" + MIT_License(
-            year: "2021",
-            name: "Nick Lockwood"
-        )
-    )
-    
-    if platform == .iOS {
-        AcknowledgementItem(
-            "Mute",
-            licenseName: "MIT License",
-            content: MIT_License(
-                year: "2017",
-                name: "Akram Hussein <akramhussein@gmail.com>"
-            )
-        )
-    }
+//    AcknowledgementItem(
+//        "CryptorECC",
+//        licenseName: "Apache License 2.0",
+//        content: Apache_License_2_0
+//    )
+//    
+//    AcknowledgementItem(
+//        "CryptorRSA",
+//        licenseName: "Apache License 2.0",
+//        content: Apache_License_2_0
+//    )
+//    
+//    AcknowledgementItem(
+//        "EFQRCode",
+//        licenseName: "MIT License",
+//        content: MIT_License(
+//            year: "2017-2025",
+//            name: "EyreFree <eyrefree@eyrefree.org>"
+//        )
+//    )
+//    
+//    AcknowledgementItem(
+//        "KituraContracts",
+//        licenseName: "Apache License 2.0",
+//        content: Apache_License_2_0
+//    )
+//    
+//    AcknowledgementItem(
+//        "LoggerAPI",
+//        licenseName: "Apache License 2.0 License",
+//        content: Apache_License_2_0
+//    )
+//    
+//    AcknowledgementItem(
+//        "LRUCache",
+//        licenseName: "MIT License",
+//        content: "MIT License\n\n" + MIT_License(
+//            year: "2021",
+//            name: "Nick Lockwood"
+//        )
+//    )
+//    
+//    if platform == .iOS {
+//        AcknowledgementItem(
+//            "Mute",
+//            licenseName: "MIT License",
+//            content: MIT_License(
+//                year: "2017",
+//                name: "Akram Hussein <akramhussein@gmail.com>"
+//            )
+//        )
+//    }
     
     AcknowledgementItem(
         "NetworkImage",
@@ -158,26 +158,26 @@ private func _packageAcknowledgements() -> [AcknowledgementItem] {
         )
     )
     
-    AcknowledgementItem(
-        "swift_qrcodejs",
-        licenseName: "MIT License",
-        content: "MIT License\n\n" + MIT_License(
-            year: "2017-2020",
-            name: "Zhiyu Zhu/朱智语/ApolloZhu"
-        )
-    )
+//    AcknowledgementItem(
+//        "swift_qrcodejs",
+//        licenseName: "MIT License",
+//        content: "MIT License\n\n" + MIT_License(
+//            year: "2017-2020",
+//            name: "Zhiyu Zhu/朱智语/ApolloZhu"
+//        )
+//    )
     
-    AcknowledgementItem(
-        "swift-argument-parser",
-        licenseName: "Apache License 2.0",
-        content: Apache_License_2_0 + swiftSuffix
-    )
+//    AcknowledgementItem(
+//        "swift-argument-parser",
+//        licenseName: "Apache License 2.0",
+//        content: Apache_License_2_0 + swiftSuffix
+//    )
     
-    AcknowledgementItem(
-        "swift-atomics",
-        licenseName: "Apache License 2.0",
-        content: Apache_License_2_0 + swiftSuffix
-    )
+//    AcknowledgementItem(
+//        "swift-atomics",
+//        licenseName: "Apache License 2.0",
+//        content: Apache_License_2_0 + swiftSuffix
+//    )
     
     AcknowledgementItem(
         "swift-gyb",
@@ -188,11 +188,11 @@ private func _packageAcknowledgements() -> [AcknowledgementItem] {
         )
     )
     
-    AcknowledgementItem(
-        "swift-log",
-        licenseName: "MIT License",
-        content: Apache_License_2_0
-    )
+//    AcknowledgementItem(
+//        "swift-log",
+//        licenseName: "MIT License",
+//        content: Apache_License_2_0
+//    )
     
     AcknowledgementItem(
         "swift-markdown-ui",
@@ -209,35 +209,35 @@ private func _packageAcknowledgements() -> [AcknowledgementItem] {
         content: Apache_License_2_0 + swiftSuffix
     )
     
-    AcknowledgementItem(
-        "SwiftDraw",
-        licenseName: "MIT License",
-        content: MIT_License(
-            year: "2019",
-            name: "Simon Whitty"
-        )
-    )
+//    AcknowledgementItem(
+//        "SwiftDraw",
+//        licenseName: "MIT License",
+//        content: MIT_License(
+//            year: "2019",
+//            name: "Simon Whitty"
+//        )
+//    )
     
-    AcknowledgementItem(
-        "SwiftJWT",
-        licenseName: "Apache License 2.0",
-        content: Apache_License_2_0
-    )
+//    AcknowledgementItem(
+//        "SwiftJWT",
+//        licenseName: "Apache License 2.0",
+//        content: Apache_License_2_0
+//    )
     
-    AcknowledgementItem(
-        "SwiftSoup",
-        licenseName: "MIT License",
-        content: swiftSoupMITLicense
-    )
+//    AcknowledgementItem(
+//        "SwiftSoup",
+//        licenseName: "MIT License",
+//        content: swiftSoupMITLicense
+//    )
     
-    AcknowledgementItem(
-        "swiftui-introspect",
-        licenseName: "MIT License",
-        content: MIT_License(
-            year: "2019",
-            name: "Timber Software"
-        )
-    )
+//    AcknowledgementItem(
+//        "swiftui-introspect",
+//        licenseName: "MIT License",
+//        content: MIT_License(
+//            year: "2019",
+//            name: "Timber Software"
+//        )
+//    )
     
     AcknowledgementItem(
         "SwiftyJSON",
@@ -248,14 +248,14 @@ private func _packageAcknowledgements() -> [AcknowledgementItem] {
         )
     )
     
-    AcknowledgementItem(
-        "SymbolAvailability",
-        licenseName: "MIT License",
-        content: "MIT License\n\n" + MIT_License(
-            year: "2026",
-            name: "WindowsMEMZ"
-        )
-    )
+//    AcknowledgementItem(
+//        "SymbolAvailability",
+//        licenseName: "MIT License",
+//        content: "MIT License\n\n" + MIT_License(
+//            year: "2026",
+//            name: "WindowsMEMZ"
+//        )
+//    )
 }
 
 @AcknowledgementBuilder
@@ -272,14 +272,14 @@ private func _codeSnippetAcknowledgements() -> [AcknowledgementItem] {
         content: Live2D_Proprietary_Software_License
     )
     
-    AcknowledgementItem(
-        "NSTextView-LineNumberView",
-        licenseName: "MIT License",
-        content: MIT_License(
-            year: "2015",
-            name: "Yichi Zhang"
-        )
-    )
+//    AcknowledgementItem(
+//        "NSTextView-LineNumberView",
+//        licenseName: "MIT License",
+//        content: MIT_License(
+//            year: "2015",
+//            name: "Yichi Zhang"
+//        )
+//    )
 }
                         
 private func MIT_License(year: String, name: String) -> String {

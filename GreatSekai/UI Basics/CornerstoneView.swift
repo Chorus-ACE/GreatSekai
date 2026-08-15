@@ -1387,7 +1387,7 @@ struct ListItem<Content1: View, Content2: View>: View {
         .onFrameChange(perform: { geometry in
             totalAvailableWidth = geometry.size.width
         })
-        .frame(minHeight: defaultMinListRowHeight)
+        .frame(minHeight: platform == .macOS ? defaultMinListRowHeight : nil)
         .accessibilityElement(children: .contain)
         .accessibilityElement(children: .combine)
         

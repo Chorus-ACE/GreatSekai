@@ -26,6 +26,7 @@ struct SongDetailView: View {
     var body: some View {
         DetailViewBase(previewList: allSongs, initialID: id) { information in
             SongDetailOverviewView(information: information)
+            SongDetailVocalsView(information: information)
             SongDetailDifficultiesView(information: information)
 //            SongDetailGameplayView(information: information)
 //            SongDetailMusicMovieView(musicVideos: information.song.musicVideos)
@@ -49,7 +50,11 @@ struct SongDetailView: View {
 //                    }
 //                }
 //            }
-            ExternalLinksSection(links: [ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/music/\(id)")!)])
+            ExternalLinksSection(links: [
+                ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/music/\(information.id)")!),
+                ExternalLink(name: "External-link.pjsekai-moe", url: URL(string: "https://pjsekai.moe/#/music/\(information.id)")!),
+                ExternalLink(name: "External-link.sonolus", url: URL(string: "https://sonolus.sekai.best/playlists/sekai-best-\(information.id)")!),
+            ])
         } switcherDestination: {
             SongSearchView()
         }

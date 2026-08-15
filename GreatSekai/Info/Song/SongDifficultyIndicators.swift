@@ -72,6 +72,7 @@ struct SongDifficultyIndicator: View {
             Text("\(level)")
                 .foregroundStyle(.white)
                 .fontWeight(.semibold)
+                .scaleEffect(platform == .macOS ? 1 : 0.8)
         }
             .frame(width: Self.diameter, height: Self.diameter)
     }

@@ -720,6 +720,15 @@ struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View
     }
 }
 
+struct DetailSectionSpacer: View {
+    var height: CGFloat = 35
+    var body: some View {
+        Rectangle()
+            .opacity(0)
+            .frame(width: 0, height: height)
+    }
+}
+
 struct DetailInfoBase<Head: View>: View {
     var detailInfo: [DetailInfoItem]
     var makeHead: () -> Head

@@ -58,10 +58,10 @@ struct CharacterSearchView: View {
                                     }, placeholder: {
                                         RoundedRectangle(cornerRadius: 5)
                                             .foregroundStyle(.tertiary)
-                                            .aspectRatio(unit == .virturalSinger ? 240/840 : 376/840, contentMode: .fit)
+                                            .aspectRatio(unit == .virtualSinger ? 240/840 : 376/840, contentMode: .fit)
                                     })
                                     .resizable()
-                                    .frame(maxWidth: 200*(unit == .virturalSinger ? 2/3 : 1))
+                                    .frame(maxWidth: 200*(unit == .virtualSinger ? 2/3 : 1))
                                 })
                                 .buttonStyle(.plain)
                                 .id(charID)

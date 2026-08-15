@@ -12,23 +12,46 @@ struct SongDetailDifficultiesView: View {
     var information: ExtendedSong
     @State var difficulty: Song.Difficulty = .master
     var body: some View {
-        Section {
+        Section(content: {
             CustomGroupBox {
                 VStack {
                     Group {
                         ListItem(title: {
                             Text("Song.difficulties.level")
-                                .bold()
                         }, value: {
                             SongDifficultyIndicator(difficulty: difficulty, level: information.song.difficultyLevel[difficulty] ?? 0)
-//                            Text("\(, default: String(localized: "Info.unknown"))")
                         })
                         
                         ListItem(title: {
                             Text("Song.difficulties.notes")
-                                .bold()
                         }, value: {
                             Text("\(information.song.noteCounts[difficulty], default: String(localized: "Info.unknown"))")
+                        })
+                        
+                        ListItem(title: {
+                            VStack(alignment: .leading) {
+                                Text("Song.difficulties.chart")
+                                Text("Song.difficulties.chart.footer")
+                                    .foregroundStyle(.secondary)
+                                    .bold(false)
+                            }
+                        }, value: {
+                            HStack {
+                                Link(destination: information.song.chartImageURL(for: difficulty, preferSVG: true), label: {
+                                    Label(String("SVG"), systemImage: "arrow.up.right.circle")
+                                })
+                                
+                                Link(destination: information.song.chartImageURL(for: difficulty, preferSVG: false), label: {
+                                    Label(String("PNG"), systemImage: "arrow.up.right.circle")
+                                })
+                            }
+                            .wrapIf(true) { context in
+                                if #available(iOS 26.0, macOS 26.0, *) {
+                                    context.labelIconToTitleSpacing(5)
+                                } else {
+                                    context
+                                }
+                            }
                         })
                     }
                     .contentTransition(.numericText())
@@ -39,7 +62,7 @@ struct SongDetailDifficultiesView: View {
                 }
             }
             .frame(maxWidth: infoContentMaxWidth)
-        } header: {
+        }, header: {
             HStack {
                 Text("Song.difficulties")
                     .font(.title2)
@@ -53,6 +76,6 @@ struct SongDetailDifficultiesView: View {
             }
             .frame(maxWidth: 615)
             .detailSectionHeader()
-        }
+        })
     }
 }

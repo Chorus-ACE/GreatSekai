@@ -216,3 +216,59 @@ struct UnitLabel: View {
         }
     }
 }
+
+
+struct CharacterWrappingHStack: View {
+    var characters: [Int]
+    
+    init(characters: [Int]) {
+        self.characters = characters
+    }
+    
+    init(characters: [Character]) {
+        self.characters = characters.map(\.id)
+    }
+    var body: some View {
+        WrappingHStack(alignment: .trailing) {
+            ForEach(characters, id: \.self) { item in
+#if os(macOS)
+                NavigationLink(destination: {
+                    CharacterDetailView(id: item)
+                }, label: {
+                    WebImage(url: Character.iconImageURL(forID: item))
+                        .antialiased(true)
+                        .resizable()
+                        .frame(width: imageButtonSize, height: imageButtonSize)
+                })
+                .buttonStyle(.plain)
+#else
+                Menu(content: {
+                    NavigationLink(destination: {
+                        CharacterDetailView(id: item)
+                    }, label: {
+                        HStack {
+                            WebImage(url: Character.iconImageURL(forID: item))
+                                .antialiased(true)
+                                .resizable()
+                                .frame(width: imageButtonSize, height: imageButtonSize)
+                            if let name = SekaiCache.preCache.character(id: item)?.fullName.forPreferredLocale() {
+                                Text(name)
+                            } else {
+                                Text(verbatim: "Lorum Ipsum")
+                                    .foregroundStyle(Color(UIColor.placeholderText))
+                                    .redacted(reason: .placeholder)
+                            }
+                        }
+                    })
+                }, label: {
+                    WebImage(url: Character.iconImageURL(forID: item))
+                        .antialiased(true)
+                        .resizable()
+                        .frame(width: imageButtonSize, height: imageButtonSize)
+                })
+#endif
+            }
+        }
+        .frame(maxWidth: CGFloat(characters.count) * (imageButtonSize + 10))
+    }
+}

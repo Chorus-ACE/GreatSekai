@@ -90,7 +90,9 @@ struct CharacterDetailView: View {
 //                }
 //            }
 //            
-//            ExternalLinksSection(links: [ExternalLink(name: "External-link.bestdori", url: URL(string: "https://bestdori.com/info/events/\(id)")!)])
+            ExternalLinksSection(links: [
+                ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/chara/\(information.id)")!)
+            ])
         } switcherDestination: {
             CharacterSearchView()
         }

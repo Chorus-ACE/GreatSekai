@@ -36,11 +36,17 @@ struct DetailSectionOptionPicker<T: Hashable>: View {
     @Binding var selection: T
     var options: [T]
     var labels: [T: String]? = nil
+    var secondaryLabels: [T: String] = [:]
     var body: some View {
         Menu(content: {
             Picker(selection: $selection, content: {
                 ForEach(options, id: \.self) { item in
-                    Text(labels?[item] ?? ((T.self == SekaiLocale.self) ? "\(item)".uppercased() : "\(item)"))
+                    Group {
+                        Text(labels?[item] ?? ((T.self == SekaiLocale.self) ? "\(item)".uppercased() : "\(item)"))
+                        if let secondaryLabel = secondaryLabels[item] {
+                            Text(secondaryLabel)
+                        }
+                    }
                         .tag(item)
                 }
             }, label: {

@@ -62,6 +62,7 @@
 		E9C55FD32F53F3C100DCFD2D /* TypeNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C55FC52F53F3C100DCFD2D /* TypeNames.swift */; };
 		E9C55FD42F53F3C100DCFD2D /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C55FC62F53F3C100DCFD2D /* ViewModifiers.swift */; };
 		E9C55FD62F53F3C100DCFD2D /* GreatSekaiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */; };
+		E9CA41463030A5E3005C7E20 /* SongDetailVocalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CA41453030A5E0005C7E20 /* SongDetailVocalsView.swift */; };
 		E9CB981F2F5FC20B00F9BBEC /* CharacterDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CB981E2F5FC20200F9BBEC /* CharacterDetailView.swift */; };
 		E9D6676C3014DD2800F6A422 /* FilterSorterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */; };
 		E9D6676E3014EDF100F6A422 /* CardSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */; };
@@ -123,6 +124,7 @@
 		E9C55FC62F53F3C100DCFD2D /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
 		E9C55FC82F53F3C100DCFD2D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreatSekaiApp.swift; sourceTree = "<group>"; };
+		E9CA41453030A5E0005C7E20 /* SongDetailVocalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongDetailVocalsView.swift; sourceTree = "<group>"; };
 		E9CB981E2F5FC20200F9BBEC /* CharacterDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterDetailView.swift; sourceTree = "<group>"; };
 		E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSorterView.swift; sourceTree = "<group>"; };
 		E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardSearchView.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 				B7105915302E9C5000039F00 /* SongSearchView.swift */,
 				B7105916302E9C5000039F00 /* SongDetailView.swift */,
 				B7105917302E9C5000039F00 /* SongDetailOverviewView.swift */,
+				E9CA41453030A5E0005C7E20 /* SongDetailVocalsView.swift */,
 				E938587D30304502006F22C1 /* SongDetailDifficultiesView.swift */,
 				B710591C302E9D3C00039F00 /* SongDifficultyIndicators.swift */,
 				E938722530301975006F22C1 /* DetailsSongsSection.swift */,
@@ -430,6 +433,7 @@
 				E912B29A2F6FE2C200B7220C /* CharacterDetailOverviewView.swift in Sources */,
 				B7105918302E9C5000039F00 /* SongSearchView.swift in Sources */,
 				B7105919302E9C5000039F00 /* SongDetailOverviewView.swift in Sources */,
+				E9CA41463030A5E3005C7E20 /* SongDetailVocalsView.swift in Sources */,
 				B710591D302E9D3C00039F00 /* SongDifficultyIndicators.swift in Sources */,
 				E938587E30304509006F22C1 /* SongDetailDifficultiesView.swift in Sources */,
 				B710591A302E9C5000039F00 /* SongDetailView.swift in Sources */,

@@ -149,7 +149,7 @@ extension FallbackableWebImage {
 extension SekaiLocale {
     @inlinable
     public static func forEveryLocale<R>(_ transform: (SekaiLocale) -> R?) -> [R] {
-        let allCases = [SekaiLocale.primaryLocale, .secondaryLocale] + SekaiLocale.allCases.drop(while: { [SekaiLocale.primaryLocale, .secondaryLocale].contains($0) })
+        let allCases = [SekaiLocale.primaryLocale, .secondaryLocale] + SekaiLocale.allCases.compactMap({ [SekaiLocale.primaryLocale, .secondaryLocale].contains($0) ? nil : $0 })
         
         return allCases.compactMap({ transform($0) })
     }

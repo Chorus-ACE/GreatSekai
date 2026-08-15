@@ -17,11 +17,12 @@ import SwiftUI
 
 struct ExternalLinksSection: View {
     var links: [ExternalLink] = []
+    @Environment(\.defaultMinListRowHeight) var defaultMinListRowHeight
     @Environment(\.openURL) private var openURL
     var body: some View {
         if !links.isEmpty {
             Section {
-                HereTheWorld { // Super weird issue causing infinite hang. Use `HereTheWorld` to fix. MAGIC --ThreeManager785
+//                HereTheWorld { // Super weird issue causing infinite hang. Use `HereTheWorld` to fix. MAGIC --ThreeManager785
                     CustomGroupBox {
                         VStack {
                             ForEach(links) { item in
@@ -38,6 +39,7 @@ struct ExternalLinksSection: View {
                                 })
                                 .buttonStyle(.plain)
                                 .id(item.id)
+                                .frame(minHeight: platform == .macOS ? defaultMinListRowHeight : nil)
                             }
                             .insert {
                                 Divider()
@@ -45,7 +47,7 @@ struct ExternalLinksSection: View {
                         }
                     }
                     .frame(maxWidth: infoContentMaxWidth)
-                }
+//                }
             } header: {
                 HStack {
                     Text("External-links")
