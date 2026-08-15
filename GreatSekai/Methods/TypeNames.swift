@@ -37,12 +37,6 @@ extension Card: SekaiTypeDescribable {
     static var symbol: String { "person.crop.square.on.square.angled" }
 }
 
-//extension CardWithBand: DoriTypeDescribable {
-//    static var singularName: LocalizedStringResource { "Type.card.singular" }
-//    static var pluralName: LocalizedStringResource { "Type.card.plural" }
-//    static var symbol: String { "person.crop.square.on.square.angled" }
-//}
-//
 //extension PreviewCostume: DoriTypeDescribable {
 //    static var singularName: LocalizedStringResource { "Type.costume.singular" }
 //    static var pluralName: LocalizedStringResource { "Type.costume.plural" }
@@ -62,11 +56,12 @@ extension Event: SekaiTypeDescribable {
 //    static var symbol: String { "dice" }
 //}
 //
-//extension PreviewSong: DoriTypeDescribable {
-//    static var singularName: LocalizedStringResource { "Type.song.singular" }
-//    static var pluralName: LocalizedStringResource { "Type.song.plural" }
-//    static var symbol: String { "music.note" }
-//}
+extension Song: SekaiTypeDescribable {
+    static var singularName: LocalizedStringResource { "Type.song.singular" }
+    static var pluralName: LocalizedStringResource { "Type.song.plural" }
+    static var cacheID: String = "Songs"
+    static var symbol: String { "music.note" }
+}
 //
 //extension PreviewLoginCampaign: DoriTypeDescribable {
 //    static var singularName: LocalizedStringResource { "Type.login-campaign.singular" }

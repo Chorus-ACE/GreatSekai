@@ -209,8 +209,9 @@ struct UnitLabel: View {
                 .resizable()
                 .interpolation(.high)
                 .antialiased(true)
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 30)
+//                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
+                .frame(maxHeight: 30)
             Text(unit.localizedName)
         }
     }

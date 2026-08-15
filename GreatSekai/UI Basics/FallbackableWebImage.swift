@@ -13,8 +13,9 @@
 //===----------------------------------------------------------------------===//
 
 
-import SwiftUI
 import SDWebImageSwiftUI
+import SekaiKit
+import SwiftUI
 
 struct FallbackableWebImage<Content: View>: View {
     var urls: [URL]
@@ -142,5 +143,14 @@ extension FallbackableWebImage {
             AnyView(layout($0))
         }
         return mutable
+    }
+}
+
+extension SekaiLocale {
+    @inlinable
+    public static func forEveryLocale<R>(_ transform: (SekaiLocale) -> R?) -> [R] {
+        let allCases = [SekaiLocale.primaryLocale, .secondaryLocale] + SekaiLocale.allCases.drop(while: { [SekaiLocale.primaryLocale, .secondaryLocale].contains($0) })
+        
+        return allCases.compactMap({ transform($0) })
     }
 }

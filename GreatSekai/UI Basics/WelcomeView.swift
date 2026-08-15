@@ -116,7 +116,7 @@ struct WelcomeView: View {
                     LazyVStack {
                         // MARK: Pentagonal View
                         ZStack {
-                            Image("AppIcon\(colorScheme == .dark ? "Dark" : "")")
+                            Image(decorative: "AppIcon\(colorScheme == .dark ? "Dark" : "Light")")
                                 .resizable()
                                 .frame(width: 80, height: 80)
                                 .shadow(radius: 6, x: 1, y: 1)

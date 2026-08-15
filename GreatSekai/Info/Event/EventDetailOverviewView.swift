@@ -89,7 +89,7 @@ struct EventDetailOverviewView: View {
                                         .antialiased(true)
                                         .resizable()
                                         .frame(width: imageButtonSize, height: imageButtonSize)
-                                    if let name = SekaiCache.preCache.character(id: item)?.fullName {
+                                    if let name = SekaiCache.preCache.character(id: item)?.fullName.forPreferredLocale() {
                                         Text(name)
                                     } else {
                                         Text(verbatim: "Lorum Ipsum")
@@ -99,7 +99,7 @@ struct EventDetailOverviewView: View {
                                 }
                             })
                         }, label: {
-                            WebImage(url: value.iconImageURL)
+                            WebImage(url: Character.iconImageURL(forID: item))
                                 .antialiased(true)
                                 .resizable()
                                 .frame(width: imageButtonSize, height: imageButtonSize)
@@ -121,7 +121,7 @@ struct EventDetailOverviewView: View {
                         Rectangle()
                             .opacity(0)
                             .frame(height: 2)
-                        WebImage(url: information.event.bannerImageURL) { image in
+                        FallbackableWebImage(throughURLs: [information.event.bannerImageURL, information.event.bannerImageAltURL]) { image in
                             image
                                 .resizable()
                                 .antialiased(true)

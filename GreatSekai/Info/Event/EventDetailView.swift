@@ -16,12 +16,14 @@ struct EventDetailView: View {
     var allEvents: [Event]?
     
     @State var parsedCards: [Card]?
+    @State var parsedSongs: [Song]?
     
     var body: some View {
         DetailViewBase(previewList: allEvents, initialID: id) { information in
             Group {
                 EventDetailOverviewView(information: information)
                 DetailsCardsSection(cards: parsedCards)
+                DetailsSongsSection(songs: parsedSongs)
                 //            DetailsGachasSection(gachas: information.gacha, applyLocaleFilter: true)
                 //            DetailsSongsSection(
                 //                songs: .init(
@@ -82,6 +84,7 @@ struct EventDetailView: View {
             }
             .onAppear {
                 parsedCards = nil
+                parsedSongs = nil
                 
                 if let cards = information.cards {
                     Task {
@@ -104,6 +107,27 @@ struct EventDetailView: View {
                     }
                 } else {
                     parsedCards = []
+                }
+                
+                if let songs = information.songs {
+                    Task {
+                        parsedSongs = await withTaskGroup(of: Song?.self) { taskGroup in
+                            for songID in songs {
+                                taskGroup.addTask {
+                                    await Song(id: songID)
+                                }
+                            }
+                            var results: [Song] = []
+                            
+                            for await result in taskGroup {
+                                if let result {
+                                    results.append(result)
+                                }
+                            }
+                            
+                            return results
+                        }
+                    }
                 }
             }
         } switcherDestination: {

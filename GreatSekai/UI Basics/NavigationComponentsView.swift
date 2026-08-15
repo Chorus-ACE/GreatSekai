@@ -51,13 +51,13 @@ import SwiftUI
 //        tabValue: .gacha,
 //        destination: {GachaSearchView()}
 //    ),
-//    InfoDestinationItem(
-//        title: "App.info.songs",
-//        symbol: "music.note",
-//        lightColor: .red,
-//        tabValue: .songs,
-//        destination: {SongSearchView()}
-//    ),
+    InfoDestinationItem(
+        title: "App.info.songs",
+        symbol: "music.note",
+        lightColor: .red,
+        tabValue: .songs,
+        destination: { SongSearchView() }
+    ),
 //    InfoDestinationItem(
 //        title: "App.info.song-meta",
 //        symbol: "music.note.list",

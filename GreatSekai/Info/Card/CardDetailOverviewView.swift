@@ -51,7 +51,8 @@ struct CardDetailOverviewView: View {
                         .environment(\.disablePopover, true)
                     WebImage(url: information.unit.iconImageURL)
                         .resizable()
-                        .frame(width: imageButtonSize, height: imageButtonSize)
+                        .scaledToFit()
+                        .frame(maxHeight: imageButtonSize)
                 }
             }
             
@@ -62,7 +63,8 @@ struct CardDetailOverviewView: View {
                             .environment(\.disablePopover, true)
                         WebImage(url: supportUnit.iconImageURL)
                             .resizable()
-                            .frame(width: imageButtonSize, height: imageButtonSize)
+                            .scaledToFit()
+                            .frame(maxHeight: imageButtonSize)
                     }
                 }
             }
@@ -101,8 +103,7 @@ struct CardDetailOverviewView: View {
             if !information.gachaPhrase.isCollectionEmpty {
                 DetailInfoItem("Card.gacha-phrase") {
                     LocalizableText(information.gachaPhrase)
-                    // FIXME: Gacha Phrase Audio Player
-//                    CompactAudioPlayer(url: information.card.gachaVoiceURL, showPlayButtonOnly: true)
+                    CompactAudioPlayer(url: information.gachaPhraseVoiceURL, showPlayButtonOnly: true)
                 }
             }
             DetailInfoItem("Card.release-date", date: information.releaseDate, showLocaleKey: true)
@@ -117,13 +118,13 @@ struct CardDetailOverviewView: View {
                         content
                             .padding(.horizontal, -15)
                     }
-                CustomGroupBox(cornerRadius: 3417) {
-                    // FIXME: Gacha Voice
-//                    if !information.card.gachaText.isValueEmpty {
-//                        CompactAudioPlayer(url: information.card.gachaVoiceURL)
-//                    }
-                }
-                .frame(maxWidth: infoContentMaxWidth)
+//                CustomGroupBox(cornerRadius: 3417) {
+//                    // FIXME: Gacha Voice
+////                    if !information.card.gachaText.isValueEmpty {
+////                        CompactAudioPlayer(url: information.card.gachaVoiceURL)
+////                    }
+//                }
+//                .frame(maxWidth: infoContentMaxWidth)
             }
         }
 //        .task {

@@ -18,17 +18,17 @@ import SDWebImageSwiftUI
 import SwiftUI
 
 
-// MARK: DetailsCardsSection
-struct DetailsCardsSection: View {
-    var cards: [Card]?
+// MARK: DetailsSongsSection
+struct DetailsSongsSection: View {
+    var songs: [Song]?
     var body: some View {
-        DetailSectionBase(elements: cards?.sorted {
-            compare($0.releaseDate.majorValue?.corrected(), $1.releaseDate.majorValue?.corrected(), direction: .descending)
+        DetailSectionBase(elements: songs?.sorted {
+            compare($0.publishDate.majorValue?.corrected(), $1.publishDate.majorValue?.corrected(), direction: .descending)
         }) { item in
             NavigationLink(destination: {
-                CardDetailView(id: item.id)
+                SongDetailView(id: item.id)
             }, label: {
-                CardInfo(item)
+                SongInfo(item)
             })
         }
     }
