@@ -126,7 +126,7 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
             if let previewList {
                 allPreviewIDs = previewList.map({ $0.id })
             } else if let ListGettableType = Information.self as? (any (Sendable & Identifiable & ListGettable & SekaiTypeDescribable & SekaiCachable).Type) {
-                allPreviewIDs = await SekaiCache.withDirectCache(id: "All\(ListGettableType.cacheID)", invocation: {
+                allPreviewIDs = await SekaiCache.withDirectCache(id: "All\(String(describing: Information.Type.self))", invocation: {
                     await ListGettableType.all() as? [Information]
                 })?.map { $0.id } ?? []
             }
@@ -148,10 +148,10 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
     private func getInformation(id: Int) async {
         infoIsAvailable = true
         informationLoadPromise?.cancel()
-        informationLoadPromise = SekaiCache.withCache(id: "\(PreviewInformation.cacheID)Detail_\(id)", trait: .realTime) {
+        informationLoadPromise = SekaiCache.withCache(id: "\(String(describing: Information.Type.self))Detail_\(id)", trait: .realTime) {
             await updateInformation(id)
-        } .onUpdate {
-            if let information = $0 {
+        } .onUpdate { result, _ in
+            if let information = result {
                 self.information = information
 //                infoIsAvailable = true
             } else {
@@ -443,6 +443,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
                 if infoIsAvailable {
                     ExtendedConstraints {
                         ProgressView()
+                            .controlSize(.large)
                     }
                 } else {
                     ExtendedConstraints {
@@ -477,9 +478,22 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
             #endif
         }
         #if !os(visionOS)
-        .wrapIf(searchedElements != nil) { content in
+        .wrapIf(true) { content in
             if #available(iOS 26.0, *) {
-                content.navigationSubtitle((searchedText.isEmpty && !filter.isFiltering(referencing: Element.filterKeys)) ? (getResultCountDescription?(searchedElements!.count) ?? "Search.item.\(searchedElements!.count)") :  "Search.result.\(searchedElements!.count)")
+                content.navigationSubtitle(
+                    {
+                        if !(searchedElements?.isEmpty ?? true) {
+                            if searchedText.isEmpty && !filter.isFiltering(referencing: Element.filterKeys) {
+                                return (getResultCountDescription?(searchedElements!.count) ?? "Search.item.\(searchedElements!.count)")
+                            } else {
+                                return "Search.result.\(searchedElements!.count)"
+                            }
+                        } else if infoIsAvailable {
+                            return "Search.loading"
+                        }
+                        return ""
+                    }()
+                )
             } else {
                 content
             }
@@ -533,6 +547,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         }
         #endif
         .searchable(text: $searchedText, prompt: searchPlaceholder)
+        .scrollDismissesKeyboard(.interactively)
         .onSubmit {
             if let elements {
                 searchedElements = elements.search(for: searchedText)
@@ -602,11 +617,12 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
     
     private func getList() async {
         infoIsAvailable = true
-        let cachedList: SekaiCache.Promise<[Element]?> = withSekaiCache(id: "All\(Element.cacheID)", trait: .realTime) {
+        
+        let cachedList: SekaiCache.Promise<[Element]?> = withSekaiCache(id: "All\(String(describing: Self.Type.self))", trait: .realTime) {
             await updateList()
         }
-        cachedList.onUpdate {
-            if let items = $0 {
+        cachedList.onUpdate { result, _ in
+            if let items = result {
                 self.elements = items.sorted(withSekaiSorter: SekaiSorter(keyword: .id, direction: .ascending))
                 searchedElements = items.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
             } else {
@@ -804,6 +820,25 @@ extension DetailInfoItem {
         df.dateStyle = .long
         df.timeStyle = .short
         self.init(titleKey, localizableText: date.map { $0 != nil ? df.string(from: $0!) : nil }, showLocaleKey: showLocaleKey)
+    }
+    
+    init(_ titleKey: LocalizedStringResource = "Release-condition", releaseConditionID: Int) {
+        var sentence: LocalizableData<String>? = nil
+        self.init(titleKey) {
+            Group {
+                if let sentence {
+                    LocalizableText(sentence)
+                } else {
+                    Text(verbatim: "Lorem Ipsum")
+                        .redacted(reason: .placeholder)
+                }
+            }
+            .onAppear {
+                Task {
+                    sentence = await ReleaseCondition(id: releaseConditionID)?.title
+                }
+            }
+        }
     }
 }
 

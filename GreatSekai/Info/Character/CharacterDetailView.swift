@@ -24,14 +24,9 @@ struct CharacterDetailView: View {
                 VStack {
                     if let randomCard {
                         CardImage(randomCard)
-                            .wrapIf(sizeClass == .regular) { content in
-                                content
-                                    .frame(maxWidth: infoContentMaxWidth)
-                            } else: { content in
-                                content
-                                    .padding(.horizontal, -15)
-                            }
+                            .frame(maxWidth: infoContentMaxWidth)
                     }
+                    
                     if randomCard != nil {
                         Button(action: {
                             randomCard = allCards.filter({ $0.characterID == information.id }).randomElement()
@@ -39,23 +34,15 @@ struct CharacterDetailView: View {
                             Label("Character.random-card", systemImage: "arrow.clockwise")
                         })
                         .wrapIf(true) { content in
-                            #if !os(visionOS)
                             if #available(iOS 26.0, macOS 26.0, *) {
-                                content
-                                    .buttonStyle(.glass)
+                                content.buttonStyle(.glass)
                             } else {
-                                content
-                                    .buttonStyle(.bordered)
+                                content.buttonStyle(.bordered)
                             }
-                            #else
-                            content
-                                .buttonStyle(.bordered)
-                            #endif
                         }
                         .buttonBorderShape(.capsule)
                     }
                 }
-                .padding(.horizontal)
                 Spacer(minLength: 0)
             }
             .onAppear {
@@ -99,16 +86,9 @@ struct CharacterDetailView: View {
         .onAppear {
             if allCards.isEmpty {
                 Task {
-                    SekaiCache.withCache(id: "AllCards", invocation: {
-                        await Card.all()
-                    }) .onUpdate { result in
-                        if let result {
-                            allCards = result
-                            
-                            if randomCard == nil {
-                                randomCard = allCards.filter({ $0.characterID == id }).randomElement()
-                            }
-                        }
+                    if let fetchedCards = await Card.allWithCache(), randomCard == nil {
+                        allCards = fetchedCards
+                        randomCard = allCards.filter({ $0.characterID == id }).randomElement()
                     }
                 }
             }

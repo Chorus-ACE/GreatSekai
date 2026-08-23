@@ -31,7 +31,7 @@ struct CharacterDetailOverviewView: View {
     var body: some View {
         DetailInfoBase(content: {
             DetailInfoItem("Character.name", localizableText: information.fullName)
-            DetailInfoItem("Character.furigana", localizableText: information.fullNameRuby)
+            DetailInfoItem(SekaiLocale.primaryLocale == .jp ? "Character.furigana" : "Character.pronunciation", localizableText: information.fullNameRuby)
             
             if !information.characterVoice.isEmpty {
                 DetailInfoItem("Character.character-voice", localizableText: information.characterVoice)

@@ -23,7 +23,9 @@ struct EventDetailView: View {
             Group {
                 EventDetailOverviewView(information: information)
                 DetailsCardsSection(cards: parsedCards)
-                DetailsSongsSection(songs: parsedSongs)
+                if !(parsedSongs?.isEmpty ?? false) {
+                    DetailsSongsSection(songs: parsedSongs)
+                }
                 //            DetailsGachasSection(gachas: information.gacha, applyLocaleFilter: true)
                 //            DetailsSongsSection(
                 //                songs: .init(
@@ -128,6 +130,8 @@ struct EventDetailView: View {
                             return results
                         }
                     }
+                } else {
+                    parsedSongs = []
                 }
             }
         } switcherDestination: {

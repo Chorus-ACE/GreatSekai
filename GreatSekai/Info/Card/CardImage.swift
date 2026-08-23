@@ -107,10 +107,13 @@ struct CardImage: View {
         }()) {
             if showNavigationHints {
                 CardCoverNavigationHints(showCardDetailView: $showCardDetailView, card: card)
+                
                 if normalCardIsOnHover {
-                    Label("Image.image.untrained", systemImage: "star")
+                    Text("Image.image.untrained")
+//                    Label("Image.image.untrained", systemImage: "star")
                 } else if trainedCardIsOnHover {
-                    Label("Image.image.trained", systemImage: "star.fill")
+                    Text("Image.image.trained")
+//                    Label("Image.image.trained", systemImage: "star.fill")
                 }
             }
         }
@@ -277,7 +280,7 @@ struct CardCoverNavigationHints: View {
                     Group {
                         Text(title)
                         Group {
-                            Text("\(character)") + Text("Typography.bold-dot-seperater").bold() + Text(card.sourceType.localizedName)
+                            Text(character.forPreferredLocale() ?? String(localized: "Info.unknown")) + Text("Typography.bold-dot-seperater").bold() + Text(card.sourceType.localizedName)
                         }
                         .font(.caption)
                     }

@@ -68,6 +68,8 @@ struct SongDetailVocalsView: View {
                                         Text(dateFormatter.string(from: vocal.publishDate))
                                     })
                                 }
+                                
+                                ListItemReleaseCondition(releaseConditionID: vocal.releaseConditionID)
                             }
                             .insert {
                                 Divider()
@@ -110,6 +112,28 @@ struct SongDetailVocalsView: View {
         .onAppear {
             if vocal == nil {
                 vocal = information.vocals?.first(where: { $0.type == .sekai }) ?? information.vocals?.first
+            }
+        }
+    }
+}
+
+struct ListItemReleaseCondition: View {
+    var releaseConditionID: Int
+    @State var sentence: LocalizableData<String>? = nil
+    var body: some View {
+        ListItem(title: {
+            Text("Release-condition")
+        }, value: {
+            if let sentence {
+                LocalizableText(sentence)
+            } else {
+                Text(verbatim: "Lorem Ipsum")
+                    .redacted(reason: .placeholder)
+            }
+        })
+        .onChange(of: releaseConditionID, initial: true) {
+            Task {
+                sentence = await ReleaseCondition(id: releaseConditionID)?.title
             }
         }
     }

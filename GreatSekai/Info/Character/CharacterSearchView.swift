@@ -123,15 +123,11 @@ struct CharacterSearchView: View {
     func getCharacters() async {
         Task {
             infoIsAvailable = true
-            SekaiCache.withCache(id: "AllCharacters", invocation: {
-                await Character.all()
-            }) .onUpdate { result in
-                if let result {
-                    allCharacters = result
-                    infoIsReady = true
-                } else {
-                    infoIsAvailable = false
-                }
+            if let result = await Character.allWithCache() {
+                allCharacters = result
+                infoIsReady = true
+            } else {
+                infoIsAvailable = false
             }
         }
     }

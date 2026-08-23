@@ -181,7 +181,7 @@ struct SettingsAdvancedStorageSection: View {
     func updateCacheSize() {
         let metaCacheSize = URL(
             filePath: NSHomeDirectory() + "/Library/Caches/"
-        ).directorySize(including: /DoriKit_.+\.cache/)
+        ).directorySize(including: /SekaiKit_.+\.cache/)
         let otherCacheSize = URL(filePath: NSTemporaryDirectory()).directorySize()
         let totalCacheSize = metaCacheSize + otherCacheSize
         cacheSize = ByteCountFormatter().string(fromByteCount: totalCacheSize)
@@ -189,7 +189,7 @@ struct SettingsAdvancedStorageSection: View {
 }
 
 func resetAllAdvancedSettings(showBannerAtHome: Bool = true) {
-    if let _data = try? Data(contentsOf: URL(filePath: NSHomeDirectory() + "/Library/Preferences/com.memz233.Greatdori.plist")),
+    if let _data = try? Data(contentsOf: URL(filePath: NSHomeDirectory() + "/Library/Preferences/com.memz233.GreatSekai.plist")),
        let serialization = try? PropertyListSerialization.propertyList(from: _data, format: nil) as? [String: Any] {
         for key in serialization.keys where key.hasPrefix("Adv_") {
             UserDefaults.standard.removeObject(forKey: key)

@@ -111,13 +111,14 @@ struct CardDetailOverviewView: View {
         } head: {
             VStack {
                 CardImage(information)
-                    .wrapIf(sizeClass == .regular) { content in
-                        content
-                            .frame(maxWidth: infoContentMaxWidth)
-                    } else: { content in
-                        content
-                            .padding(.horizontal, -15)
-                    }
+                    .frame(maxWidth: infoContentMaxWidth)
+//                    .wrapIf(sizeClass == .regular) { content in
+//                        content
+//                            .frame(maxWidth: infoContentMaxWidth)
+//                    } else: { content in
+//                        content
+//                            .padding(.horizontal, -15)
+//                    }
 //                CustomGroupBox(cornerRadius: 3417) {
 //                    // FIXME: Gacha Voice
 ////                    if !information.card.gachaText.isValueEmpty {

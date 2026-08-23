@@ -38,7 +38,7 @@ struct EventSearchView: View {
                 LazyVStack(spacing: showDetails ? nil : bannerSpacing) {
                     content
                 }
-                .frame(maxWidth: bannerWidth)
+//                .frame(maxWidth: bannerWidth)
             }
             .animation(.spring(duration: 0.3, bounce: 0.1, blendDuration: 0), value: showDetails)
         } eachContent: { showDetails, element in

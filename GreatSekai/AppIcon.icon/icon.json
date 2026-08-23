@@ -19,6 +19,9 @@
         {
           "fill-specializations" : [
             {
+              "value" : "system-light"
+            },
+            {
               "appearance" : "dark",
               "value" : {
                 "solid" : "display-p3:0.27800,0.53300,0.48200,1.00000"
@@ -26,6 +29,27 @@
             }
           ],
           "hidden" : false,
+          "image-name" : "music.note.png",
+          "name" : "music.note",
+          "position" : {
+            "scale" : 0.25,
+            "translation-in-points" : [
+              11,
+              -9.361499999999978
+            ]
+          }
+        },
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "display-p3:0.27800,0.53300,0.48200,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "hidden" : true,
           "image-name" : "music.note 2.svg",
           "name" : "Music Note",
           "position" : {

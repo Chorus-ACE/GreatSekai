@@ -10,58 +10,69 @@ import SwiftUI
 
 struct SongDetailDifficultiesView: View {
     var information: ExtendedSong
-    @State var difficulty: Song.Difficulty = .master
+    @State var difficulty: Song.Difficulty? = nil
     var body: some View {
         Section(content: {
-            CustomGroupBox {
-                VStack {
-                    Group {
-                        ListItem(title: {
-                            Text("Song.difficulties.level")
-                        }, value: {
-                            SongDifficultyIndicator(difficulty: difficulty, level: information.song.difficultyLevel[difficulty] ?? 0)
-                        })
-                        
-                        ListItem(title: {
-                            Text("Song.difficulties.notes")
-                        }, value: {
-                            Text("\(information.song.noteCounts[difficulty], default: String(localized: "Info.unknown"))")
-                        })
-                        
-                        ListItem(title: {
-                            VStack(alignment: .leading) {
-                                Text("Song.difficulties.chart")
-                                Text("Song.difficulties.chart.footer")
-                                    .foregroundStyle(.secondary)
-                                    .bold(false)
-                            }
-                        }, value: {
-                            HStack {
-                                Link(destination: information.song.chartImageURL(for: difficulty, preferSVG: true), label: {
-                                    Label(String("SVG"), systemImage: "arrow.up.right.circle")
-                                })
-                                
-                                Link(destination: information.song.chartImageURL(for: difficulty, preferSVG: false), label: {
-                                    Label(String("PNG"), systemImage: "arrow.up.right.circle")
-                                })
-                            }
-                            .wrapIf(true) { context in
-                                if #available(iOS 26.0, macOS 26.0, *) {
-                                    context.labelIconToTitleSpacing(5)
-                                } else {
-                                    context
+            if let difficulty {
+                CustomGroupBox {
+                    VStack {
+                        Group {
+                            ListItem(title: {
+                                Text("Song.difficulties.level")
+                            }, value: {
+                                SongDifficultyIndicator(difficulty: difficulty, level: information.song.difficultyLevel[difficulty] ?? 0)
+                            })
+                            
+                            ListItem(title: {
+                                Text("Song.difficulties.notes")
+                            }, value: {
+                                Text("\(information.song.noteCounts[difficulty], default: String(localized: "Info.unknown"))")
+                            })
+                            
+                            ListItem(title: {
+                                VStack(alignment: .leading) {
+                                    Text("Song.difficulties.chart")
+                                    Text("Song.difficulties.chart.footer")
+                                        .foregroundStyle(.secondary)
+                                        .bold(false)
                                 }
-                            }
-                        })
-                    }
-                    .contentTransition(.numericText())
-                    .animation(.default, value: difficulty)
-                    .insert {
-                        Divider()
+                            }, value: {
+                                HStack {
+                                    Link(destination: information.song.chartImageURL(for: difficulty, preferSVG: true), label: {
+                                        Label(String("SVG"), systemImage: "arrow.up.right.circle")
+                                    })
+                                    
+                                    Link(destination: information.song.chartImageURL(for: difficulty, preferSVG: false), label: {
+                                        Label(String("PNG"), systemImage: "arrow.up.right.circle")
+                                    })
+                                }
+                                .wrapIf(true) { context in
+                                    if #available(iOS 26.0, macOS 26.0, *) {
+                                        context.labelIconToTitleSpacing(5)
+                                    } else {
+                                        context
+                                    }
+                                }
+                            })
+                        }
+                        .contentTransition(.numericText())
+                        .animation(.default, value: difficulty)
+                        .insert {
+                            Divider()
+                        }
                     }
                 }
+                .frame(maxWidth: infoContentMaxWidth)
+            } else {
+                CustomGroupBox {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                }
+                .frame(maxWidth: infoContentMaxWidth)
             }
-            .frame(maxWidth: infoContentMaxWidth)
         }, header: {
             HStack {
                 Text("Song.difficulties")
@@ -77,5 +88,10 @@ struct SongDetailDifficultiesView: View {
             .frame(maxWidth: 615)
             .detailSectionHeader()
         })
+        .onAppear {
+            if difficulty == nil {
+                difficulty = Array(information.song.difficultyLevel.keys).sorted().last ?? .master
+            }
+        }
     }
 }

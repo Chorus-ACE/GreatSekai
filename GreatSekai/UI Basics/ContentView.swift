@@ -122,9 +122,8 @@ struct ContentView: View {
                         }
                     })
                 } else {
-                    /*
                     // MARK: Fallback for Older Versions
-                    if platform == .mac || sizeClass == .regular {
+                    if platform == .macOS || sizeClass == .regular {
                         NavigationSplitView {
                             List(selection: $selection) {
                                 Label("App.home", systemImage: "house").tag(AppSection.home)
@@ -135,16 +134,16 @@ struct ContentView: View {
                                         Label(allInfoDestinationItems[itemIndex].title, systemImage: allInfoDestinationItems[itemIndex].symbol).tag(AppSection.info(allInfoDestinationItems[itemIndex].tabValue))
                                     }
                                 })
-                                Section("App.tools", content: {
-                                    ForEach(0..<allToolsDestinationItems.count, id: \.self) { itemIndex in
-                                        Label(allToolsDestinationItems[itemIndex].title, systemImage: allToolsDestinationItems[itemIndex].symbol).tag(AppSection.tools(allToolsDestinationItems[itemIndex].tabValue))
-                                    }
-                                })
+//                                Section("App.tools", content: {
+//                                    ForEach(0..<allToolsDestinationItems.count, id: \.self) { itemIndex in
+//                                        Label(allToolsDestinationItems[itemIndex].title, systemImage: allToolsDestinationItems[itemIndex].symbol).tag(AppSection.tools(allToolsDestinationItems[itemIndex].tabValue))
+//                                    }
+//                                })
 #if os(iOS)
                                 Label("App.settings", systemImage: "gear").tag(AppSection.settings)
 #endif
                             }
-                            .navigationTitle("Greatdori!")
+                            .navigationTitle("GreatSekai")
                         } detail: {
                             detailView(for: selection)
                         }
@@ -154,21 +153,19 @@ struct ContentView: View {
                                 .tabItem { Label("App.home", systemImage: "house") }
                                 .tag(AppSection.home)
                             
-                            detailView(for: .community)
-                                .tabItem { Label("App.community", systemImage: "at") }
-                                .tag(AppSection.community)
+//                            detailView(for: .community)
+//                                .tabItem { Label("App.community", systemImage: "at") }
+//                                .tag(AppSection.community)
                             
                             detailView(for: .info(.home))
                                 .tabItem { Label("App.info", systemImage: "rectangle.stack") }
                                 .tag(AppSection.info(.home))
                             
-                            detailView(for: .tools(.home))
-                                .tabItem { Label("App.tools", systemImage: "slider.horizontal.3") }
-                                .tag(AppSection.tools(.home))
+//                            detailView(for: .tools(.home))
+//                                .tabItem { Label("App.tools", systemImage: "slider.horizontal.3") }
+//                                .tag(AppSection.tools(.home))
                         }
                     }
-                     */
-                EmptyView()
                 }
             }
             .onAppear {
