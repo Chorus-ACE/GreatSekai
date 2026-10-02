@@ -141,7 +141,7 @@ struct SettingsTab: Hashable {
     var isDisplayable: Bool {
         switch note {
         case "DEBUG":
-            return AppFlag.DEBUG
+            return AppFlag.get(key: "DEBUG")
         case "HIDDEN":
             return false
         case "WIDGETKIT":

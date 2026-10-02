@@ -595,7 +595,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         // then add a custom group box
         // after the `matchedTransitionSource(id:in:)` call
         // if needed to solve this problem.
-        // That's why codes here seem wired.
+        // That's why codes here seem weird.
         CustomGroupBox(showGroupBox: isCustomGroupBoxActive) {
             makeSomeContent(currentLayout, element)
                 .highlightKeyword($searchedText)
