@@ -118,7 +118,7 @@ struct CompactToggle: View {
 }
 
 // MARK: CustomGroupBox
-struct CustomGroupBox<Content: View>: View {
+struct _CustomGroupBox2<Content: View>: View {
     let content: () -> Content
     var cornerRadius: CGFloat
     var showGroupBox: Bool
@@ -133,7 +133,6 @@ struct CustomGroupBox<Content: View>: View {
         cornerRadius: CGFloat = platform == .macOS ? 15 : 20,
         useExtenedConstraints: Bool = false,
         strokeLineWidth: CGFloat = 0,
-        customGroupBoxVersion: Int? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.showGroupBox = showGroupBox
@@ -224,6 +223,64 @@ struct CustomGroupBox<Content: View>: View {
         // other views that suppress the custom group box
         // to provide their own representation
         .preference(key: CustomGroupBoxActivePreference.self, value: showGroupBox)
+    }
+}
+
+// MARK: CustomGroupBox
+struct CustomGroupBox<Content: View>: View {
+    let content: () -> Content
+    var cornerRadius: CGFloat
+    var showGroupBox: Bool
+    var strokeLineWidth: CGFloat
+    var useExtenedConstraints: Bool
+    @Environment(\._groupBoxStrokeLineWidth) var envStrokeLineWidth: CGFloat
+    @Environment(\._suppressCustomGroupBox) var suppressCustomGroupBox
+    @Environment(\._groupBoxBackgroundTintOpacity) var backgroundTintOpacity: CGFloat
+    
+    init(
+        showGroupBox: Bool = true,
+        cornerRadius: CGFloat = 20,
+        useExtenedConstraints: Bool = false,
+        strokeLineWidth: CGFloat = 0,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.showGroupBox = showGroupBox
+        self.cornerRadius = cornerRadius
+        self.strokeLineWidth = strokeLineWidth
+        self.useExtenedConstraints = useExtenedConstraints
+        self.content = content
+    }
+    
+    var body: some View {
+        if showGroupBox && !suppressCustomGroupBox {
+            if #available(anyAppleOS 26.0, *) {
+                ExtendedConstraints(isActive: useExtenedConstraints) {
+                    content()
+                        .padding(.all, showGroupBox && !suppressCustomGroupBox ? nil : 0)
+                }
+                .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+                .overlay {
+                    if showGroupBox && !suppressCustomGroupBox {
+                        let strokeLineWidth = strokeLineWidth > 0 ? strokeLineWidth : envStrokeLineWidth
+                        if strokeLineWidth > 0 {
+                            RoundedRectangle(cornerRadius: cornerRadius)
+                                .strokeBorder(.tint.opacity(0.9), lineWidth: strokeLineWidth)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                }
+                .preference(key: CustomGroupBoxActivePreference.self, value: showGroupBox)
+            } else {
+                _CustomGroupBox2(showGroupBox: showGroupBox, cornerRadius: cornerRadius, useExtenedConstraints: useExtenedConstraints, strokeLineWidth: strokeLineWidth) {
+                    content()
+                }
+            }
+        } else {
+            ExtendedConstraints(isActive: useExtenedConstraints) {
+                content()
+            }
+            .preference(key: CustomGroupBoxActivePreference.self, value: showGroupBox)
+        }
     }
 }
 
