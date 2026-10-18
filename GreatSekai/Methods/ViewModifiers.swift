@@ -61,6 +61,7 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
     var otherContent: (() -> V)?
     @State private var isFileExporterPresented = false
     @State private var exportingImageDocument: _ImageFileDocument?
+    @State private var imageSaveError: String?
     
     func body(content: Content) -> some View {
         content
@@ -72,8 +73,8 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
 #if os(macOS)
                     forEachImageInfo("Image.save.download", systemImage: "square.and.arrow.down") { info in
                         Task {
-                            guard let downloadsFolder = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first else { return }
-                            try? await info.resolvedData()?.write(to: downloadsFolder.appending(path: info.url.lastPathComponent))
+                            do { _ = try await info.saveToDownloads() }
+                            catch { imageSaveError = error.localizedDescription }
                         }
                     }
                     forEachImageInfo("Image.save.as", systemImage: "square.and.arrow.down") { info in
@@ -166,6 +167,12 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
                     otherContent()
                 }
             }
+            .alert("Image.save.failed", isPresented: Binding(
+                get: { imageSaveError != nil },
+                set: { if !$0 { imageSaveError = nil } }
+            )) {
+                Button("General.ok") { imageSaveError = nil }
+            } message: { Text(imageSaveError ?? "") }
             .fileExporter(isPresented: $isFileExporterPresented, document: exportingImageDocument, contentType: .image) { _ in
                 exportingImageDocument = nil
             }
@@ -202,32 +209,6 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
     enum ContentPlacement {
         case start
         case end
-    }
-}
-
-struct ImageInfo: Hashable, Sendable {
-    var url: URL
-    var data: Data?
-    var description: LocalizedStringResource?
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(url)
-        hasher.combine(data)
-        if let description {
-            hasher.combine(String(localized: description))
-        }
-    }
-    
-    func resolvedData() async -> Data? {
-        if let data {
-            return data
-        }
-        return await withCheckedContinuation { continuation in
-            DispatchQueue(label: "com.memz233.Greatdori.Resolve-Image-From-URL", qos: .userInitiated).async {
-                let data = try? Data(contentsOf: url)
-                continuation.resume(returning: data)
-            }
-        }
     }
 }
 

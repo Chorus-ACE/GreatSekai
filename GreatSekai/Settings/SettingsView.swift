@@ -83,6 +83,8 @@ struct SettingsView: View {
             switch tab {
             case "locale":
                 SettingsLocaleView()
+            case "collections":
+                CardCollectionsView()
             case "advanced":
                 SettingsAdvancedView()
             case "about":
@@ -157,6 +159,7 @@ struct SettingsTab: Hashable {
 }
 
 let settingsTabs: [SettingsTab] = [
+    .init(symbol: "rectangle.stack", name: "Collections.title", destination: "collections", note: "NO-FORM"),
     .init(symbol: "globe", name: "Settings.locale", destination: "locale"),
     .init(symbol: "rectangle.3.group", name: "Settings.home-edit", destination: "home"),
 //    .init(symbol: "books.vertical", name: "Settings.story-viewer", destination: "story"),

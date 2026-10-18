@@ -3,43 +3,55 @@ import SwiftUI
 
 struct GachaDetailPaymentView: View {
     let information: Gacha
+    @Environment(\.horizontalSizeClass) private var sizeClass
     var body: some View {
         if !information.configuration.map({ $0?.behaviors }).isCollectionEmpty {
             GachaRegionalSection("Gacha.payment-options", values: information.configuration.map { $0.map(GachaPaymentDefinition.init) }) { definition in
-                VStack(spacing: 12) {
+                CustomGroupBox {
                     if definition.options.isEmpty {
-                        CustomGroupBox { Text("Gacha.section.empty").foregroundStyle(.secondary) }
-                    }
-                    ForEach(definition.options) { option in
-                        CustomGroupBox {
-                            VStack(spacing: 10) {
-                                ListItem {
-                                    if option.spinCount == 1 {
-                                        Text("Gacha.draw-single").bold()
-                                    } else {
-                                        Text("Gacha.draw-count.\(option.spinCount)").bold()
-                                    }
-                                } value: {
+                        Text("Gacha.section.empty").foregroundStyle(.secondary)
+                    } else if platform == .macOS || sizeClass == .regular {
+                        Table(definition.options) {
+                            TableColumn("Gacha.payment-type") { option in drawCount(option) }
+                            TableColumn("Gacha.payment-cost") { option in Text(costDescription(option)) }
+                            TableColumn("Gacha.payment-rule") { option in paymentNote(option) }
+                        }
+                        .scrollDisabled(true)
+                        .frame(height: CGFloat(definition.options.count + 1) * 44)
+                    } else {
+                        Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 12) {
+                            GridRow {
+                                Text("Gacha.payment-type").bold()
+                                Text("Gacha.payment-cost").bold()
+                                Text("Gacha.payment-rule").bold()
+                            }
+                            Divider()
+                            ForEach(definition.options) { option in
+                                GridRow {
+                                    drawCount(option)
                                     Text(costDescription(option))
-                                }
-                                Divider()
-                                ListItem {
-                                    Text("Gacha.payment-rule").bold()
-                                } value: {
-                                    Text(behaviorName(option.type))
-                                }
-                                if let limit = option.executeLimit, limit > 0 {
-                                    Divider()
-                                    ListItem {
-                                        Text("Gacha.payment-limit").bold()
-                                    } value: {
-                                        Text(String(limit)).monospacedDigit()
-                                    }
+                                    paymentNote(option)
                                 }
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func drawCount(_ option: Gacha.Behavior) -> some View {
+        if option.spinCount == 1 { Text("Gacha.draw-single") }
+        else { Text("Gacha.draw-count.\(option.spinCount)") }
+    }
+
+    private func paymentNote(_ option: Gacha.Behavior) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(behaviorName(option.type))
+            if let limit = option.executeLimit, limit > 0 {
+                Text("Gacha.payment-limit") + Text(verbatim: ": \(limit)")
             }
         }
     }

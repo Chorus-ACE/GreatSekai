@@ -17,43 +17,14 @@ import SwiftUI
 
 struct ExternalLinksSection: View {
     var links: [ExternalLink?] = []
-    @Environment(\.defaultMinListRowHeight) var defaultMinListRowHeight
-    @Environment(\.openURL) private var openURL
     var body: some View {
-        if !links.isEmpty {
+        if links.contains(where: { $0 != nil }) {
             Section {
                 VStack {
                     CustomGroupBox {
                         VStack {
                             ForEach(links.compactMap({ $0 })) { item in
-                                Button(action: {
-                                    openURL(item.url)
-                                }, label: {
-                                    HStack {
-                                        Group {
-                                            if let icon = item.icon {
-                                                Image(icon)
-                                                    .resizable()
-                                                    .scaledToFit()
-                                            } else {
-                                                Image(systemName: "globe")
-                                            }
-                                        }
-                                        .mask({
-                                            RoundedRectangle(cornerRadius: 5)
-                                        })
-                                        .frame(maxWidth: 20, maxHeight: 20)
-                                        
-                                        Text(item.name)
-                                        Spacer()
-                                        Image(systemName: "arrow.up.forward.app")
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .contentShape(Rectangle())
-                                })
-                                .buttonStyle(.plain)
-                                .id(item.id)
-                                .frame(minHeight: platform == .macOS ? defaultMinListRowHeight : nil)
+                                ExternalLinkRow(item: item)
                             }
                             .insert {
                                 Divider()
@@ -89,20 +60,23 @@ struct ExternalLink: Hashable, Identifiable {
     let id: UUID = .init()
     let name: LocalizedStringResource
     let icon: String?
-    let url: URL
+    let url: @MainActor () async -> URL
     
     init(name: LocalizedStringResource, icon: String? = nil, url: URL) {
         self.name = name
         self.icon = icon
-        self.url = url
+        self.url = { url }
     }
     
     init(_ source: DefaultSource, url: URL) {
         self.name = source.localizedName
         self.icon = source.icon
-        self.url = url
+        self.url = { url }
     }
     
+    static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+
     enum DefaultSource {
         case sekaiViewer
         case sekaipedia
@@ -135,5 +109,40 @@ struct ExternalLink: Hashable, Identifiable {
             case .pjsekaiMoe: "ExternalPjsekaiMoe"
             }
         }
+    }
+}
+
+private struct ExternalLinkRow: View {
+    let item: ExternalLink
+    @Environment(\.openURL) private var openURL
+    @Environment(\.defaultMinListRowHeight) private var rowHeight
+    @State private var opening = false
+
+    var body: some View {
+        Button {
+            opening = true
+            Task { @MainActor in
+                defer { opening = false }
+                let url = await item.url()
+                await openURL(url)
+            }
+        } label: {
+            HStack {
+                Group {
+                    if let icon = item.icon { Image(icon).resizable().scaledToFit() }
+                    else { Image(systemName: "globe") }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 5))
+                .frame(width: 20, height: 20)
+                Text(item.name)
+                Spacer()
+                if opening { ProgressView().controlSize(.small) }
+                else { Image(systemName: "arrow.up.forward.app").foregroundStyle(.secondary) }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(opening)
+        .frame(minHeight: platform == .macOS ? rowHeight : nil)
     }
 }

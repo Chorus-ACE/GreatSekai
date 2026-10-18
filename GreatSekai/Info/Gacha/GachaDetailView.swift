@@ -47,6 +47,11 @@ private struct GachaDetailContent: View {
                 })
             }
             
+            if !information.configuration.map({ $0?.pickupCardIDs }).isCollectionEmpty {
+                DetailInfoItem("Gacha.pickup-cards") {
+                    GachaPickupCardsView(information: information)
+                }
+            }
             DetailInfoItem("ID", text: String(information.id))
         } head: {
             FallbackableWebImage(throughURLs: information.previewImageURLs()) { image in
@@ -82,7 +87,7 @@ private struct GachaDetailContent: View {
                 }
             }
         }
-        ExternalLinksSection(links: [ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/gacha/\(information.id)")!)])
+        ExternalLinksSection(links: [ExternalLink(.sekaiViewer, url: URL(string: "https://sekai.best/gacha/\(information.id)")!)])
     }
 
 }
@@ -96,7 +101,7 @@ private struct GachaTextSection: View {
         Section {
             CustomGroupBox {
                 Text(text)
-                    .lineLimit(expanded ? nil : 4)
+                    .lineLimit(expanded ? nil : 5)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)

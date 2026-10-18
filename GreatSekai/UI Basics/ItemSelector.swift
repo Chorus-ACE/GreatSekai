@@ -15,6 +15,7 @@ struct ItemSelectorView<Element: Identifiable & Sendable & Hashable & SekaiFilte
     var resultCountDescription: (Int) -> LocalizedStringResource
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismissSelection) private var dismissSelection
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var layout: Layout
     @State private var filter: SekaiFilter
@@ -64,7 +65,7 @@ struct ItemSelectorView<Element: Identifiable & Sendable & Hashable & SekaiFilte
                         if let emptySelectionTitle {
                             Button {
                                 selection = nil
-                                dismiss()
+                                close()
                             } label: {
                                 CustomGroupBox {
                                     HStack {
@@ -132,7 +133,7 @@ struct ItemSelectorView<Element: Identifiable & Sendable & Hashable & SekaiFilte
                 )
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("General.done", systemImage: "checkmark") { dismiss() }
+                Button("General.done", systemImage: "checkmark") { close() }
             }
         }
         .withSystemBackground()
@@ -156,6 +157,10 @@ struct ItemSelectorView<Element: Identifiable & Sendable & Hashable & SekaiFilte
         .onDisappear { showFilterSheet = false }
     }
 
+    private func close() {
+        if let dismissSelection { dismissSelection() } else { dismiss() }
+    }
+
     private var filterView: some View {
         FilterView(filter: $filter, keys: Element.filterKeys)
             .presentationDetents([.medium, .large])
@@ -166,7 +171,7 @@ struct ItemSelectorView<Element: Identifiable & Sendable & Hashable & SekaiFilte
     private func selectionButton(_ element: Element) -> some View {
         Button {
             selection = element
-            dismiss()
+            close()
         } label: {
             makeContent(layout, element)
                 .highlightKeyword($query)

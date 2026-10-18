@@ -75,6 +75,8 @@
 		E9A92ACD3084ABD10037CFA6 /* DetailsEventsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92ACC3084ABD10037CFA6 /* DetailsEventsSection.swift */; };
 		E9A92AE73084E26D0037CFA6 /* EventPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92AE63084E26D0037CFA6 /* EventPicker.swift */; };
 		E9A92AE93084E2C30037CFA6 /* StoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92AE83084E2C30037CFA6 /* StoryDetailView.swift */; };
+		E9A92B1B30852D360037CFA6 /* SelectionWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92B1A30852D360037CFA6 /* SelectionWindow.swift */; };
+		E9A92B1D30852DEF0037CFA6 /* ImageInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92B1C30852DEF0037CFA6 /* ImageInfo.swift */; };
 		E9BCABBA3021F5270076FAA5 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E9BCABB83021F5270076FAA5 /* InfoPlist.strings */; };
 		E9C55F5C2F53F21200DCFD2D /* SekaiKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F5B2F53F21200DCFD2D /* SekaiKit */; };
 		E9C55F9D2F53F27000DCFD2D /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F9C2F53F27000DCFD2D /* SDWebImageSwiftUI */; };
@@ -187,6 +189,8 @@
 		E9A92ACC3084ABD10037CFA6 /* DetailsEventsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsEventsSection.swift; sourceTree = "<group>"; };
 		E9A92AE63084E26D0037CFA6 /* EventPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventPicker.swift; sourceTree = "<group>"; };
 		E9A92AE83084E2C30037CFA6 /* StoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StoryDetailView.swift; path = GreatSekai/Tools/StoryViewer/StoryDetailView.swift; sourceTree = SOURCE_ROOT; };
+		E9A92B1A30852D360037CFA6 /* SelectionWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionWindow.swift; sourceTree = "<group>"; };
+		E9A92B1C30852DEF0037CFA6 /* ImageInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageInfo.swift; sourceTree = "<group>"; };
 		E9BCABB63021F48C0076FAA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E9BCABB93021F5270076FAA5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E9BCABBB3021F5D20076FAA5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -392,6 +396,7 @@
 				E931520A2F5401D1002D102D /* CompactAudioPlayer.swift */,
 				E931520B2F5401D1002D102D /* ExternalLinks.swift */,
 				E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */,
+				E9A92B1A30852D360037CFA6 /* SelectionWindow.swift */,
 			);
 			path = "UI Basics";
 			sourceTree = "<group>";
@@ -482,6 +487,7 @@
 				E9C55FC42F53F3C100DCFD2D /* StableHasher.swift */,
 				E9C55FC52F53F3C100DCFD2D /* TypeNames.swift */,
 				E9C55FC62F53F3C100DCFD2D /* ViewModifiers.swift */,
+				E9A92B1C30852DEF0037CFA6 /* ImageInfo.swift */,
 			);
 			path = Methods;
 			sourceTree = "<group>";
@@ -696,6 +702,7 @@
 				F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */,
 				10D7563A373B4F1B85D3D343 /* ComicInfo.swift in Sources */,
 				F175E196AE87424785FA95F5 /* ComicSearchView.swift in Sources */,
+				E9A92B1B30852D360037CFA6 /* SelectionWindow.swift in Sources */,
 				E9A92ACD3084ABD10037CFA6 /* DetailsEventsSection.swift in Sources */,
 				2131E269C7F241EBA1410EA7 /* ComicDetailView.swift in Sources */,
 				7550ABBA3B3C75889C5905D5 /* GachaSearchView.swift in Sources */,
@@ -724,6 +731,7 @@
 				B7105918302E9C5000039F00 /* SongSearchView.swift in Sources */,
 				B7105919302E9C5000039F00 /* SongDetailOverviewView.swift in Sources */,
 				E9CA41463030A5E3005C7E20 /* SongDetailVocalsView.swift in Sources */,
+				E9A92B1D30852DEF0037CFA6 /* ImageInfo.swift in Sources */,
 				B710591D302E9D3C00039F00 /* SongDifficultyIndicators.swift in Sources */,
 				E938587E30304509006F22C1 /* SongDetailDifficultiesView.swift in Sources */,
 				B710591A302E9C5000039F00 /* SongDetailView.swift in Sources */,
@@ -1007,6 +1015,7 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GreatSekai/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GreatSekai;
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Privacy.photo-library.add-only.description";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -1068,6 +1077,7 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GreatSekai/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GreatSekai;
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Privacy.photo-library.add-only.description";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;

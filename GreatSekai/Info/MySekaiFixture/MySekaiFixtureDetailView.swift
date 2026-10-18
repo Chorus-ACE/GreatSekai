@@ -34,7 +34,7 @@ struct MySekaiFixtureDetailView: View {
                     }
                 }
             }
-            ExternalLinksSection(links: [ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/mysekai/fixture/\(fixture.id)")!)])
+            ExternalLinksSection(links: [ExternalLink(.sekaiViewer, url: URL(string: "https://sekai.best/mysekai/fixture/\(fixture.id)")!)])
         } switcherDestination: { MySekaiFixtureSearchView() }
     }
 }

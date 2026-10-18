@@ -8,17 +8,6 @@ struct GachaDetailCardsView: View {
 
     var body: some View {
         Group {
-            if !information.configuration.map({ $0?.pickupCardIDs }).isCollectionEmpty {
-                GachaRegionalSection("Gacha.pickup-cards", values: information.configuration.map { $0.map { Array(Set($0.pickupCardIDs)).sorted() } }) { ids in
-                    CustomGroupBox {
-                        if ids.isEmpty {
-                            Text("Gacha.section.empty").foregroundStyle(.secondary)
-                        } else {
-                            GachaCardGrid(ids: ids, cardsByID: cardsByID ?? [:])
-                        }
-                    }
-                }
-            }
             GachaRegionalSection("Gacha.cards", values: information.configuration.map { $0.map(GachaPoolDefinition.init) }) { definition in
                 if failed {
                     Button { Task { await loadCards() } } label: {
@@ -156,7 +145,7 @@ private struct GachaCardGrid: View {
                 ForEach(expanded ? ids : Array(ids.prefix(20)), id: \.self) { id in
                     NavigationLink { CardDetailView(id: id) } label: {
                         if let card = cardsByID[id] {
-                            CardThumbnail(card, showTrainedVersion: showTrained)
+                            CardThumbnail(card, showTrainedVersion: showTrained, showNavigationHints: true)
                         } else {
                             Label("#\(id)", systemImage: "person.crop.square")
                                 .frame(width: 72, height: 72)
@@ -173,5 +162,45 @@ private struct GachaCardGrid: View {
                 .buttonStyle(.borderless)
             }
         }
+    }
+}
+
+struct GachaPickupCardsView: View {
+    let information: Gacha
+    @State private var cardsByID: [Int: Card]?
+    @State private var failed = false
+    @State private var locale: SekaiLocale = .primaryLocale
+    private var values: LocalizableData<[Int]> {
+        information.configuration.map { $0.map { Array(Set($0.pickupCardIDs)).sorted() } }
+    }
+    private var locales: [SekaiLocale] { values.localizedData?.allAvailableLocales ?? [] }
+    private var needsPicker: Bool {
+        guard let first = locales.first else { return false }
+        return locales.dropFirst().contains { values.localizedData?[$0] != values.localizedData?[first] }
+    }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if needsPicker {
+                DetailSectionOptionPicker(selection: $locale, options: locales)
+            }
+            if failed {
+                Button("General.retry") { Task { await load() } }
+            } else if let cardsByID {
+                let ids = values.localizedData?[locale] ?? (values.localizedData == nil ? values.majorValue : nil) ?? []
+                if ids.isEmpty { Text("Gacha.section.empty").foregroundStyle(.secondary) }
+                else { GachaCardGrid(ids: ids, cardsByID: cardsByID) }
+            } else { ProgressView() }
+        }
+        .task(id: information.id) {
+            locale = values.majorLocale ?? .primaryLocale
+            await load()
+        }
+    }
+    private func load() async {
+        failed = false
+        let cards = await Card.allWithCache()
+        guard !Task.isCancelled else { return }
+        cardsByID = cards.map { Dictionary($0.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first }) }
+        failed = cards == nil
     }
 }

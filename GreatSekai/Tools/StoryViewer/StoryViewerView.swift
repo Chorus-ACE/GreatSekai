@@ -76,7 +76,7 @@ struct StoryViewerView: View {
         }
         .navigationTitle("App.tools.story-viewer")
         .searchable(text: $query)
-        .sheet(isPresented: $choosingChapter) {
+        .selectionWindow(isPresented: $choosingChapter, title: "Story.select-chapter") {
             NavigationStack {
                 if kind == .event {
                     EventPicker(

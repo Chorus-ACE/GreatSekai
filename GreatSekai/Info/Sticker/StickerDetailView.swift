@@ -59,7 +59,7 @@ private struct StickerDetailContent: View {
                 }
             }
         }
-        ExternalLinksSection(links: [ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/stamp")!)])
+        ExternalLinksSection(links: [ExternalLink(.sekaiViewer, url: URL(string: "https://sekai.best/stamp")!)])
     }
 
 }

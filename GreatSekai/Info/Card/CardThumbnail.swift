@@ -157,6 +157,9 @@ struct CardThumbnail: View {
                 .onHover { isHovering in
                     self.isHovering = isHovering && !disablePopover
                 }
+                .onChange(of: disablePopover) {
+                    if disablePopover { isHovering = false }
+                }
                 .popover(isPresented: $isHovering, arrowEdge: .bottom) {
                     VStack {
                         if let title = card.title.majorValue,

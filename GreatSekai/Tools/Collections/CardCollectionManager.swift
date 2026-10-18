@@ -41,6 +41,22 @@ final class CardCollectionManager: ObservableObject {
         }
         await cache(saved)
     }
+    func remove(_ card: SavedCard, from collectionID: UUID) {
+        guard var collection = collections.first(where: { $0.id == collectionID }) else { return }
+        collection.cards.removeAll { $0.id == card.id }
+        save(collection)
+    }
+
+    func removeCachedImages(in collection: SavedCardCollection) {
+        do {
+            for card in collection.cards {
+                let url = CardCollectionStore.imageURL(for: card)
+                if FileManager.default.fileExists(atPath: url.path) { try FileManager.default.removeItem(at: url) }
+            }
+            WidgetCenter.shared.reloadTimelines(ofKind: CardCollectionStore.widgetKind)
+        } catch { self.error = error.localizedDescription }
+    }
+
     func cache(_ card: SavedCard) async {
         guard !FileManager.default.fileExists(atPath: CardCollectionStore.imageURL(for: card).path) else { return }
         do {
