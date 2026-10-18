@@ -295,6 +295,7 @@ extension EnvironmentValues {
     @Entry fileprivate var _groupBoxStrokeLineWidth: CGFloat = 0
     @Entry fileprivate var _groupBoxBackgroundTintOpacity: CGFloat = 0
 }
+
 extension View {
     func groupBoxStrokeLineWidth(_ width: CGFloat) -> some View {
         environment(\._groupBoxStrokeLineWidth, width)

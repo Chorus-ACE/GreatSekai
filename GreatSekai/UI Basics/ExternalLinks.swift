@@ -22,7 +22,7 @@ struct ExternalLinksSection: View {
     var body: some View {
         if !links.isEmpty {
             Section {
-//                HereTheWorld { // Super weird issue causing infinite hang. Use `HereTheWorld` to fix. MAGIC --ThreeManager785
+                VStack {
                     CustomGroupBox {
                         VStack {
                             ForEach(links.compactMap({ $0 })) { item in
@@ -30,6 +30,20 @@ struct ExternalLinksSection: View {
                                     openURL(item.url)
                                 }, label: {
                                     HStack {
+                                        Group {
+                                            if let icon = item.icon {
+                                                Image(icon)
+                                                    .resizable()
+                                                    .scaledToFit()
+                                            } else {
+                                                Image(systemName: "globe")
+                                            }
+                                        }
+                                        .mask({
+                                            RoundedRectangle(cornerRadius: 5)
+                                        })
+                                        .frame(maxWidth: 20, maxHeight: 20)
+                                        
                                         Text(item.name)
                                         Spacer()
                                         Image(systemName: "arrow.up.forward.app")
@@ -46,8 +60,17 @@ struct ExternalLinksSection: View {
                             }
                         }
                     }
-                    .frame(maxWidth: infoContentMaxWidth)
-//                }
+                    
+                    HStack {
+                        Text("External-links.disclaimer")
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                    }
+                    .padding(.vertical, 1)
+                }
+                .frame(maxWidth: infoContentMaxWidth)
             } header: {
                 HStack {
                     Text("External-links")
@@ -65,5 +88,52 @@ struct ExternalLinksSection: View {
 struct ExternalLink: Hashable, Identifiable {
     let id: UUID = .init()
     let name: LocalizedStringResource
+    let icon: String?
     let url: URL
+    
+    init(name: LocalizedStringResource, icon: String? = nil, url: URL) {
+        self.name = name
+        self.icon = icon
+        self.url = url
+    }
+    
+    init(_ source: DefaultSource, url: URL) {
+        self.name = source.localizedName
+        self.icon = source.icon
+        self.url = url
+    }
+    
+    enum DefaultSource {
+        case sekaiViewer
+        case sekaipedia
+        case sonolus
+        case cleista
+        case moeSekai
+        case haruki
+        case pjsekaiMoe
+        
+        var localizedName: LocalizedStringResource {
+            switch self {
+            case .sekaiViewer: "External-link.sekai-viewer"
+            case .sekaipedia: "External-link.sekaipedia"
+            case .sonolus: "External-link.sonolus"
+            case .cleista: "External-link.cleista"
+            case .moeSekai: "External-link.moesekai"
+            case .haruki: "External-link.haruki"
+            case .pjsekaiMoe: "External-link.pjsekai-moe"
+            }
+        }
+        
+        var icon: String {
+            switch self {
+            case .sekaiViewer: "ExternalSekaiViewer"
+            case .sekaipedia: "ExternalSekaipedia"
+            case .sonolus: "ExternalSonolus"
+            case .cleista: "ExternalCleista"
+            case .moeSekai: "ExternalMoeSekai"
+            case .haruki: "ExternalHaruki"
+            case .pjsekaiMoe: "ExternalPjsekaiMoe"
+            }
+        }
+    }
 }

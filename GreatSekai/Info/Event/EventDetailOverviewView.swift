@@ -108,38 +108,42 @@ struct EventDetailOverviewView: View {
                 })
             }
             
+            if !information.event.outline.isEmpty {
+                DetailInfoItem("Event.outline") {
+                    LocalizableText(information.event.outline, showSecondaryText: false)
+                        .listItemLayout(.basedOnUISizeClass)
+                        .environment(\.disablePopover, true)
+                }
+            }
+
             DetailInfoItem("ID", text: "\(String(information.id))")
         } head: {
             VStack {
+                // MARK: Title Image
                 Group {
-                    // MARK: Title Image
-                    Group {
-                        Rectangle()
-                            .opacity(0)
-                            .frame(height: 2)
-                        FallbackableWebImage(throughURLs: [information.event.bannerImageURL, information.event.bannerImageAltURL]) { image in
-                            image
-                                .resizable()
-                                .antialiased(true)
-                                .interpolation(.high)
-                        } placeholder: {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(getPlaceholderColor())
-                        }
-                        .aspectRatio(bannerRatio, contentMode: .fit)
-                        .frame(maxWidth: bannerWidth, maxHeight: bannerWidth/bannerRatio)
-                        .cornerRadius(10)
-                        
-                        Rectangle()
-                            .opacity(0)
-                            .frame(height: 2)
+                    Rectangle()
+                        .opacity(0)
+                        .frame(height: 2)
+                    FallbackableWebImage(throughURLs: [information.event.bannerImageURL, information.event.bannerImageAltURL]) { image in
+                        image
+                            .resizable()
+                            .antialiased(true)
+                            .interpolation(.high)
+                    } placeholder: {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(getPlaceholderColor())
                     }
+                    .aspectRatio(bannerRatio, contentMode: .fit)
+                    .frame(maxWidth: bannerWidth, maxHeight: bannerWidth/bannerRatio)
+                    .cornerRadius(10)
                     
-//                    if isSayuruVersion {
-                        CustomGroupBox(cornerRadius: 3417) {
-                            CompactAudioPlayer(url: information.event.backgroundMusicURL)
-                        }
-//                    }
+                    Rectangle()
+                        .opacity(0)
+                        .frame(height: 2)
+                }
+                
+                CustomGroupBox(cornerRadius: 3417) {
+                    CompactAudioPlayer(url: information.event.backgroundMusicURL)
                 }
             }
         }

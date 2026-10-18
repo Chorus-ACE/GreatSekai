@@ -139,8 +139,8 @@ struct HomeBirthdayView: View {
         HStack {
             VStack(alignment: .leading) {
                 HStack {
-                    if birthdays?.first.map({ todaysTheirBirthday($0.birthday) }) == true {
-                        Text("Home.birthday.happy-birthday")
+                    if let character = birthdays?.first, todaysTheirBirthday(character.birthday) {
+                        Text(character.isVirtualSinger ? "Home.birthday.happy-anniversary" : "Home.birthday.happy-birthday")
                             .font(.title2)
                             .bold()
                     } else if birthdays != nil {
@@ -336,6 +336,7 @@ struct HomeBirthdayView: View {
 
 private struct HomeBirthdayCharacter: Identifiable, Equatable {
     let id: Int
+    let isVirtualSinger: Bool
     let birthday: Date
     let characterName: LocalizableData<String>
     let iconImageURL: URL?
@@ -347,6 +348,7 @@ private struct HomeBirthdayCharacter: Identifiable, Equatable {
         components.year = 2000
         guard let birthday = calendar.date(from: components) else { return nil }
         id = character.id
+        isVirtualSinger = character.unit == .virtualSinger
         self.birthday = birthday
         characterName = character.fullName
         iconImageURL = character.iconImageURL

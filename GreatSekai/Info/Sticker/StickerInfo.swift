@@ -11,14 +11,19 @@ struct StickerInfo: View {
         self.layout = layout
     }
 
-    let horizontalLayoutCoverSideLength: CGFloat = 110
-    let verticalLayoutCoverSideLength: CGFloat = 120
+    let horizontalLayoutCoverSideLength: CGFloat = 100
+    let verticalLayoutCoverSideLength: CGFloat = 100
+    
+    var sideLength: CGFloat {
+        layout == .horizontal ? horizontalLayoutCoverSideLength : verticalLayoutCoverSideLength
+    }
 
     var body: some View {
         SummaryViewBase(layout, source: information) {
-            StickerImage(sticker: information)
-                .frame(width: layout == .horizontal ? horizontalLayoutCoverSideLength : verticalLayoutCoverSideLength,
-                       height: layout == .horizontal ? horizontalLayoutCoverSideLength : verticalLayoutCoverSideLength)
+            ExtendedConstraints {
+                StickerImage(sticker: information)
+                    .frame(maxWidth: sideLength, maxHeight: sideLength)
+            }
         } detail: {
             HighlightableText(information.type.majorValue?.localizedName ?? String(localized: "Info.unknown"))
                 .font(platform == .macOS ? .body : .caption)

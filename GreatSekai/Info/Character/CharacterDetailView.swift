@@ -12,8 +12,8 @@ struct CharacterDetailView: View {
     var id: Int
     var allCharacters: [Character]?
     
-    @State var allCards: [Card] = []
-//    @State var allCharacterCards: [Card] = []
+    @State private var allCards: [Card]?
+    @State private var allEvents: [Event]?
     @State var randomCard: Card? = nil
     
     @Environment(\.horizontalSizeClass) var sizeClass
@@ -22,14 +22,14 @@ struct CharacterDetailView: View {
             HStack {
                 Spacer(minLength: 0)
                 VStack {
-                    if let randomCard {
+                    if let randomCard, randomCard.characterID == information.id {
                         CardImage(randomCard)
                             .frame(maxWidth: infoContentMaxWidth)
                     }
                     
-                    if randomCard != nil {
+                    if randomCard?.characterID == information.id {
                         Button(action: {
-                            randomCard = allCards.filter({ $0.characterID == information.id }).randomElement()
+                            randomCard = allCards?.filter({ $0.characterID == information.id }).randomElement()
                         }, label: {
                             Label("Character.random-card", systemImage: "arrow.clockwise")
                         })
@@ -45,80 +45,43 @@ struct CharacterDetailView: View {
                 }
                 Spacer(minLength: 0)
             }
-            .onAppear {
-                if randomCard?.id != information.id {
-                    randomCard = allCards.filter({ $0.characterID == information.id }).randomElement()
+            .task(id: information.id) {
+                if allCards == nil {
+                    let fetchedCards = await Card.allWithCache()
+                    guard !Task.isCancelled else { return }
+                    allCards = fetchedCards ?? []
+                }
+                if randomCard?.characterID != information.id {
+                    randomCard = allCards?.filter { $0.characterID == information.id }.randomElement()
                 }
             }
             
             CharacterDetailOverviewView(information: information)
-//            DetailArtsSection {
-//                ArtsTab("Event.arts.banner", ratio: 3) {
-//                    for locale in DoriLocale.allCases {
-//                        if let url = information.event.bannerImageURL(in: locale, allowsFallback: false) {
-//                            ArtsItem(title: LocalizedStringResource(stringLiteral: locale.rawValue.uppercased()), url: url)
-//                        }
-//                        if let url = information.event.homeBannerImageURL(in: locale, allowsFallback: false) {
-//                            ArtsItem(title: LocalizedStringResource(stringLiteral: locale.rawValue.uppercased()), url: url)
-//                        }
-// 
-//                    }
-//                }
-//                ArtsTab("Event.arts.logo", ratio: 450/200) {
-//                    for locale in DoriLocale.allCases {
-//                        if let url = information.event.logoImageURL(in: locale, allowsFallback: false) {
-//                            ArtsItem(title: LocalizedStringResource(stringLiteral: locale.rawValue.uppercased()), url: url)
-//                        }
-//                    }
-//                }
-//                ArtsTab("Event.arts.home-screen") {
-//                    ArtsItem(title: "Event.arts.home-screen.characters", url: information.event.topScreenTrimmedImageURL, ratio: 1)
-//                    ArtsItem(title: "Event.arts.home-screen.background", url: information.event.topScreenBackgroundImageURL, ratio: 816/613)
-//                }
-//            }
-//            
-            DetailArtsSection {
-                ArtsTab("Character.arts.selection", ratio: 0.45) {
-                    for locale in SekaiLocale.allCases where information.givenName.localizedData?.availableInLocale(locale) == true {
-                        ArtsItem(title: .init(stringLiteral: locale.rawValue.uppercased()), url: information.selectionImageURL(in: locale))
-                    }
-                }
-                if let url = information.iconImageURL {
-                    ArtsTab("Character.arts.icon") {
-                        ArtsItem(title: .init(stringLiteral: information.fullName.majorValue ?? ""), url: url)
-                    }
-                }
-            }
+            DetailsCardsSection(cards: allCards?.filter { $0.characterID == information.id })
+            DetailsEventsSection(events: allEvents, character: information)
             
             ExternalLinksSection(links: [
-                ExternalLink(
-                    name: "External-link.sekai-viewer",
+                ExternalLink(.sekaiViewer,
                     url: URL(string: "https://sekai.best/chara/\(information.id)")!
                 ),
-                ExternalLink(
-                    name: "External-link.sekaipedia",
+                ExternalLink(.sekaipedia,
                     url: URL(string: "https://www.sekaipedia.org/wiki/\((information.fullName.localizedData?.forLocale(.en) ?? "").replacingOccurrences(of: " ", with: "_"))")!
                 ),
-                ExternalLink(
-                    name: "External-link.cleista",
+                ExternalLink(.cleista,
                     url: URL(string: "https://pjsk.cleista.cc/#/characters/\(information.givenNameEnglish.lowercased())")!
                 ),
-                ExternalLink(
-                    name: "External-link.moesekai",
+                ExternalLink(.moeSekai,
                     url: URL(string: "https://pjsk.moe/character/\(information.id)/")!
                 )
             ])
         } switcherDestination: {
             CharacterSearchView()
         }
-        .onAppear {
-            if allCards.isEmpty {
-                Task {
-                    if let fetchedCards = await Card.allWithCache(), randomCard == nil {
-                        allCards = fetchedCards
-                        randomCard = allCards.filter({ $0.characterID == id }).randomElement()
-                    }
-                }
+        .task {
+            if allEvents == nil {
+                let fetchedEvents = await Event.allWithCache()
+                guard !Task.isCancelled else { return }
+                allEvents = fetchedEvents ?? []
             }
         }
     }

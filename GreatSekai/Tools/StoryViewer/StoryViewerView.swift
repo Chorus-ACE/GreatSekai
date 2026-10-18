@@ -1,7 +1,6 @@
 // Story selection and transcript layout adapted from Greatdori’s StoryViewer,
 // StoryCardView and StoryDetailView (Apache-2.0, Greatdori project authors).
 // https://greatdori.com/LICENSE.txt
-import AVKit
 import SekaiKit
 import SwiftUI
 import SDWebImageSwiftUI
@@ -11,11 +10,16 @@ struct StoryViewerView: View {
     @State private var locale = SekaiLocale.primaryLocale
     @State private var episodes: [Episode]?
     @State private var selectedParent: Int?
+    @State private var events: [SekaiKit.Event] = []
     @State private var parentNames: [Int: String] = [:]
     @State private var choosingChapter = false
     @State private var chapterQuery = ""
     @State private var failed = false
     @State private var query = ""
+    @State private var retryID = 0
+    @State private var loadedKind: Episode.Kind?
+    @State private var loadedRequestID: String?
+    private var requestID: String { "\(kind.rawValue)-\(locale.rawValue)-\(retryID)" }
     private var groups: [Int] { Array(Set((episodes ?? []).map(\.parentID))).sorted(by: >) }
     private var displayed: [Episode] {
         (episodes ?? []).filter { (selectedParent == nil || $0.parentID == selectedParent) && (query.isEmpty || $0.title.localizedCaseInsensitiveContains(query)) }
@@ -45,6 +49,7 @@ struct StoryViewerView: View {
                                     Image(systemName: "chevron.up.chevron.down").font(.footnote)
                                 }
                             }.buttonStyle(.plain).foregroundStyle(.tint)
+                            .disabled(episodes == nil)
                         }
                         Divider()
                         ListItem {
@@ -65,7 +70,7 @@ struct StoryViewerView: View {
                 } else if failed {
                     ContentUnavailableView {
                         Label("Story.unavailable", systemImage: "text.bubble")
-                    } actions: { Button("General.retry") { Task { await load() } } }
+                    } actions: { Button("General.retry") { retryID += 1 } }
                 } else { ProgressView() }
             }.frame(maxWidth: infoContentMaxWidth).padding().frame(maxWidth: .infinity)
         }
@@ -73,51 +78,92 @@ struct StoryViewerView: View {
         .searchable(text: $query)
         .sheet(isPresented: $choosingChapter) {
             NavigationStack {
-                List {
-                    Button("Story.all-chapters") { selectedParent = nil; choosingChapter = false }
-                    ForEach(groups.filter { chapterQuery.isEmpty || groupTitle($0).localizedCaseInsensitiveContains(chapterQuery) }, id: \.self) { id in
-                        Button {
-                            selectedParent = id; choosingChapter = false
-                        } label: {
-                            HStack {
-                                Text(groupTitle(id)).foregroundStyle(.primary)
-                                Spacer()
-                                if id == selectedParent { Image(systemName: "checkmark").foregroundStyle(.tint) }
-                            }.padding(.vertical, 4)
+                if kind == .event {
+                    EventPicker(
+                        selection: Binding {
+                            events.first { $0.id == selectedParent }
+                        } set: { event in
+                            selectedParent = event?.id
+                            if let event {
+                                events.removeAll { $0.id == event.id }
+                                events.append(event)
+                                parentNames[event.id] = event.title.localizedData?[locale] ?? event.title.majorValue ?? ""
+                            }
+                        },
+                        locale: locale,
+                        availableEventIDs: Set(groups),
+                        emptySelectionTitle: "Story.all-chapters"
+                    )
+                } else {
+                    List {
+                        Button("Story.all-chapters") { selectedParent = nil; choosingChapter = false }
+                        ForEach(groups.filter { chapterQuery.isEmpty || groupTitle($0).localizedCaseInsensitiveContains(chapterQuery) }, id: \.self) { id in
+                            Button {
+                                selectedParent = id; choosingChapter = false
+                            } label: {
+                                HStack {
+                                    Text(groupTitle(id)).foregroundStyle(.primary)
+                                    Spacer()
+                                    if id == selectedParent { Image(systemName: "checkmark").foregroundStyle(.tint) }
+                                }.padding(.vertical, 4)
+                            }
                         }
                     }
+                    .searchable(text: $chapterQuery)
+                    .navigationTitle("Story.chapter")
+                    .toolbar { ToolbarItem { Button("General.done") { choosingChapter = false } } }
                 }
-                .searchable(text: $chapterQuery)
-                .navigationTitle("Story.chapter")
-                .toolbar { ToolbarItem { Button("General.done") { choosingChapter = false } } }
             }.frame(minWidth: platform == .macOS ? 500 : nil, minHeight: 400)
         }
-        .task(id: "\(kind.rawValue)-\(locale.rawValue)") { await load() }
+        .withSystemBackground()
+        .task(id: requestID) {
+            guard loadedRequestID != requestID else { return }
+            await load()
+        }
     }
     private func groupTitle(_ id: Int) -> String {
         let title = episodes?.first { $0.parentID == id }?.chapterTitle ?? ""
         return kind == .unit ? title : "#\(id) · \(parentNames[id] ?? "")"
     }
     private func load() async {
-        episodes = nil; failed = false; selectedParent = nil
-        let result = await Episode.all(in: locale, kind: kind)
-        guard !Task.isCancelled else { return }
-        episodes = result
-        failed = result == nil
-        selectedParent = groups.first
+        episodes = nil
+        failed = false
+        events = []
         parentNames = [:]
-        switch kind {
+        let currentRequestID = requestID
+        let selectedKind = kind
+        let selectedLocale = locale
+        let result = await Episode.all(in: selectedLocale, kind: selectedKind)
+        guard !Task.isCancelled else { return }
+        guard let result else {
+            failed = true
+            return
+        }
+        switch selectedKind {
         case .event:
-            if let events = await SekaiKit.Event.allWithCache(), !Task.isCancelled {
-                parentNames = Dictionary(events.map { ($0.id, $0.title.localizedData?[locale] ?? $0.title.majorValue ?? "") }, uniquingKeysWith: { a, _ in a })
+            if let regionalEvents = await SekaiKit.Event.allInLocale(selectedLocale) {
+                guard !Task.isCancelled else { return }
+                events = regionalEvents
+                parentNames = Dictionary(regionalEvents.map { ($0.id, $0.title.majorValue ?? "") }, uniquingKeysWith: { first, _ in first })
             }
         case .card:
-            if let cards = await Card.allWithCache(), !Task.isCancelled {
-                parentNames = Dictionary(cards.map { ($0.id, $0.name.localizedData?[locale] ?? $0.name.majorValue ?? "") }, uniquingKeysWith: { a, _ in a })
+            if let cards = await Card.allWithCache() {
+                guard !Task.isCancelled else { return }
+                parentNames = Dictionary(cards.map { ($0.id, $0.name.localizedData?[selectedLocale] ?? $0.name.majorValue ?? "") }, uniquingKeysWith: { first, _ in first })
             }
         case .unit: break
         }
+        guard !Task.isCancelled else { return }
+        episodes = result.sorted {
+            $0.parentID == $1.parentID ? $0.number < $1.number : $0.parentID > $1.parentID
+        }
+        if loadedKind != selectedKind || selectedParent.map({ !groups.contains($0) }) == true {
+            selectedParent = groups.first
+        }
+        loadedKind = selectedKind
+        loadedRequestID = currentRequestID
     }
+
 }
 
 struct EpisodeRow: View {
@@ -158,8 +204,13 @@ struct EventEpisodesSection: View {
         Section {
             VStack {
                 if let episodes {
-                    if episodes.isEmpty { Text("Story.no-episodes").foregroundStyle(.secondary) }
-                    ForEach(episodes) { EpisodeRow(episode: $0) }
+                    if episodes.isEmpty {
+                        Text("Story.no-episodes")
+                        .foregroundStyle(.secondary)
+                    }
+                    ForEach(episodes) {
+                        EpisodeRow(episode: $0)
+                    }
                 } else if failed {
                     Button("General.retry") { Task { await load() } }
                 } else {
@@ -190,80 +241,5 @@ struct EventEpisodesSection: View {
         guard !Task.isCancelled else { return }
         episodes = all?.filter { $0.parentID == event.id }.sorted { $0.number < $1.number }
         failed = all == nil
-    }
-}
-
-struct StoryDetailView: View {
-    let episode: Episode
-    @State private var transcript: StoryTranscript?
-    @State private var failed = false
-    @State private var query = ""
-    @State private var player = AVPlayer()
-    @AppStorage("StoryViewerFontSize") private var fontSize = 16.0
-    var body: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 18) {
-                if let transcript {
-                    if transcript.lines.isEmpty { Text("Story.no-dialogue").foregroundStyle(.secondary) }
-                    ForEach(transcript.lines.filter { query.isEmpty || $0.text.localizedCaseInsensitiveContains(query) || $0.speaker.localizedCaseInsensitiveContains(query) }) { line in
-                        if line.speaker.isEmpty {
-                            Text(line.text).font(.system(size: fontSize)).underline()
-                                .multilineTextAlignment(.center).textSelection(.enabled)
-                                .frame(maxWidth: .infinity).padding(.vertical)
-                        } else {
-                            CustomGroupBox(cornerRadius: 20) {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    HStack {
-                                        if let ids = line.characterIDs, ids.count == 1, let id = ids.first,
-                                           let icon = SekaiKit.Character.iconImageURL(forID: id) {
-                                            WebImage(url: icon) { $0.resizable().scaledToFit() } placeholder: {
-                                                Image(systemName: "person.crop.circle")
-                                            }.frame(width: 20, height: 20)
-                                        } else {
-                                            Image(systemName: (line.characterIDs?.count ?? 0) > 1 ? "person.3.fill" : "person.crop.circle")
-                                                .bold().frame(width: 20, height: 20)
-                                        }
-                                        Text(line.speaker).font(.headline)
-                                        Spacer()
-                                        if let url = line.voiceURL {
-                                            Button("Story.play-voice", systemImage: "speaker.wave.2") {
-                                                player.replaceCurrentItem(with: AVPlayerItem(url: url)); player.play()
-                                            }.labelStyle(.iconOnly).buttonStyle(.plain)
-                                        }
-                                    }
-                                    Text(line.text).font(.system(size: fontSize))
-                                        .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
-                                        .textSelection(.enabled)
-                                }.frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                        }
-                    }
-                } else if failed {
-                    ContentUnavailableView {
-                        Label("Story.unavailable", systemImage: "text.bubble")
-                    } actions: { Button("General.retry") { Task { await load() } } }
-                } else { ProgressView().frame(maxWidth: .infinity) }
-            }.frame(maxWidth: infoContentMaxWidth).padding().frame(maxWidth: .infinity)
-        }
-        .navigationTitle(episode.title)
-        .searchable(text: $query)
-        .toolbar {
-            ToolbarItem {
-                Menu("Story.text-size", systemImage: "textformat.size") {
-                    Button("Story.text-larger") { fontSize = min(fontSize + 2, 32) }
-                    Button("Story.text-smaller") { fontSize = max(fontSize - 2, 12) }
-                }
-            }
-        }
-        .task(id: episode.id) { await load() }
-        .onDisappear { player.pause(); player.replaceCurrentItem(with: nil) }
-    }
-    private func load() async {
-        transcript = nil; failed = false
-        let result = await SekaiCache.withDirectCache(id: "Transcript-v2-\(episode.id)", trait: .invocationElidable) {
-            await StoryTranscript.load(episode)
-        }
-        guard !Task.isCancelled else { return }
-        transcript = result; failed = result == nil
     }
 }

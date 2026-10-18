@@ -67,7 +67,6 @@ import SwiftUI
     ),
     InfoDestinationItem(title: "App.info.comics", symbol: "book", lightColor: .brown, tabValue: .comics, destination: { ComicSearchView() }),
     InfoDestinationItem(title: "App.info.fixtures", symbol: "chair.lounge", lightColor: .teal, tabValue: .fixtures, destination: { MySekaiFixtureSearchView() }),
-    InfoDestinationItem(title: "App.info.song-meta", symbol: "music.note.list", lightColor: .pink, tabValue: .songMeta, destination: { MusicMetaView() }),
 //    InfoDestinationItem(
 //        title: "App.info.song-meta",
 //        symbol: "music.note.list",
@@ -100,6 +99,7 @@ import SwiftUI
 ]
 
 @MainActor let allToolsDestinationItems: [ToolDestinationItem] = [
+    ToolDestinationItem(title: "App.tools.music-meta", symbol: "music.note.list", tabValue: .musicMeta, destination: { MusicMetaView() }),
 //    ToolDestinationItem(title: "App.tools.live2d-viewer", symbol: "person.and.viewfinder", tabValue: .live2dViewer, destination: { Live2DViewerView() }),
     ToolDestinationItem(title: "App.tools.story-viewer", symbol: "text.bubble", tabValue: .storyViewer, destination: { StoryViewerView() }),
     ToolDestinationItem(title: "Collections.title", symbol: "rectangle.stack", tabValue: .collections, destination: { CardCollectionsView() }),

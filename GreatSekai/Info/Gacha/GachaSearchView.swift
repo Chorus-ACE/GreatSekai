@@ -49,8 +49,8 @@ struct GachaInfo: View {
             } placeholder: {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(getPlaceholderColor())
-                    .aspectRatio(2.346, contentMode: .fit)
             }
+            .aspectRatio(2.346, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: 10))
         } detail: {
             HighlightableText(gacha.type.localizedName)

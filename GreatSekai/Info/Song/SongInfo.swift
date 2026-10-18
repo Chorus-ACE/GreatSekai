@@ -32,6 +32,10 @@ struct SongInfo: View {
     let horizontalLayoutCoverSideLength: CGFloat = 110
     let verticalLayoutCoverSideLength: CGFloat = 120
     
+    var coverSideLength: CGFloat {
+        layout == .horizontal ? horizontalLayoutCoverSideLength : verticalLayoutCoverSideLength
+    }
+    
     var body: some View {
         SummaryViewBase(layout, source: information) {
             WebImage(url: information.coverImageURL) { image in
@@ -39,12 +43,12 @@ struct SongInfo: View {
                     .resizable()
                     .antialiased(true)
                     .aspectRatio(1, contentMode: .fit)
-                    .frame(width: (layout == .horizontal ? horizontalLayoutCoverSideLength : verticalLayoutCoverSideLength), height: (layout == .horizontal ? horizontalLayoutCoverSideLength : verticalLayoutCoverSideLength))
+                    .frame(width: coverSideLength, height: coverSideLength)
                     .cornerRadius(5)
             } placeholder: {
                 RoundedRectangle(cornerRadius: 5)
                     .fill(getPlaceholderColor())
-                    .frame(width: (layout == .horizontal ? horizontalLayoutCoverSideLength : verticalLayoutCoverSideLength), height: (layout == .horizontal ? horizontalLayoutCoverSideLength : verticalLayoutCoverSideLength))
+                    .frame(width: coverSideLength, height: coverSideLength)
             }
             .interpolation(.high)
         } detail: {
@@ -60,14 +64,5 @@ struct SongInfo: View {
                 .foregroundStyle(.primary)
                 .preferHiddenInCompactLayout()
         }
-//        .onAppear {
-//            bandName = DoriCache.preCache.bands.first { $0.id == information.bandID }?.bandName.forPreferredLocale() ?? "Lorem Ipsum"
-//            if bandName == "Lorem Ipsum" {
-//                Task {
-//                    let allBands = await Band.all()
-//                    bandName = allBands?.first{ $0.id == information.bandID }?.bandName.forPreferredLocale() ?? "Lorem Ipsum"
-//                }
-//            }
-//        }
     }
 }

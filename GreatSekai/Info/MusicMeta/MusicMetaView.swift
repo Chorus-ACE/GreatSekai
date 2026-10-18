@@ -31,7 +31,7 @@ struct MusicMetaView: View {
                             NavigationLink(destination: {
                                 SongDetailView(id: row.song.id)
                             }, label: {
-                                Text(row.title)
+                                HighlightableText(row.title)
                                     .multilineTextAlignment(.leading)
                             })
                             .foregroundStyle(.primary)
@@ -57,9 +57,9 @@ struct MusicMetaView: View {
                                 NavigationLink { SongDetailView(id: row.song.id) } label: {
                                     CustomGroupBox {
                                         VStack(alignment: .leading, spacing: 8) {
-                                            Text(row.title).font(.headline)
+                                            HighlightableText(row.title).font(.headline)
                                             SongDifficultyIndicator(difficulty: row.meta.difficulty, level: row.level)
-                                                .accessibilityLabel("\(row.meta.difficulty.name) \(row.level)")
+                                                .accessibilityLabel(String("\(row.meta.difficulty.name) \(row.level)"))
                                             Grid(alignment: .leading) {
                                                 metric("MusicMeta.duration", row.meta.duration.formatted(.number.precision(.fractionLength(1))))
                                                 metric("MusicMeta.notes", row.notes.formatted())
@@ -80,7 +80,8 @@ struct MusicMetaView: View {
                 } actions: { Button("General.retry") { Task { await load() } } }
             } else { ProgressView().controlSize(.large) }
         }
-        .navigationTitle("App.info.song-meta")
+        .navigationTitle("App.tools.music-meta")
+        .highlightKeyword($query)
         .searchable(text: $query)
         .toolbar {
             if sizeClass != .regular && platform != .macOS {

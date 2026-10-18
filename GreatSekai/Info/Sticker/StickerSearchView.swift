@@ -2,7 +2,7 @@ import SekaiKit
 import SwiftUI
 
 struct StickerSearchView: View {
-    let gridLayoutItemWidth: CGFloat = 225
+    let gridLayoutItemWidth: CGFloat = 200
 
     var body: some View {
         SearchViewBase(forType: Sticker.self, initialLayout: SummaryLayout.vertical(), layoutOptions: verticalAndHorizontalLayouts) { layout, _, content, _ in

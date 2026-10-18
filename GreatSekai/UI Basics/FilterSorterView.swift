@@ -31,6 +31,7 @@ let filterOptionAnimationDuration: CGFloat = 0.1
 struct FilterView: View {
     @Binding var filter: SekaiFilter
     var keys: [SekaiFilter.Key]
+    var songLevelRange: ClosedRange<Double> = 5...38
     
     let hiddenKeys: [String] = ["characterMatchingStrategy"]
     
@@ -44,7 +45,11 @@ struct FilterView: View {
                         && !(key.id == Card.supportUnitFilterKey.id
                              && keys.contains(where: { $0.id == "unit" })
                              && !(filter["unit"]?.contains(SekaiKit.Unit.virtualSinger.intRawValue) ?? true)) {
-                        FilterItemView(filter: $filter, key: key, allKeys: keys)
+                        if key.id == Song.levelFilterKey.id {
+                            SongLevelFilterView(filter: $filter, key: key, range: songLevelRange)
+                        } else {
+                            FilterItemView(filter: $filter, key: key, allKeys: keys)
+                        }
                     }
                 }
             }, header: {
@@ -70,6 +75,51 @@ struct FilterView: View {
     }
 }
 
+private struct SongLevelFilterView: View {
+    @Binding var filter: SekaiFilter
+    let key: SekaiFilter.Key
+    let range: ClosedRange<Double>
+
+    private var enabled: Binding<Bool> {
+        Binding(get: { !(filter[key]?.isEmpty ?? true) }, set: {
+            filter[key.id] = $0 ? [Int(range.lowerBound)] : []
+        })
+    }
+    private var level: Binding<Double> {
+        Binding(get: {
+            Double(filter[key]?.compactMap { $0 }.first ?? Int(range.lowerBound))
+        }, set: { filter[key.id] = [Int($0)] })
+    }
+    var body: some View {
+        VStack(alignment: .leading) {
+            Toggle(isOn: enabled) {
+                HStack {
+                    Text(key.title)
+                        .bold()
+                    Spacer()
+                    if enabled.wrappedValue {
+                        Text(Int(level.wrappedValue).formatted())
+                            .monospacedDigit()
+                            .contentTransition(.numericText())
+                        Stepper(key.title, value: level, in: range, step: 1)
+                            .labelsHidden()
+                    }
+                }
+            }
+            .toggleStyle(.switch)
+            .tint(.accentColor)
+            if enabled.wrappedValue {
+                Slider(value: level, in: range, step: 1) {
+                    Text(key.title)
+                }
+                    .labelsHidden()
+            }
+        }
+        .animation(.default, value: enabled.wrappedValue)
+        .animation(.default, value: level.wrappedValue)
+    }
+}
+
 struct FilterItemView: View {
     @Binding var filter: SekaiFilter
     let key: SekaiFilter.Key
@@ -83,8 +133,6 @@ struct FilterItemView: View {
         Binding(get: { characterMatchingStrategy }, set: { filter["characterMatchingStrategy"] = [$0] })
     }
 //    @State var skill: SekaiFilter.Skill? = nil
-//    @State var levelSliderIsEnabled = false
-//    @State var level: Double = 5
     var body: some View {
         VStack(alignment: .leading) {
             if key.allowMultipleSelection {
@@ -255,140 +303,8 @@ struct FilterItemView: View {
                         .accessibilityHint("Filter.tap-to-toggle")
                     }
                 }
-            } else {
-                /*
-                 // MARK: Single Selection
-                 if key == .skill {
-                 Group {
-                 #if os(iOS)
-                 VStack(alignment: .leading) {
-                 Text(key.localizedString)
-                 .bold()
-                 //                                        .offset(y: 5)
-                 Picker(selection: $skill, content: {
-                 // Optional "Any" to clear the filter
-                 Text("Filter.skill.any")
-                 .tag(Optional<SekaiFilter.Skill>.none)
-                 
-                 ForEach(key.selector.items, id: \.self) { item in
-                 if let value = item.item.value as? SekaiFilter.Skill {
-                 // Use the skill's simpleDescription (localized) instead of selectorText
-                 //                                    let label = value.simpleDescription.forPreferredLocale() ?? ""
-                 //                                    let label = value.description.forPreferredLocale() ?? ""
-                 Text(item.text)
-                 .tag(Optional(value))
-                 }
-                 }
-                 }, label: {
-                 Text(key.localizedString)
-                 .bold()
-                 }, optionalCurrentValueLabel: {
-                 HStack {
-                 Text(skill?.selectorText ?? String(localized: "Filter.skill.any"))
-                 Spacer()
-                 //                                                .multilineTextAlignment(.trailing)
-                 }
-                 })
-                 .labelsHidden()
-                 .padding(.vertical, -4)
-                 .padding(.leading, -5)
-                 //                                    .border(.red)
-                 .offset(y: -5)
-                 }
-                 #else
-                 Picker(selection: $skill, content: {
-                 // Optional "Any" to clear the filter
-                 Text("Filter.skill.any")
-                 .tag(Optional<SekaiFilter.Skill>.none)
-                 
-                 ForEach(key.selector.items, id: \.self) { item in
-                 if let value = item.item.value as? SekaiFilter.Skill {
-                 // Use the skill's simpleDescription (localized) instead of selectorText
-                 //                                    let label = value.simpleDescription.forPreferredLocale() ?? ""
-                 //                                    let label = value.description.forPreferredLocale() ?? ""
-                 Text(item.text)
-                 .tag(Optional(value))
-                 }
-                 }
-                 }, label: {
-                 Text(key.localizedName)
-                 .bold()
-                 .lineLimit(nil)
-                 })
-                 #endif
-                 }
-                 .pickerStyle(.menu)
-                 .onChange(of: skill) { _, newValue in
-                 filter.skill = newValue
-                 }
-                 } else if /*key == .level*/ false { // FIXME: Level
-                 VStack {
-                 Toggle(isOn: $levelSliderIsEnabled, label: {
-                 HStack {
-                 Text(key.localizedName)
-                 .bold()
-                 Spacer()
-                 if levelSliderIsEnabled {
-                 Text("\(Int(level))")
-                 // .contentTransition(.numericText())
-                 // .animation(.default, value: level)
-                 Stepper("", value: $level, in: 5...35, step: 1, onEditingChanged: { value in
-                 // FIXME: Level
-                 //                                        filter.level = Int(level)
-                 })
-                 .labelsHidden()
-                 .accessibilityHidden(true)
-                 }
-                 
-                 }
-                 })
-                 .toggleStyle(.switch)
-                 .tint(Color.accentColor)
-                 //                            .foregroundStyle(Color.tint)
-                 if levelSliderIsEnabled {
-                 Slider(value: $level, in: 5...35, step: 1, label: {
-                 Text("")
-                 }, onEditingChanged: { value in
-                 if !value {
-                 // FIXME: Level
-                 //                                    filter.level = Int(level)
-                 }
-                 })
-                 .labelsHidden()
-                 .disabled(!levelSliderIsEnabled)
-                 }
-                 }
-                 //                    .onChange(of: levelSliderIsEnabled) { _, isEnabledNow in
-                 //                        if isEnabledNow {
-                 //                            filter.level = Int(level)
-                 //                        } else {
-                 //                            filter.level = nil
-                 //                        }
-                 //                    }
-                 }
-                 */
             }
         }
-        // FIXME: Level & Skill
-        //        .onAppear {
-        //            skill = filter.skill
-        //            if let filterLevel = filter.level {
-        //                levelSliderIsEnabled = true
-        //                level = Double(filterLevel)
-        //            } else {
-        //                levelSliderIsEnabled = false
-        //            }
-        //        }
-        //        .onChange(of: filter.skill) {
-        //            if skill == nil {
-        //                skill = filter.skill
-        //            }
-        //        }
-        //        .onChange(of: filter.level) {
-        //            if filter.level == nil {
-        //                levelSliderIsEnabled = false
-        //            }
-        //        }
     }
     struct FilterSelectionCapsuleView<Content: View>: View {
         @Environment(\.horizontalSizeClass) var sizeClass

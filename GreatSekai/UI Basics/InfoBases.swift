@@ -370,6 +370,12 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
     @State private var searchTask: Task<Void, Never>?
     @State private var searchRevision = 0
 
+    private var songLevelRange: ClosedRange<Double> {
+        let levels = (elements as? [Song] ?? []).flatMap { $0.difficultyLevel.values }
+        let minimum = Double(levels.min() ?? 1)
+        return minimum...max(minimum + 1, Double(levels.max() ?? 40))
+    }
+
     private struct RowIdentity: Hashable {
         let id: Element.ID
         let revision: Int64
@@ -442,6 +448,7 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
                                 Spacer(minLength: 0)
                             }
                         }
+                        .environment(\.highlightedSongLevel, filter[Song.levelFilterKey.id]?.first ?? nil)
                     } else {
                         ContentUnavailableView("Search.no-results", systemImage: "magnifyingglass", description: Text("Search.no-results.description"))
                     }
@@ -505,7 +512,11 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
                                 return "Search.result.\(searchedElements!.count)"
                             }
                         } else if infoIsAvailable {
-                            return "Search.loading"
+                            if searchedText.isEmpty && !filter.isFiltering(referencing: Element.filterKeys) {
+                                return "Search.loading"
+                            } else {
+                                return "Search.result.\(0)"
+                            }
                         }
                         return ""
                     }()
@@ -536,7 +547,7 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
         .wrapIf(sizeClass == .regular) { content in
             content
                 .inspector(isPresented: $showFilterSheet) {
-                    FilterView(filter: $filter, keys: Element.filterKeys)
+                    FilterView(filter: $filter, keys: Element.filterKeys, songLevelRange: songLevelRange)
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
                         .presentationBackgroundInteraction(.enabled)
@@ -544,7 +555,7 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
         } else: { content in
             content
                 .sheet(isPresented: $showFilterSheet) {
-                    FilterView(filter: $filter, keys: Element.filterKeys)
+                    FilterView(filter: $filter, keys: Element.filterKeys, songLevelRange: songLevelRange)
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
                         .presentationBackgroundInteraction(.enabled)
@@ -682,15 +693,17 @@ extension SearchViewBase {
     }
 }
 
-struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View>: View {
+struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View, HeaderAccessory: View>: View {
     var localizedElements: LocalizedData<[Element]>
     var isLoading: Bool
     var showLocalePicker: Bool
     var makeEachContent: (Element) -> Content
+    var makeHeaderAccessory: () -> HeaderAccessory
     
     init(
         elements: [Element]?,
         showLocalePicker: Bool = false,
+        @ViewBuilder headerAccessory: @escaping () -> HeaderAccessory = { EmptyView() },
         @ViewBuilder eachContent: @escaping (Element) -> Content
     ) {
         if let elements {
@@ -702,11 +715,13 @@ struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View
         }
         self.showLocalePicker = showLocalePicker
         self.makeEachContent = eachContent
+        self.makeHeaderAccessory = headerAccessory
     }
     init(
         elements: LocalizedData<[Element]>?,
         isLoading: Bool = false,
         showLocalePicker: Bool = true,
+        @ViewBuilder headerAccessory: @escaping () -> HeaderAccessory = { EmptyView() },
         @ViewBuilder eachContent: @escaping (Element) -> Content
     ) {
         if let elements {
@@ -718,6 +733,7 @@ struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View
         }
         self.showLocalePicker = showLocalePicker
         self.makeEachContent = eachContent
+        self.makeHeaderAccessory = headerAccessory
     }
     
     @State private var locale = SekaiLocale.primaryLocale
@@ -758,6 +774,7 @@ struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View
                 Text(Element.pluralName)
                     .font(.title2)
                     .bold()
+                makeHeaderAccessory()
                 if showLocalePicker {
                     DetailSectionOptionPicker(selection: $locale, options: SekaiLocale.allCases)
                 }

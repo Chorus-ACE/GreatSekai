@@ -61,10 +61,10 @@ private struct GachaDetailContent: View {
         GachaDetailRatesView(information: information)
         GachaDetailPaymentView(information: information)
         if !information.summary.isCollectionEmpty {
-            textSection("Gacha.summary", text: information.summary)
+            GachaTextSection(title: "Gacha.summary", text: information.summary.majorValue ?? "")
         }
         if !information.description.isCollectionEmpty {
-            textSection("Gacha.description", text: information.description)
+            GachaTextSection(title: "Gacha.description", text: information.description.majorValue ?? "")
         }
         DetailArtsSection {
             ArtsTab("Gacha.arts.banner", ratio: 3) {
@@ -85,17 +85,35 @@ private struct GachaDetailContent: View {
         ExternalLinksSection(links: [ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/gacha/\(information.id)")!)])
     }
 
-    private func textSection(_ title: LocalizedStringKey, text: LocalizableData<String>) -> some View {
+}
+
+private struct GachaTextSection: View {
+    let title: LocalizedStringKey
+    let text: String
+    @State private var expanded = false
+
+    var body: some View {
         Section {
             CustomGroupBox {
-                LocalizableText(text)
+                Text(text)
+                    .lineLimit(expanded ? nil : 4)
+                    .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
             .frame(maxWidth: infoContentMaxWidth)
         } header: {
-            HStack { Text(title).font(.title2).bold(); Spacer() }
-                .frame(maxWidth: infoContentMaxWidth).detailSectionHeader()
+            HStack {
+                Text(title).font(.title2).bold()
+                Spacer()
+                Button(expanded ? "Details.collapse" : "Details.expand") {
+                    expanded.toggle()
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: infoContentMaxWidth)
+            .detailSectionHeader()
         }
     }
 }

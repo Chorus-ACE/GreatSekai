@@ -299,9 +299,10 @@ enum AppSection: Hashable {
 }
 
 enum InfoTab: Hashable {
-    case home, characters, cards, costumes, events, gacha, stickers, songs, songMeta, miracleTicket, comics, fixtures
+    case home, characters, cards, costumes, events, gacha, stickers, songs, miracleTicket, comics, fixtures
 }
 
 enum ToolTab: Hashable {
-    case home, eventTracker, chartSimulator, storyViewer, live2dViewer, assetExplorer, station, zeileEditor, eventCalculator, collections
+    // case live2dViewer
+    case home, musicMeta, eventTracker, chartSimulator, storyViewer, assetExplorer, station, zeileEditor, eventCalculator, collections
 }

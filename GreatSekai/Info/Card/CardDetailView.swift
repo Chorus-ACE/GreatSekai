@@ -77,28 +77,21 @@ struct CardDetailView: View {
             #endif
             
             ExternalLinksSection(links: [
-                ExternalLink(
-                    name: "External-link.sekai-viewer",
-                    url: URL(string: "https://sekai.best/card/\(information.id)")!
-                ),
+                ExternalLink(.sekaiViewer, url:
+                                URL(string: "https://sekai.best/card/\(information.id)")!
+                            ),
                 
-//                ExternalLink(
-//                    name: "External-link.sekaipedia",
-//                    url: URL(string: "https://www.sekaipedia.org/wiki/\((information.fullName.localizedData?.forLocale(.en) ?? "").replacingOccurrences(of: " ", with: "_"))")!
-//                ),
+                ExternalLink(.cleista, url:
+                                URL(string: "https://pjsk.cleista.cc/#/cards/\(SekaiCache.preCache.character(id: information.characterID)?.givenName.forLocale(.en)?.lowercased() ?? "")-\(information.id)")!
+                             ),
                 
-                ExternalLink(
-                    name: "External-link.cleista",
-                    url: URL(string: "https://pjsk.cleista.cc/#/cards/\(SekaiCache.preCache.character(id: information.characterID)?.givenName.forLocale(.en)?.lowercased() ?? "")-\(information.id)")!
-                ),
-                ExternalLink(
-                    name: "External-link.moesekai",
-                    url: URL(string: "https://pjsk.moe/cards/\(information.id)/")!
-                ),
-                ExternalLink(
-                    name: "External-link.haruki",
-                    url: URL(string: "https://haruki.seiunx.com/cards/\(information.id)")!
-                )
+                ExternalLink(.moeSekai, url:
+                                URL(string: "https://pjsk.moe/cards/\(information.id)/")!
+                            ),
+                
+                ExternalLink(.haruki, url:
+                                URL(string: "https://haruki.seiunx.com/cards/\(information.id)")!
+                            )
             ])
         } switcherDestination: {
             CardSearchView()

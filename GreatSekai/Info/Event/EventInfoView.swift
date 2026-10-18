@@ -16,20 +16,22 @@ let bannerRatio: CGFloat = 2.346
 struct EventInfo: View {
     var subtitle: LocalizedStringKey? = nil
     var showDetails: Bool
-    @State var event: Event
+    var event: Event
+    var locale: SekaiLocale?
     
-    init(_ event: Event, subtitle: LocalizedStringKey? = nil, showDetails: Bool = true) {
+    init(_ event: Event, subtitle: LocalizedStringKey? = nil, showDetails: Bool = true, locale: SekaiLocale? = nil) {
         self.event = event
         self.subtitle = subtitle
         self.showDetails = showDetails
+        self.locale = locale
     }
     
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.regularInfoImageSizeFactor) private var sizeFactor
 
     var body: some View {
-        SummaryViewBase(.vertical(hidesDetail: !showDetails), source: event) {
-            FallbackableWebImage(throughURLs: [event.bannerImageURL, event.bannerImageAltURL]) { image in
+        SummaryViewBase(.vertical(hidesDetail: !showDetails), title: locale.map { .unlocalized(event.title.localizedData?[$0] ?? event.title.majorValue) } ?? event.title) {
+            FallbackableWebImage(throughURLs: [event.bannerImageURL(in: locale), event.bannerImageAltURL(in: locale)]) { image in
                 image
                     .resizable()
                     .antialiased(true)
@@ -53,10 +55,10 @@ struct EventInfo: View {
         } detail: {
             Group {
                 HighlightableText(
-                    event.focusCharacterLabel ?? event.unit?.localizedName ?? String(localized: "Event.shuffle"),
+                    event.focusCharacterLabel(in: locale ?? .primaryLocale) ?? event.unit?.localizedName ?? String(localized: "Event.shuffle"),
                     suffix: "\(String(localized: "Typography.bold-dot-seperater"))\(event.eventType.localizedName)"
                 )
-                .typesettingLanguage(.explicit(.init(identifier: SekaiLocale.primaryLocale.nsLocale.language.minimalIdentifier)))
+                .typesettingLanguage(.explicit(.init(identifier: (locale ?? .primaryLocale).nsLocale.language.minimalIdentifier)))
             }
             
             if let subtitle {

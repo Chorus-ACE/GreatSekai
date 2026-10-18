@@ -50,28 +50,22 @@ struct SongDetailView: View {
             }
             
             ExternalLinksSection(links: [
-                ExternalLink(
-                    name: "External-link.sekai-viewer",
+                ExternalLink(.sekaiViewer,
                     url: URL(string: "https://sekai.best/music/\(information.id)")!
                 ),
-                ExternalLink(
-                    name: "External-link.sonolus",
+                ExternalLink(.sonolus,
                     url: URL(string: "https://sonolus.sekai.best/playlists/sekai-best-\(information.id)")!
                 ),
-                ExternalLink(
-                    name: "External-link.cleista",
+                ExternalLink(.cleista,
                     url: URL(string: "https://pjsk.cleista.cc/#/music/\(information.id)")!
                 ),
-                ExternalLink(
-                    name: "External-link.moesekai",
+                ExternalLink(.moeSekai,
                     url: URL(string: "https://pjsk.moe/music/\(information.id)/")!
                 ),
-                ExternalLink(
-                    name: "External-link.haruki",
+                ExternalLink(.haruki,
                     url: URL(string: "https://haruki.seiunx.com/music/\(information.id)")!
                 ),
-                ExternalLink(
-                    name: "External-link.pjsekai-moe",
+                ExternalLink(.pjsekaiMoe,
                     url: URL(string: "https://pjsekai.moe/#/music/\(information.id)")!
                 )
             ])

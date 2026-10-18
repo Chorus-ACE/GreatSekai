@@ -14,6 +14,10 @@ struct ComicInfo: View {
             ComicThumbnail(comic: information)
                 .frame(width: layout == .horizontal ? 140 : 200)
         } detail: {
+            if let title = information.title.localizedData?.forLocale(.secondaryLocale) {
+                HighlightableText(title)
+                    .foregroundStyle(.secondary)
+            }
         }
         .fixedSize(horizontal: false, vertical: true)
     }

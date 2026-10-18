@@ -29,6 +29,7 @@ struct EventDetailView: View {
                 }
                 
                 EventEpisodesSection(event: information.event).id(information.id)
+                
                 DetailArtsSection {
                     ArtsTab("Event.arts.banner", ratio: bannerRatio) {
                         for locale in SekaiLocale.allCases where information.event.title.localizedData?.availableInLocale(locale) == true {
@@ -50,20 +51,16 @@ struct EventDetailView: View {
                 }
                 
                 ExternalLinksSection(links: [
-                    ExternalLink(
-                        name: "External-link.sekai-viewer",
+                    ExternalLink(.sekaiViewer,
                         url: URL(string: "https://sekai.best/event/\(information.id)")!
                     ),
-                    ExternalLink(
-                        name: "External-link.cleista",
+                    ExternalLink(.cleista,
                         url: URL(string: "https://pjsk.cleista.cc/#/event-story/\(information.id)/episode-list")!
                     ),
-                    ExternalLink(
-                        name: "External-link.moesekai",
+                    ExternalLink(.moeSekai,
                         url: URL(string: "https://pjsk.moe/events/\(information.id)/")!
                     ),
-                    ExternalLink(
-                        name: "External-link.haruki",
+                    ExternalLink(.haruki,
                         url: URL(string: "https://haruki.seiunx.com/events/\(information.id)")!
                     )
                 ])

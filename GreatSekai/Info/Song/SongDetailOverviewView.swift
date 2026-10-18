@@ -88,6 +88,19 @@ struct SongDetailOverviewView: View {
                 //                        CompactAudioPlayer(url: information.soundURL, mediaInfo: (information.title.forPreferredLocale(), information.creatorArtist.localizedData?.forPreferredLocale()))
                 //                    }
                 //                }
+                
+                
+                CustomGroupBox {
+                    VStack {
+                        CompactAudioPlayer(url: information.song.musicURL(vocalAssetBundleName: "FIXME")) // FIXME: No vocal asset bundle name yet
+                        Divider()
+                        ListItem(title: {
+                            Text("Song.player.version")
+                        }, value: {
+                            
+                        })
+                    }
+                }
             }
         })
     }

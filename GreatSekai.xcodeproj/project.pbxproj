@@ -23,7 +23,6 @@
 		6F4974E09387419AA413C935 /* GachaDetailPaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06F3EFF5F5D42B58D6CEFCB /* GachaDetailPaymentView.swift */; };
 		738A3DCEB5BF4ABBA4376C40 /* GachaDetailRatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E77F48E2AF1F48D48DD857F3 /* GachaDetailRatesView.swift */; };
 		7550ABBA3B3C75889C5905D5 /* GachaSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCACD85661D542DAD507090 /* GachaSearchView.swift */; };
-		8FA9C2DDD2E3472AB1C72738 /* Live2DKit in Frameworks */ = {isa = PBXBuildFile; productRef = B9CB5DD6B6774B22BBDB659C /* Live2DKit */; };
 		8FD387BE52B844E184BA2B29 /* CardCollectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0639E8DD198D459E92890B32 /* CardCollectionsView.swift */; };
 		A498D037E5834DDF8B700919 /* MySekaiFixtureDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F87278AA85A547ED836C6684 /* MySekaiFixtureDetailView.swift */; };
 		B63999876492E28397E093DD /* StickerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED49AC16127A4427C94DB2ED /* StickerDetailView.swift */; };
@@ -73,6 +72,9 @@
 		E98C84CF301D9413005B6B45 /* CardThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98C84CE301D9413005B6B45 /* CardThumbnail.swift */; };
 		E99FB7B4301F030E00020F06 /* CardImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99FB7B3301F030E00020F06 /* CardImage.swift */; };
 		E99FB7B6301F227700020F06 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E99FB7B5301F227700020F06 /* AppIcon.icon */; };
+		E9A92ACD3084ABD10037CFA6 /* DetailsEventsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92ACC3084ABD10037CFA6 /* DetailsEventsSection.swift */; };
+		E9A92AE73084E26D0037CFA6 /* EventPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92AE63084E26D0037CFA6 /* EventPicker.swift */; };
+		E9A92AE93084E2C30037CFA6 /* StoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92AE83084E2C30037CFA6 /* StoryDetailView.swift */; };
 		E9BCABBA3021F5270076FAA5 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E9BCABB83021F5270076FAA5 /* InfoPlist.strings */; };
 		E9C55F5C2F53F21200DCFD2D /* SekaiKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F5B2F53F21200DCFD2D /* SekaiKit */; };
 		E9C55F9D2F53F27000DCFD2D /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9C55F9C2F53F27000DCFD2D /* SDWebImageSwiftUI */; };
@@ -182,6 +184,9 @@
 		E98C84CE301D9413005B6B45 /* CardThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardThumbnail.swift; sourceTree = "<group>"; };
 		E99FB7B3301F030E00020F06 /* CardImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardImage.swift; sourceTree = "<group>"; };
 		E99FB7B5301F227700020F06 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		E9A92ACC3084ABD10037CFA6 /* DetailsEventsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsEventsSection.swift; sourceTree = "<group>"; };
+		E9A92AE63084E26D0037CFA6 /* EventPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventPicker.swift; sourceTree = "<group>"; };
+		E9A92AE83084E2C30037CFA6 /* StoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StoryDetailView.swift; path = GreatSekai/Tools/StoryViewer/StoryDetailView.swift; sourceTree = SOURCE_ROOT; };
 		E9BCABB63021F48C0076FAA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E9BCABB93021F5270076FAA5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E9BCABBB3021F5D20076FAA5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -232,7 +237,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8FA9C2DDD2E3472AB1C72738 /* Live2DKit in Frameworks */,
 				E9C55FA02F53F28800DCFD2D /* SDWebImageSVGCoder in Frameworks */,
 				E9C55F9D2F53F27000DCFD2D /* SDWebImageSwiftUI in Frameworks */,
 				E9C55F5C2F53F21200DCFD2D /* SekaiKit in Frameworks */,
@@ -293,6 +297,7 @@
 			isa = PBXGroup;
 			children = (
 				2406D8CDA925482EAD99A31F /* StoryViewerView.swift */,
+				E9A92AE83084E2C30037CFA6 /* StoryDetailView.swift */,
 			);
 			name = StoryViewer;
 			sourceTree = "<group>";
@@ -485,9 +490,9 @@
 			isa = PBXGroup;
 			children = (
 				E9BCABB63021F48C0076FAA5 /* Info.plist */,
-				E9C55FC82F53F3C100DCFD2D /* Assets.xcassets */,
-				E90629812F727BA900EDCDC6 /* Localizable.xcstrings */,
 				E99FB7B5301F227700020F06 /* AppIcon.icon */,
+				E90629812F727BA900EDCDC6 /* Localizable.xcstrings */,
+				E9C55FC82F53F3C100DCFD2D /* Assets.xcassets */,
 				E9BCABB73021F5130076FAA5 /* Localizable */,
 				E9C55FCA2F53F3C100DCFD2D /* GreatSekaiApp.swift */,
 				E931520C2F5401D1002D102D /* UI Basics */,
@@ -522,6 +527,8 @@
 				E960BAD4301DF12000B86B8A /* EventSearchView.swift */,
 				B716232C3025566900228E92 /* EventDetailView.swift */,
 				B716232E3025583300228E92 /* EventDetailOverviewView.swift */,
+				E9A92ACC3084ABD10037CFA6 /* DetailsEventsSection.swift */,
+				E9A92AE63084E26D0037CFA6 /* EventPicker.swift */,
 			);
 			path = Event;
 			sourceTree = "<group>";
@@ -567,7 +574,6 @@
 			);
 			name = GreatSekai;
 			packageProductDependencies = (
-				B9CB5DD6B6774B22BBDB659C /* Live2DKit */,
 				E9C55F5B2F53F21200DCFD2D /* SekaiKit */,
 				E9C55F9C2F53F27000DCFD2D /* SDWebImageSwiftUI */,
 				E9C55F9F2F53F28800DCFD2D /* SDWebImageSVGCoder */,
@@ -603,7 +609,6 @@
 			mainGroup = E9C55F432F53F1E700DCFD2D;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				322F04C3BA2B4DFBA8950DD5 /* XCLocalSwiftPackageReference "Packages/Live2DKit" */,
 				E9C55F5A2F53F21100DCFD2D /* XCLocalSwiftPackageReference "../SekaiKit" */,
 				E9C55F9B2F53F27000DCFD2D /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 				E9C55F9E2F53F28800DCFD2D /* XCRemoteSwiftPackageReference "SDWebImageSVGCoder" */,
@@ -691,9 +696,11 @@
 				F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */,
 				10D7563A373B4F1B85D3D343 /* ComicInfo.swift in Sources */,
 				F175E196AE87424785FA95F5 /* ComicSearchView.swift in Sources */,
+				E9A92ACD3084ABD10037CFA6 /* DetailsEventsSection.swift in Sources */,
 				2131E269C7F241EBA1410EA7 /* ComicDetailView.swift in Sources */,
 				7550ABBA3B3C75889C5905D5 /* GachaSearchView.swift in Sources */,
 				6077A621EA2E5D4C2E91158C /* GachaDetailView.swift in Sources */,
+				E9A92AE93084E2C30037CFA6 /* StoryDetailView.swift in Sources */,
 				6F4974E09387419AA413C935 /* GachaDetailPaymentView.swift in Sources */,
 				738A3DCEB5BF4ABBA4376C40 /* GachaDetailRatesView.swift in Sources */,
 				C61F1100241C4822BB60D84A /* GachaDetailCardsView.swift in Sources */,
@@ -706,6 +713,7 @@
 				E99FB7B4301F030E00020F06 /* CardImage.swift in Sources */,
 				E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */,
 				B7850001301CE604005B6B45 /* EventInfoForHome.swift in Sources */,
+				E9A92AE73084E26D0037CFA6 /* EventPicker.swift in Sources */,
 				E9C55FD12F53F3C100DCFD2D /* QuickLook.swift in Sources */,
 				E938722630301975006F22C1 /* DetailsSongsSection.swift in Sources */,
 				E9C55FD22F53F3C100DCFD2D /* StableHasher.swift in Sources */,
@@ -1128,10 +1136,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		322F04C3BA2B4DFBA8950DD5 /* XCLocalSwiftPackageReference "Packages/Live2DKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/Live2DKit;
-		};
 		E9C55F5A2F53F21100DCFD2D /* XCLocalSwiftPackageReference "../SekaiKit" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../SekaiKit;
@@ -1166,10 +1170,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B9CB5DD6B6774B22BBDB659C /* Live2DKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Live2DKit;
-		};
 		E93152C22F540687002D102D /* MarkdownUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E93152C12F540687002D102D /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;

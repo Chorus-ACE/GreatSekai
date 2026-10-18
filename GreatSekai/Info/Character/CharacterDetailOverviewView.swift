@@ -74,7 +74,7 @@ struct CharacterDetailOverviewView: View {
                 DetailInfoItem("Character.gender", text: information.gender.localizedName)
             }
             
-            DetailInfoItem("Character.birthday", content: {
+            DetailInfoItem(information.unit == .virtualSinger ? "Character.anniversary" : "Character.birthday", content: {
                 if let birthday = information.birthday, let date = calendar().date(from: birthday) {
                     Text(dateFormatter.string(from: date))
                 } else {
@@ -166,8 +166,6 @@ struct CharacterDetailColorInfo: View {
                         })
                     }
                     .formStyle(.grouped)
-                } else {
-                    Text(verbatim: "111")
                 }
             }
             .navigationTitle("Character.color.details")
@@ -225,8 +223,8 @@ struct CharacterWrappingHStack: View {
     @State var virtualSingerIsHovering: Bool = false
     
     var mappedCharacters: [Int] {
-        if Set(21...26).isSubset(of: Set(characters)) {
-            var temp = characters
+        var temp = characters
+        if wrapCompleteVirtualSingers && Set(21...26).isSubset(of: Set(characters)) {
             temp.removeAll(where: { (21...26).contains($0) })
             temp.append(-831)
             return temp
