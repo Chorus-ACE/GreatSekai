@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
+import SwiftUI
+import SekaiKit
 import Combine
 import SDWebImageSwiftUI
-import SekaiKit
-import SwiftUI
 
 let loadingAnimationDuration = 0.1
 
@@ -25,7 +25,6 @@ private func homeNavigate(to page: NavigationPage?) {
     _homeNavigationSubject.send(page)
 }
 enum NavigationPage: Hashable {
-    case news
     case characterDetail(Int)
     case eventDetail(Int)
 }
@@ -36,43 +35,20 @@ struct HomeView: View {
     @State var useCompactVariant = true
     @State var showSettingsSheet = false
     @State var currentNavigationPage: NavigationPage?
-    @AppStorage("homeEventServer1") var homeEventServer1 = "jp"
-    @AppStorage("homeEventServer2") var homeEventServer2 = "cn"
-    @AppStorage("homeEventServer3") var homeEventServer3 = "tw"
-    @AppStorage("homeEventServer4") var homeEventServer4 = "en"
     var body: some View {
         NavigationStack {
             ScrollView {
-                Button(action: {
-                    Task {
-                        SekaiCache.invalidateAll()
-                        
-                        SDImageCache.shared.clear(with: .all)
-                        
-//                        await SDImageCache.shared.clearDiskOnCompletion()
-                        
-//                        let char = await Character(id: 3)
-//                        
-//                        print(char)
-                    }
-                }, label: {
-                    Text(verbatim: "1")
-                })
-                /*
                 ZStack {
                     VStack {
                         HomeBannersView()
                         HStack {
                             VStack {
-                                HomeNewsView()
                                 CustomGroupBox { HomeBirthdayView() }
-                                HomeEventsView(locale: DoriLocale(rawValue: homeEventServer4) ?? .jp)
+                                HomeEventsView(locale: homeEventSecondaryLocale())
                                 Spacer()
                             }
                             VStack {
-                                HomeEventsView(locale: DoriLocale(rawValue: homeEventServer1) ?? .jp)
-                                HomeEventsView(locale: DoriLocale(rawValue: homeEventServer2) ?? .jp)
-                                HomeEventsView(locale: DoriLocale(rawValue: homeEventServer3) ?? .jp)
+                                HomeEventsView(locale: .jp)
                                 Spacer()
                             }
                         }
@@ -82,42 +58,36 @@ struct HomeView: View {
                     .frame(width: useCompactVariant ? 0 : nil, height: useCompactVariant ? 0 : nil)
                     VStack {
                         HomeBannersView()
-                        HomeNewsView()
                         CustomGroupBox { HomeBirthdayView() }
-                        HomeEventsView(locale: DoriLocale(rawValue: homeEventServer1) ?? .jp)
-                        HomeEventsView(locale: DoriLocale(rawValue: homeEventServer2) ?? .jp)
-                        HomeEventsView(locale: DoriLocale(rawValue: homeEventServer3) ?? .jp)
-                        HomeEventsView(locale: DoriLocale(rawValue: homeEventServer4) ?? .jp)
+                        HomeEventsView(locale: .jp)
+                        HomeEventsView(locale: homeEventSecondaryLocale())
                     }
                     .padding(.horizontal)
                     .opacity(!useCompactVariant ? 0 : 1)
                     .frame(width: !useCompactVariant ? 0 : nil, height: !useCompactVariant ? 0 : nil)
                 }
-                 */
+                .padding(.vertical, useCompactVariant ? 0 : nil)
             }
             .withSystemBackground()
             .navigationTitle("App.home")
             .navigationDestination(item: $currentNavigationPage) { page in
                 switch page {
-                case .news:
-                    EmptyView()
                 case .characterDetail(let id):
-//                    CharacterDetailView(id: id)
-                    EmptyView()
+                    CharacterDetailView(id: id)
                 case .eventDetail(let id):
-//                    EventDetailView(id: id)
-                    EmptyView()
+                    EventDetailView(id: id)
                 }
             }
             .toolbar {
-                if platform != .macOS && sizeClass == .compact {
-                    ToolbarItem(placement: .automatic, content: {
+                if platform != .macOS && (sizeClass == .compact || platform == .visionOS) {
+                    ToolbarItem {
                         Button(action: {
                             showSettingsSheet = true
                         }, label: {
                             Image(systemName: "gear")
                         })
-                    })
+                        .buttonBorderShape(.circle)
+                    }
                 }
             }
             .sheet(isPresented: $showSettingsSheet, content: {
@@ -135,124 +105,21 @@ struct HomeView: View {
             currentNavigationPage = page
         }
     }
-}
-
-/*
-struct HomeNewsView: View {
-    @State var news: [DoriFrontend.News.ListItem]?
-    @State var allEvents: [PreviewEvent]?
-    @State var allGacha: [PreviewGacha]?
-    @State var allSongs: [PreviewSong]?
-    var dateFormatter = DateFormatter()
-    init() {
-        dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = .short
-    }
-    let totalNewsNumber = 4
-    var body: some View {
-            CustomGroupBox {
-                HStack {
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Group {
-                                if news != nil {
-                                    Text("Home.news")
-                                } else {
-                                    Text("Home.news")
-                                        .foregroundStyle(getPlaceholderColor())
-                                        .redacted(reason: .placeholder)
-                                }
-                            }
-                            .font(.title2)
-                            .bold()
-                            .accessibilityHeading(.h2)
-                            Spacer()
-                        }
-                        Rectangle()
-                            .frame(height: 1)
-                            .opacity(0)
-                        if let news {
-                            ForEach(0..<news.prefix(totalNewsNumber).count, id: \.self) { newsIndex in
-                                NewsPreview(allEvents: allEvents, allGacha: allGacha, allSongs: allSongs, news: news[newsIndex])
-                                if newsIndex != (totalNewsNumber - 1) {
-                                    Rectangle()
-                                        .frame(height: 1)
-                                        .opacity(0)
-                                }
-                            }
-                        } else {
-                            ForEach(0..<5, id: \.self) { newsIndex in
-                                VStack(alignment: .leading) {
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.15))
-                                        .frame(height: 40)
-                                        .cornerRadius(5)
-                                        .redacted(reason: .placeholder)
-                                }
-                                
-                                if newsIndex != 4 {
-                                    Rectangle()
-                                        .frame(height: 1)
-                                        .opacity(0)
-                                }
-                            }
-                        }
-                    }
-                    Spacer()
-                }
-            }
-            .accessibilityElement(children: .contain)
-        .animation(.easeInOut(duration: loadingAnimationDuration), value: news?.count)
-        .buttonStyle(.plain)
-        .foregroundStyle(.primary)
-        .onAppear {
-            updateNews()
-        }
-        .onActivationChange { isActive in
-            if isActive {
-                updateNews()
-            }
-        }
-        .onTapGesture {
-            homeNavigate(to: .news)
-        }
-    }
     
-    private func updateNews() {
-        Task {
-            DoriCache.withCache(id: "Home_News", trait: .realTime) {
-                await DoriFrontend.News.list()
-            } .onUpdate {
-                news = $0
-            }
-            await withTaskGroup { group in
-                group.addTask {
-                    let events = await Event.all()
-                    await MainActor.run {
-                        allEvents = events
-                    }
-                }
-                group.addTask {
-                    let gacha = await Gacha.all()
-                    await MainActor.run {
-                        allGacha = gacha
-                    }
-                }
-                group.addTask {
-                    let songs = await Song.all()
-                    await MainActor.run {
-                        allSongs = songs
-                    }
-                }
-            }
+    func homeEventSecondaryLocale() -> SekaiLocale {
+        if SekaiLocale.primaryLocale != .jp {
+            return SekaiLocale.primaryLocale
+        } else {
+            return SekaiLocale.secondaryLocale
         }
     }
 }
 
 struct HomeBirthdayView: View {
+    @AppStorage("BirthdayTimeZone") private var birthdayTimeZone = "JST"
     @AppStorage("showBirthdayDate") var showBirthdayDate = showBirthdayDateDefaultValue
-    @State var birthdays: [DoriFrontend.Characters.BirthdayCharacter]?
-    @State var systemBirthdays: [DoriFrontend.Characters.BirthdayCharacter]?
+    @State private var birthdays: [HomeBirthdayCharacter]?
+    @State private var systemBirthdays: [HomeBirthdayCharacter]?
     var formatter = DateFormatter()
     var todaysDateFormatter = DateFormatter()
     var calendar = Calendar(identifier: .gregorian)
@@ -272,7 +139,7 @@ struct HomeBirthdayView: View {
         HStack {
             VStack(alignment: .leading) {
                 HStack {
-                    if birthdays != nil && todaysHerBirthday(birthdays!.first!.birthday) {
+                    if birthdays?.first.map({ todaysTheirBirthday($0.birthday) }) == true {
                         Text("Home.birthday.happy-birthday")
                             .font(.title2)
                             .bold()
@@ -293,7 +160,7 @@ struct HomeBirthdayView: View {
                             Text(todaysDateFormatter.string(from: .now))
                         } else if showBirthdayDate == 2 {
                             // If today's someone's birthday
-                            if (birthdays != nil && todaysHerBirthday(birthdays!.first!.birthday)) {
+                            if (birthdays?.first.map { todaysTheirBirthday($0.birthday) } == true) {
                                 Text(todaysDateFormatter.string(from: .now))
                             }
                         } else if showBirthdayDate == 1 {
@@ -305,7 +172,6 @@ struct HomeBirthdayView: View {
                     .foregroundStyle(.secondary)
                     .fontWeight(.light)
                     .font(.title3)
-                    .hidden(AppFlag.DEMO)
                     .wrapIf(birthdays == nil) { content in
                         content
                             .redacted(reason: .placeholder)
@@ -316,7 +182,7 @@ struct HomeBirthdayView: View {
                         ForEach(0..<birthdays.count, id: \.self) { i in
                             if (i != birthdays.count - 1)
                                 && (birthdays[i].birthday == birthdays[i + 1].birthday)
-                                && (!todaysHerBirthday(birthdays[i].birthday)) {
+                                && (!todaysTheirBirthday(birthdays[i].birthday)) {
                                 // If she is not the last person & the person next have the same birthday & today's not her birthday.
                                 // (Cond. 3 is because labels should be expanded to show their full name during their birthday.)
                                 Menu(content: {
@@ -330,7 +196,7 @@ struct HomeBirthdayView: View {
                                                 .clipShape(Circle())
                                                 .frame(width: 30, height: 30)
                                             #endif
-                                            Text(birthdays[i].characterName.forPreferredLocale() ?? "")
+                                            Text(birthdays[i].characterName.majorValue ?? "")
                                         }
                                     })
                                     Button(action: {
@@ -343,7 +209,7 @@ struct HomeBirthdayView: View {
                                                 .clipShape(Circle())
                                                 .frame(width: imageButtonSize, height: imageButtonSize)
                                             #endif
-                                            Text(birthdays[i+1].characterName.forPreferredLocale() ?? "")
+                                            Text(birthdays[i+1].characterName.majorValue ?? "")
                                         }
                                     })
                                 }, label: {
@@ -365,7 +231,7 @@ struct HomeBirthdayView: View {
                                     .frame(width: 2, height: 2)
                             } else if (i != 0)
                                         && (birthdays[i].birthday == birthdays[i - 1].birthday)
-                                        && (!todaysHerBirthday(birthdays[i].birthday)) {
+                                        && (!todaysTheirBirthday(birthdays[i].birthday)) {
                                 // If she is not the first person & the person in front have the same birthday & today's not her birthday.
                                 EmptyView()
                             } else {
@@ -376,14 +242,14 @@ struct HomeBirthdayView: View {
                                         .resizable()
                                         .clipShape(Circle())
                                         .frame(width: imageButtonSize, height: imageButtonSize)
-                                    if todaysHerBirthday(birthdays[i].birthday) {
-                                        Text(birthdays[i].characterName.forPreferredLocale() ?? "")
+                                    if todaysTheirBirthday(birthdays[i].birthday) {
+                                        Text(birthdays[i].characterName.majorValue ?? "")
                                     } else {
                                         Text(formatter.string(from: birthdays[i].birthday))
                                     }
                                 })
                                 .buttonStyle(.plain)
-                                .accessibilityLabel(birthdays[i].characterName.forPreferredLocale() ?? "")
+                                .accessibilityLabel(birthdays[i].characterName.majorValue ?? "")
                                 .accessibilityValue(formatter.string(from: birthdays[i].birthday))
                                 Rectangle()
                                     .opacity(0)
@@ -411,16 +277,20 @@ struct HomeBirthdayView: View {
         .animation(.easeInOut(duration: loadingAnimationDuration), value: birthdays?.count)
         .buttonStyle(.plain)
         .foregroundStyle(.primary)
-        .onAppear {
-            updateBirthday()
+        .task(id: birthdayTimeZone) {
+            todaysDateFormatter.timeZone = getBirthdayTimeZone()
+            await updateBirthday()
+        }
+        .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
+            Task { await updateBirthday() }
         }
         .onActivationChange { isActive in
             if isActive {
-                updateBirthday()
+                Task { await updateBirthday() }
             }
         }
     }
-    func todaysHerBirthday(_ birthday: Date) -> Bool {
+    func todaysTheirBirthday(_ birthday: Date) -> Bool {
         let today = Date.now
         var calendar = Calendar(identifier: .gregorian)
         var jstCalendar = calendar
@@ -449,30 +319,48 @@ struct HomeBirthdayView: View {
         return (birthdayMonth == systemMonth && birthdayDay == systemDay)
     }
     
-    func updateBirthday() {
-        Task {
-            if AppFlag.DEMO {
-                birthdays = await DoriFrontend.Characters.recentBirthdayCharacters(aroundDate: Date(timeIntervalSince1970: 1768534620))
-            } else {
-                birthdays = await DoriFrontend.Characters.recentBirthdayCharacters(timeZone: getBirthdayTimeZone())
-            }
-            if getBirthdayTimeZone() != TimeZone.autoupdatingCurrent {
-                systemBirthdays = await DoriFrontend.Characters.recentBirthdayCharacters(timeZone: getBirthdayTimeZone(from: .adaptive))
-            } else {
-                systemBirthdays = nil
-            }
+    func updateBirthday() async {
+        let timeZone = getBirthdayTimeZone()
+        let characters = await Character.recentBirthdayCharacters(timeZone: timeZone)
+        guard !Task.isCancelled else { return }
+        birthdays = characters?.compactMap(HomeBirthdayCharacter.init)
+        if timeZone != TimeZone.autoupdatingCurrent {
+            let systemCharacters = await Character.recentBirthdayCharacters(timeZone: getBirthdayTimeZone(from: .adaptive))
+            guard !Task.isCancelled else { return }
+            systemBirthdays = systemCharacters?.compactMap(HomeBirthdayCharacter.init)
+        } else {
+            systemBirthdays = nil
         }
     }
 }
 
+private struct HomeBirthdayCharacter: Identifiable, Equatable {
+    let id: Int
+    let birthday: Date
+    let characterName: LocalizableData<String>
+    let iconImageURL: URL?
+
+    init?(_ character: Character) {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Tokyo")!
+        guard var components = character.birthday else { return nil }
+        components.year = 2000
+        guard let birthday = calendar.date(from: components) else { return nil }
+        id = character.id
+        self.birthday = birthday
+        characterName = character.fullName
+        iconImageURL = character.iconImageURL
+    }
+}
+
 struct HomeEventsView: View {
-    @State var latestEvents: LocalizedData<DoriFrontend.Events.PreviewEvent>?
+    @State var latestEvent: Event?
     @State var imageOpacity: Double = 0
     @State var placeholderOpacity: Double = 1
-    var locale: DoriLocale = .jp
+    var locale: SekaiLocale = .jp
     var dateFormatter = DateFormatter()
     
-    init(locale: DoriLocale = .jp) {
+    init(locale: SekaiLocale = .jp) {
         self.locale = locale
         dateFormatter.dateStyle = .medium
         dateFormatter.timeStyle = .short
@@ -480,21 +368,21 @@ struct HomeEventsView: View {
     
     var body: some View {
         Button(action: {
-            if let latestEvents {
-                homeNavigate(to: .eventDetail(latestEvents.forLocale(locale)!.id))
+            if let latestEvent {
+                homeNavigate(to: .eventDetail(latestEvent.id))
             }
         }, label: {
             CustomGroupBox {
                 ZStack {
                     Group {
-                        if let latestEvents {
-                            EventInfoForHome(latestEvents.forLocale(locale)!, inLocale: locale, showsCountdown: true)
+                        if let latestEvent {
+                            EventInfoForHome(latestEvent, inLocale: locale, showsCountdown: true)
                         }
                     }
                     .opacity(imageOpacity)
                     .zIndex(2)
                     Group {
-                        if latestEvents == nil {
+                        if latestEvent == nil {
                             VStack {
                                 RoundedRectangle(cornerRadius: 10)
                                     .fill(Color.gray.opacity(0.15))
@@ -530,13 +418,13 @@ struct HomeEventsView: View {
     }
     
     func updateEvent() {
-        DoriCache.withCache(id: "Home_LatestEvents", trait: .realTime) {
-            await DoriFrontend.Events.localizedLatestEvent()
-        } .onUpdate {
-            latestEvents = $0
-            withAnimation(.easeInOut(duration: loadingAnimationDuration), {
+        withSekaiCache(id: "Home_LatestEvents", trait: .realTime) {
+            await Event.all()
+        }.onUpdate { events, _ in
+            latestEvent = events.flatMap { Event.featuredEvent(in: $0, locale: locale) }
+            withAnimation(.easeInOut(duration: loadingAnimationDuration)) {
                 imageOpacity = 1
-            })
+            }
         }
     }
 }
@@ -544,32 +432,18 @@ struct HomeEventsView: View {
 struct HomeBannersView: View {
     @AppStorage("AdvancedSettingsHaveReset") var advSettingsHaveReset = false
     var body: some View {
-        #if !(DORIKIT_ENABLE_PRECACHE)
-        Banner(color: .red) {
-            Image(systemName: .exclamationmarkCircle)
-                .font(.title3)
-                .bold()
-            VStack(alignment: .leading) {
-                Text("Home.banner.no-pre-cahce.title")
-                    .bold()
-                Text("Home.banner.no-pre-cahce.subtitle")
-                    .font(isMACOS ? .body : .footnote)
-            }
-        }
-        #endif
         Banner(isPresented: $advSettingsHaveReset, dismissable: true) {
-            Image(systemName: .exclamationmarkCircle)
+            Image(systemName: "exclamationmark.circle")
                 .font(.title3)
                 .bold()
             VStack(alignment: .leading) {
                 Text("Home.banner.crash.title")
                     .bold()
                 Text("Home.banner.crash.subtitle")
-                    .font(isMACOS ? .body : .footnote)
+                    .font(platform == .macOS ? .body : .footnote)
             }
         }
     }
 }
-*/
 
 extension PassthroughSubject: @retroactive @unchecked Sendable where Output: Sendable, Failure: Sendable {}

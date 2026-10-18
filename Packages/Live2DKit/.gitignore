@@ -1,0 +1,21 @@
+# Live2D SDK material is NEVER committed.
+#
+# Cubism Core is under the Live2D Proprietary Software License and the Framework
+# under the Cubism SDK licence; neither is ours to redistribute. Both are
+# populated locally from your own SDK download by Scripts/bootstrap.sh, which is
+# why this repo stays clean (and can stay private without carrying their bits).
+Vendor/Live2DCubismCore.xcframework/
+Vendor/CubismFramework/
+
+# Compiled shader libraries are DERIVED from Live2D's proprietary .metal sources,
+# so they are no more ours to redistribute than the sources are. Built locally by
+# Scripts/build-metallibs.sh from whatever bootstrap.sh staged.
+Vendor/FrameworkMetallibs-*/
+
+.build/
+.swiftpm/
+.DS_Store
+*.xcodeproj
+Vendor/Models/
+
+Vendor/CUBISM_VERSION

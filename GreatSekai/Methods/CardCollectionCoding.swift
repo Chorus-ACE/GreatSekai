@@ -32,7 +32,6 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import SekaiKit
 
 enum CollectionCodeVersion: String, Equatable, Hashable {
     case illumination
@@ -193,7 +192,7 @@ func encodeCollection(_ info: CollectionEncodingInfo) -> String {
 }
 
 func decodeCollection(_ input: String) -> CollectionEncodingInfo? {
-    guard input.count > 5 else { return nil } // s[0] + l + c + v + s[1...2]
+    guard input.count > 5, input.utf8.count <= 32000, input.utf8.allSatisfy({ (33...126).contains($0) }) else { return nil } // s[0] + l + c + v + s[1...2]
                                               // s: version specifier
                                               // l: specifier length
                                               // c: subject
@@ -250,7 +249,7 @@ private func intArray2String(_ compressed: [Int32]) -> String? {
     }
     
     var result = ""
-    var w = dict[Int(compressed[0])]!
+    guard var w = dict[Int(compressed[0])] else { return nil }
     result.append(w)
     
     for k in compressed.dropFirst() {
@@ -263,6 +262,7 @@ private func intArray2String(_ compressed: [Int32]) -> String? {
             return nil
         }
         
+        guard result.utf8.count + entry.utf8.count <= 100000 else { return nil }
         result.append(entry)
         dict[dictSize] = w + String(entry.first!)
         dictSize += 1
@@ -274,6 +274,7 @@ private func intArray2String(_ compressed: [Int32]) -> String? {
 }
 
 func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
+    guard input.count > 5, input.utf8.count <= 32000, input.utf8.allSatisfy({ (33...126).contains($0) }) else { return nil }
     var str = input
     
     // We need to get a valid verification field for verifying specifier,
@@ -305,7 +306,8 @@ func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
     guard specifier == expectedSpecifier else { return nil }
     
     let mergedData = decompressInts(str, preservedOrder: true)
-    let splitedData = mergedData.split(separator: 10082625, maxSplits: 1)
+    guard mergedData.allSatisfy({ Int32(exactly: $0) != nil }) else { return nil }
+    let splitedData = mergedData.split(separator: 10082625, maxSplits: 1, omittingEmptySubsequences: false)
     if splitedData.count == 2 {
         if let _decList = intArray2String(splitedData[0].map { Int32($0) }),
            let _decName = intArray2String(splitedData[1].map { Int32($0) }) {
@@ -333,6 +335,7 @@ func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
             var shift: UInt = 0
             
             for byte in data {
+                guard shift < UInt.bitWidth, (shift < 63 || byte & 0x7F <= 1) else { return [] }
                 value |= UInt(byte & 0x7F) << shift
                 if (byte & 0x80) == 0 {
                     values.append(value)
@@ -342,7 +345,7 @@ func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
                     shift += 7
                 }
             }
-            return values
+            return shift == 0 ? values : []
         }
         
         var data: Data?
@@ -412,10 +415,11 @@ func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
                     positiveFlag = true
                     continue
                 }
+                guard let number = Int(exactly: number) else { return [] }
                 if positiveFlag {
-                    posDiffs.append(Int(number))
+                    posDiffs.append(number)
                 } else {
-                    negDiffs.append(Int(number))
+                    negDiffs.append(number)
                 }
             }
             
@@ -424,7 +428,9 @@ func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
                 result.append(negDiffs[0])
                 if negDiffs.count > 1 {
                     for i in 1..<negDiffs.count {
-                        result.append(result.last! + negDiffs[i])
+                        let sum = result.last!.addingReportingOverflow(negDiffs[i])
+                        guard !sum.overflow else { return [] }
+                        result.append(sum.partialValue)
                     }
                 }
                 result = result.map { -$0 }
@@ -433,7 +439,9 @@ func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
                 result.append(posDiffs[0])
                 if posDiffs.count > 1 {
                     for i in 1..<posDiffs.count {
-                        result.append(result.last! + posDiffs[i])
+                        let sum = result.last!.addingReportingOverflow(posDiffs[i])
+                        guard !sum.overflow else { return [] }
+                        result.append(sum.partialValue)
                     }
                 }
             }

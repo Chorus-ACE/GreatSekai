@@ -20,7 +20,7 @@ import UIKit
 #endif
 
 let filterItemHeight: CGFloat = platform == .macOS ? 25 : 35
-let filerKeysWithSmallerIcons = ["unit", "rarity"] // "attribute",
+let filerKeysWithSmallerIcons = ["unit", "supportUnit", "rarity"] // "attribute",
 
 let flowLayoutDefaultVerticalSpacing: CGFloat = 3
 let flowLayoutDefaultHorizontalSpacing: CGFloat = 3
@@ -40,7 +40,10 @@ struct FilterView: View {
         Form {
             Section(content: {
                 ForEach(keys) { key in
-                    if !hiddenKeys.contains(key.id) {
+                    if !hiddenKeys.contains(key.id)
+                        && !(key.id == Card.supportUnitFilterKey.id
+                             && keys.contains(where: { $0.id == "unit" })
+                             && !(filter["unit"]?.contains(SekaiKit.Unit.virtualSinger.intRawValue) ?? true)) {
                         FilterItemView(filter: $filter, key: key, allKeys: keys)
                     }
                 }
@@ -73,7 +76,12 @@ struct FilterItemView: View {
     let allKeys: [SekaiFilter.Key]
     
 //    @State var isHovering = false
-    @State var characterMatchingStrategy = 0
+    private var characterMatchingStrategy: Int {
+        filter["characterMatchingStrategy"]?.compactMap { $0 }.first ?? 0
+    }
+    private var characterMatchingStrategyBinding: Binding<Int> {
+        Binding(get: { characterMatchingStrategy }, set: { filter["characterMatchingStrategy"] = [$0] })
+    }
 //    @State var skill: SekaiFilter.Skill? = nil
 //    @State var levelSliderIsEnabled = false
 //    @State var level: Double = 5
@@ -91,7 +99,7 @@ struct FilterItemView: View {
                     // FIXME: Match All
                     if key.id == "character" && allKeys.map(\.id).contains("characterMatchingStrategy") {
                         Menu(content: {
-                            Picker(selection: $characterMatchingStrategy, content: {
+                            Picker(selection: characterMatchingStrategyBinding, content: {
                                 Text("Filter.matching-strategy.match-any")
                                     .tag(0)
                                 Text("Filter.matching-strategy.match-all")
@@ -111,9 +119,6 @@ struct FilterItemView: View {
                         .menuIndicator(.hidden)
                         .menuStyle(.borderlessButton)
                         .buttonStyle(.plain)
-                        .onChange(of: characterMatchingStrategy, {
-                            filter["characterMatchingStrategy"] = Set([characterMatchingStrategy])
-                        })
                         .accessibilityLabel(Text(getAttributedStringForMatchAll(status: characterMatchingStrategy)))
                     }
                     
@@ -210,7 +215,9 @@ struct FilterItemView: View {
 //                                                    .font(.title3)
                                             }
                                         }
-                                        .frame(width: filterItemHeight, height: filterItemHeight)
+                                        .scaledToFit()
+                                        .frame(maxHeight: filterItemHeight)
+//                                        .frame(width: filterItemHeight, height: filterItemHeight)
                                         .mask(Circle())
                                     }
                                     .contentShape(Circle())

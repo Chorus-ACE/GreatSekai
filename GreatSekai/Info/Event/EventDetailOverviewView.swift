@@ -19,20 +19,11 @@ import SwiftUI
 // MARK: EventDetailOverviewView
 struct EventDetailOverviewView: View {
     let information: ExtendedEvent
-//    @State var eventCharacterPercentageDict: [Int: [DoriAPI.Events.EventCharacter]] = [:]
-//    @State var eventCharacterNameDict: [Int: LocalizedData<String>] = [:]
-//    @State var cardsArray: [PreviewCard] = []
-//    @State var cardsArraySeperated: [[PreviewCard?]] = []
-//    @State var cardsPercentage: Int = -100
-//    @State var rewardsArray: [PreviewCard] = []
-//    @State var cardsTitleWidth: CGFloat = 0 // Fixed
-//    @State var cardsPercentageWidth: CGFloat = 0 // Fixed
-//    @State var cardsContentRegularWidth: CGFloat = 0 // Fixed
-//    @State var cardsFixedWidth: CGFloat = 0 //Fixed
-//    @State var cardsUseCompactLayout = true
-    
+
     @State var accessibilityNavigationTargetCard = 0
     @State var accessibilityNavigationIsActive = false
+    
+    @AppStorage("showAdvancedDetails") var showAdvancedDetails = false
     var dateFormatter: DateFormatter { let df = DateFormatter(); df.dateStyle = .long; df.timeStyle = .short; return df }
     var body: some View {
         DetailInfoBase {
@@ -67,10 +58,54 @@ struct EventDetailOverviewView: View {
             }
             
             DetailInfoItem("Event.character") {
-                CharacterWrappingHStack(characters: information.event.characters)
+                CharacterWrappingHStack(characters: information.event.characters, wrapCompleteVirtualSingers: true)
                 Text("+\(information.event.characterBonus)%")
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: true)
+            }
+            
+            if let focusID = information.event.focusCharacterID,
+               let rotation = information.event.focusCharacterIndex,
+               let character = SekaiCache.preCache.character(id: focusID),
+               let rotationNumeralText = { () -> String? in
+//                if Locale.current.language.minimalIdentifier.contains("zh") {
+//                    return String(rotation)
+//                }
+                let formatter = NumberFormatter()
+                formatter.numberStyle = .ordinal
+                return formatter.string(from: NSNumber(value: rotation))
+            }()
+            {
+                DetailInfoItem("Event.focus") {
+                    NavigationLink(destination: {
+                        CharacterDetailView(id: character.id)
+                    }, label: {
+                        HStack {
+                            VStack(alignment: .trailing) {
+                                Text(character.fullName.forPreferredLocale() ?? String(localized: "Info.unknown"))
+                                    .typesettingLanguage(.explicit(SekaiLocale.primaryLocale.nsLocale.language))
+                                Text("Event.focus.rotation-\(rotationNumeralText)")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .multilineTextAlignment(.trailing)
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+                            
+                            WebImage(url: Character.iconImageURL(forID: character.id))
+                                .resizable()
+                                .clipShape(Circle())
+                                .frame(width: imageButtonSize, height: imageButtonSize)
+                        }
+                        .accessibilityLabel(information.event.focusCharacterLabel ?? String("Info.unknown"))
+                    })
+                }
+            }
+            
+            if showAdvancedDetails {
+                DetailInfoItem("Info.asset-bundle-name", content: {
+                    Text(information.event.assetBundleName)
+                        .fontDesign(.monospaced)
+                })
             }
             
             DetailInfoItem("ID", text: "\(String(information.id))")

@@ -70,3 +70,27 @@ extension Song: SekaiTypeDescribable {
 //    static var pluralName: LocalizedStringResource { "Type.comic.plural" }
 //    static var symbol: String { "book" }
 //}
+
+extension Gacha: SekaiTypeDescribable {
+    static var singularName: LocalizedStringResource { "Type.gacha.singular" }
+    static var pluralName: LocalizedStringResource { "Type.gacha.plural" }
+    static var symbol: String { "dice" }
+}
+
+extension Sticker: SekaiTypeDescribable {
+    static var singularName: LocalizedStringResource { "Type.sticker.singular" }
+    static var pluralName: LocalizedStringResource { "Type.sticker.plural" }
+    static var symbol: String { "sticker" }
+}
+
+extension Comic: SekaiTypeDescribable {
+    static var singularName: LocalizedStringResource { "Type.comic.singular" }
+    static var pluralName: LocalizedStringResource { "Type.comic.plural" }
+    static var symbol: String { "book" }
+}
+
+extension MySekaiFixture: SekaiTypeDescribable {
+    static var singularName: LocalizedStringResource { "Type.fixture.singular" }
+    static var pluralName: LocalizedStringResource { "Type.fixture.plural" }
+    static var symbol: String { "chair.lounge" }
+}

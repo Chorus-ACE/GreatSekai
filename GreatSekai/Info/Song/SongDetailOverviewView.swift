@@ -57,7 +57,9 @@ struct SongDetailOverviewView: View {
             DetailInfoItem("Song.composer", localizableText: information.song.composer)
             DetailInfoItem("Song.arranger", localizableText: information.song.arranger)
             DetailInfoItem("Song.lyricist", localizableText: information.song.lyricist)
-            DetailInfoItem("Song.media", text: ListFormatter.localizedString(byJoining: information.song.availableMedia.map(\.localizedName)))
+            if !information.song.availableMedia.isEmpty {
+                DetailInfoItem("Song.media", text: ListFormatter.localizedString(byJoining: information.song.availableMedia.map(\.localizedName)))
+            }
             DetailInfoItem("Song.release-date", date: information.song.publishDate, showLocaleKey: true)
             //            DetailInfoItem("Song.length", localizableText: information.song.isFullLength)
             DetailInfoItem("ID", text: "\(String(information.id))")

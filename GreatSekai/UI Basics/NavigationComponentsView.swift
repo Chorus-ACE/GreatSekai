@@ -44,13 +44,6 @@ import SwiftUI
         tabValue: .events,
         destination: { EventSearchView() }
     ),
-//    InfoDestinationItem(
-//        title: "App.info.gachas",
-//        symbol: "dice",
-//        lightColor: .yellow,
-//        tabValue: .gacha,
-//        destination: {GachaSearchView()}
-//    ),
     InfoDestinationItem(
         title: "App.info.songs",
         symbol: "music.note",
@@ -58,6 +51,23 @@ import SwiftUI
         tabValue: .songs,
         destination: { SongSearchView() }
     ),
+    InfoDestinationItem(
+        title: "App.info.gachas",
+        symbol: "dice",
+        lightColor: .yellow,
+        tabValue: .gacha,
+        destination: { GachaSearchView() }
+    ),
+    InfoDestinationItem(
+        title: "App.info.stickers",
+        symbol: "sticker",
+        lightColor: .cyan,
+        tabValue: .stickers,
+        destination: { StickerSearchView() }
+    ),
+    InfoDestinationItem(title: "App.info.comics", symbol: "book", lightColor: .brown, tabValue: .comics, destination: { ComicSearchView() }),
+    InfoDestinationItem(title: "App.info.fixtures", symbol: "chair.lounge", lightColor: .teal, tabValue: .fixtures, destination: { MySekaiFixtureSearchView() }),
+    InfoDestinationItem(title: "App.info.song-meta", symbol: "music.note.list", lightColor: .pink, tabValue: .songMeta, destination: { MusicMetaView() }),
 //    InfoDestinationItem(
 //        title: "App.info.song-meta",
 //        symbol: "music.note.list",
@@ -90,6 +100,9 @@ import SwiftUI
 ]
 
 @MainActor let allToolsDestinationItems: [ToolDestinationItem] = [
+//    ToolDestinationItem(title: "App.tools.live2d-viewer", symbol: "person.and.viewfinder", tabValue: .live2dViewer, destination: { Live2DViewerView() }),
+    ToolDestinationItem(title: "App.tools.story-viewer", symbol: "text.bubble", tabValue: .storyViewer, destination: { StoryViewerView() }),
+    ToolDestinationItem(title: "Collections.title", symbol: "rectangle.stack", tabValue: .collections, destination: { CardCollectionsView() }),
 //    ToolDestinationItem(
 //        title: "App.tools.event-tracker",
 //        symbol: "chart.line.uptrend.xyaxis",

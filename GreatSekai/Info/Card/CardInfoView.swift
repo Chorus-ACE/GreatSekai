@@ -20,7 +20,7 @@ struct CardInfo: View {
     private var card: Card
     private var displayType: CardImageDisplayType
     private var characterName: LocalizedData<String>?
-//    @State var isNormalCardAvailable = true
+    @State var isNormalCardAvailable = true
     
     @Environment(\.horizontalSizeClass) var sizeClass
     
@@ -37,8 +37,8 @@ struct CardInfo: View {
             Group {
                 if layoutType != 3 {
                     HStack(spacing: 5) {
-                        if /*isNormalCardAvailable && */displayType != .trainedOnly {
-                            CardThumbnail(card)
+                        if displayType != .trainedOnly && (card.afterTrainingArtURL == nil || isNormalCardAvailable) {
+                            CardThumbnail(card, onFailure: { isNormalCardAvailable = false })
                         }
                         if card.afterTrainingThumbnailURL != nil && displayType != .normalOnly {
                             CardThumbnail(card, showTrainedVersion: true)
@@ -63,6 +63,9 @@ struct CardInfo: View {
             .foregroundStyle(.secondary)
             .font(platform == .macOS ? .body : .caption)
             .accessibilityLabel(String("\(characterName?.forPreferredLocale() ?? String(localized: "Info.unknown")), \(card.sourceType.localizedName)"))
+        }
+        .onChange(of: card.beforeTrainingThumbnailURL) {
+            isNormalCardAvailable = true
         }
         .accessibilityCustomContent("Card.rarity", Text(card.rarity.localizedName))
         .accessibilityCustomContent("Card.attribute", card.attribute.name)

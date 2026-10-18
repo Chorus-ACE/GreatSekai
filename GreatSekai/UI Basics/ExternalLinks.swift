@@ -16,7 +16,7 @@ import SekaiKit
 import SwiftUI
 
 struct ExternalLinksSection: View {
-    var links: [ExternalLink] = []
+    var links: [ExternalLink?] = []
     @Environment(\.defaultMinListRowHeight) var defaultMinListRowHeight
     @Environment(\.openURL) private var openURL
     var body: some View {
@@ -25,7 +25,7 @@ struct ExternalLinksSection: View {
 //                HereTheWorld { // Super weird issue causing infinite hang. Use `HereTheWorld` to fix. MAGIC --ThreeManager785
                     CustomGroupBox {
                         VStack {
-                            ForEach(links) { item in
+                            ForEach(links.compactMap({ $0 })) { item in
                                 Button(action: {
                                     openURL(item.url)
                                 }, label: {

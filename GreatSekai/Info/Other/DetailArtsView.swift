@@ -94,7 +94,7 @@ struct ArtsTab: Identifiable, Hashable, Equatable {
 }
 
 struct ArtsItem: Hashable, Equatable {
-    let id = UUID()
+    var id: String { title.key + "|" + url.absoluteString }
     var title: LocalizedStringResource
     var url: URL
     var ratio: CGFloat? = nil
@@ -108,10 +108,10 @@ struct DetailArtsSection: View {
     #if os(macOS)
     @State private var previewController = PreviewController()
     #endif
-    @State var nativeImages = [UUID: PlatformImage]()
-    @State var imageFrames = [UUID: CGRect]()
+    @State var nativeImages = [String: PlatformImage]()
+    @State var imageFrames = [String: CGRect]()
     @State var quickLookOnFocusItem: ImageLookItem?
-    @State var hiddenItems: [UUID] = []
+    @State var hiddenItems: Set<String> = []
     
     let itemMinimumWidth: CGFloat = 280
     let itemMaximumWidth: CGFloat = 440
@@ -120,7 +120,7 @@ struct DetailArtsSection: View {
             Group {
                 if let tab, let tabContent = information.first(where: {$0.id == tab}), !tabContent.content.isEmpty, tabContent.content.contains(where: { !hiddenItems.contains($0.id) }) {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: itemMinimumWidth, maximum: itemMaximumWidth))]) {
-                        ForEach(tabContent.content, id: \.self) { item in
+                        ForEach(tabContent.content, id: \.id) { item in
                             if !hiddenItems.contains(item.id) {
                                 Button(action: {
                                     #if !os(macOS)
@@ -151,6 +151,7 @@ struct DetailArtsSection: View {
                                                     .resizable()
                                                     .antialiased(true)
                                                     .aspectRatio(item.forceApplyRatio ? (item.ratio ?? tabContent.ratio) : nil, contentMode: .fit)
+                                                    .clipShape(RoundedRectangle(cornerRadius: 10))
                                             } placeholder: {
                                                 RoundedRectangle(cornerRadius: 10)
                                                     .fill(getPlaceholderColor())
@@ -164,13 +165,14 @@ struct DetailArtsSection: View {
                                             }
                                             .onFailure { _ in
                                                 DispatchQueue.main.async { // yield
-                                                    hiddenItems.append(item.id)
+                                                    hiddenItems.insert(item.id)
                                                 }
                                             }
                                             .background {
                                                 GeometryReader { geometry in
                                                     let frame = geometry.frame(in: .global)
                                                     Color.clear
+                                                        .onAppear { imageFrames[item.id] = frame }
                                                         .onChange(of: frame) {
                                                             imageFrames.updateValue(frame, forKey: item.id)
                                                         }
@@ -208,8 +210,14 @@ struct DetailArtsSection: View {
             .detailSectionHeader()
             .onAppear {
                 if tab == nil {
-                    tab = information.first!.id
+                    tab = information.first?.id
                 }
+            }
+            .onChange(of: information.map { $0.id + $0.content.map(\.id).joined() }) {
+                if !information.contains(where: { $0.id == tab }) { tab = information.first?.id }
+                nativeImages = [:]
+                imageFrames = [:]
+                hiddenItems = []
             }
             #if os(iOS)
             .fullScreenCover(item: $quickLookOnFocusItem) { item in

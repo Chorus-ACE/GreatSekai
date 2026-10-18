@@ -267,7 +267,7 @@ extension EnvironmentValues {
 @MainActor let verticalAndHorizontalLayouts: [(LocalizedStringKey, String, SummaryLayout)] = [("Filter.view.list", "list.bullet", SummaryLayout.horizontal), ("Filter.view.grid", "square.grid.2x2", SummaryLayout.vertical(hidesDetail: false))]
 @MainActor let bannerLayouts: [(LocalizedStringKey, String, Bool)] = [("Filter.view.banner-and-details", "text.below.rectangle", true), ("Filter.view.banner-only", "rectangle.grid.1x2", false)]
 
-struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilterable & SekaiSortable & SekaiSearchable & SekaiTypeDescribable, Layout, LayoutPicker: View, Container: View, Content: View, Destination: View>: View {
+struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachable & SekaiFilterable & SekaiSortable & SekaiSearchable & SekaiTypeDescribable, Layout, LayoutPicker: View, Container: View, Content: View, Destination: View>: View {
     var updateList: @Sendable () async -> [Element]?
     var makeLayoutPicker: (Binding<Layout>) -> LayoutPicker
     var makeContainer: (Layout, [Element], AnyView, @escaping (Element) -> AnyView) -> Container
@@ -365,8 +365,15 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
     @State private var searchedText = ""
     @State private var showFilterSheet = false
     @State private var presentingElement: Element?
-    @State private var elementIDMap: [Element: Int64] = [:]
+    @State private var elementIDMap: [Element.ID: Int64] = [:]
     @State private var isCustomGroupBoxActive = false
+    @State private var searchTask: Task<Void, Never>?
+    @State private var searchRevision = 0
+
+    private struct RowIdentity: Hashable {
+        let id: Element.ID
+        let revision: Int64
+    }
     
     var body: some View {
         VStack {
@@ -378,7 +385,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
                                 Spacer(minLength: 0)
                                 makeContainer(currentLayout, resultElements,
                                     AnyView(
-                                        ForEach(resultElements, id: \.self) { element in
+                                        ForEach(resultElements) { element in
                                             Group {
                                                 // macOS 26 workaround
                                                 if #available(macOS 26.0, *) {
@@ -447,12 +454,21 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
                     }
                 } else {
                     ExtendedConstraints {
-                        ContentUnavailableView(unavailablePrompt, systemImage: Element.symbol, description: Text("Search.unavailable.description"))
-                            .onTapGesture {
-                                Task {
-                                    await getList()
+                        ContentUnavailableView(label: {
+                            Label(title: {
+                                Text(unavailablePrompt)
+                            }, icon: {
+                                Image(_internalSystemName: Element.symbol)
+                            })
+                        }, description: {
+                            Text("Search.unavailable.description")
+                                .onTapGesture {
+                                    Task {
+                                        await getList()
+                                    }
                                 }
-                            }
+                        })
+//                        ContentUnavailableView(unavailablePrompt, systemImage: Element.symbol, description:
                     }
                 }
             }
@@ -464,11 +480,11 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
                 .wrapIf(true) { content in
                     if #available(iOS 18.0, *) {
                         content
-                            .navigationTransition(.zoom(sourceID: element.hashValue, in: navigationAnimationNamespace))
+                            .navigationTransition(.zoom(sourceID: element.id, in: navigationAnimationNamespace))
                             .onDisappear {
                                 elementIDMap.updateValue(
                                     Int64(CFAbsoluteTimeGetCurrent() * 1000),
-                                    forKey: element
+                                    forKey: element.id
                                 )
                             }
                     } else {
@@ -509,7 +525,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
             }
             #endif
             ToolbarItemGroup {
-                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltering(referencing: Element.filterKeys), sorterKeywords: Element.applicableSortingTypes, hasEndingDate: false)
+                FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltering(referencing: Element.filterKeys), sorterKeywords: Element.applicableSortingTypes, hasEndingDate: Element.hasEndingDate)
             }
         }
         .onDisappear {
@@ -549,9 +565,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         .searchable(text: $searchedText, prompt: searchPlaceholder)
         .scrollDismissesKeyboard(.interactively)
         .onSubmit {
-            if let elements {
-                searchedElements = elements.search(for: searchedText)
-            }
+            updateSearchResults()
         }
         .withSystemBackground() // This modifier MUST be placed BOTH before
                                 // and after `inspector` to make it work as expected
@@ -559,20 +573,17 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
             await getList()
         }
         .onChange(of: filter) {
-            if let elements {
-                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
-            }
+            updateSearchResults()
         }
         .onChange(of: sorter) {
-            if let elements {
-                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
-            }
+            updateSearchResults()
         }
         .onChange(of: searchedText, {
-            if let elements {
-                searchedElements = elements.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
-            }
+            updateSearchResults(debounce: true)
         })
+        .onDisappear {
+            searchTask?.cancel()
+        }
     }
     
     @ViewBuilder
@@ -606,15 +617,46 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
                 .wrapIf(true) { content in
                     if #available(iOS 18.0, macOS 15.0, *) {
                         content
-                            .matchedTransitionSource(id: element.hashValue, in: navigationAnimationNamespace)
+                            .matchedTransitionSource(id: element.id, in: navigationAnimationNamespace)
                     } else {
                         content
                     }
                 }
         }
-        .id(elementIDMap[element] ?? Int64(element.hashValue))
+        .id(RowIdentity(id: element.id, revision: elementIDMap[element.id] ?? 0))
     }
     
+    private func updateSearchResults(debounce: Bool = false) {
+        searchTask?.cancel()
+        searchRevision += 1
+        guard let elements else { return }
+        let revision = searchRevision
+        let filter = filter
+        let sorter = sorter
+        let text = searchedText
+        searchTask = Task {
+            if debounce {
+                do { try await Task.sleep(for: .milliseconds(150)) }
+                catch { return }
+            }
+            guard !Task.isCancelled else { return }
+            let worker = Task.detached(priority: .userInitiated) {
+                let filtered = elements.filter(withSekaiFilter: filter)
+                guard !Task.isCancelled else { return [Element]() }
+                let searched = filtered.search(for: text)
+                guard !Task.isCancelled else { return [Element]() }
+                return searched.sorted(withSekaiSorter: sorter)
+            }
+            let result = await withTaskCancellationHandler {
+                await worker.value
+            } onCancel: {
+                worker.cancel()
+            }
+            guard !Task.isCancelled, revision == searchRevision else { return }
+            searchedElements = result
+        }
+    }
+
     private func getList() async {
         infoIsAvailable = true
         
@@ -624,7 +666,7 @@ struct SearchViewBase<Element: Sendable & Hashable & SekaiCachable & SekaiFilter
         cachedList.onUpdate { result, _ in
             if let items = result {
                 self.elements = items.sorted(withSekaiSorter: SekaiSorter(keyword: .id, direction: .ascending))
-                searchedElements = items.filter(withSekaiFilter: filter).search(for: searchedText).sorted(withSekaiSorter: sorter)
+                updateSearchResults()
             } else {
                 infoIsAvailable = false
             }

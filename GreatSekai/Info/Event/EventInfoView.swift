@@ -26,7 +26,7 @@ struct EventInfo: View {
     
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.regularInfoImageSizeFactor) private var sizeFactor
-    
+
     var body: some View {
         SummaryViewBase(.vertical(hidesDetail: !showDetails), source: event) {
             FallbackableWebImage(throughURLs: [event.bannerImageURL, event.bannerImageAltURL]) { image in
@@ -52,7 +52,11 @@ struct EventInfo: View {
             .cornerRadius(10)
         } detail: {
             Group {
-                HighlightableText(event.unit?.localizedName ?? String(localized: "Event.shuffle"), suffix: "\(String(localized: "Typography.bold-dot-seperater"))\(event.eventType.localizedName)")
+                HighlightableText(
+                    event.focusCharacterLabel ?? event.unit?.localizedName ?? String(localized: "Event.shuffle"),
+                    suffix: "\(String(localized: "Typography.bold-dot-seperater"))\(event.eventType.localizedName)"
+                )
+                .typesettingLanguage(.explicit(.init(identifier: SekaiLocale.primaryLocale.nsLocale.language.minimalIdentifier)))
             }
             
             if let subtitle {

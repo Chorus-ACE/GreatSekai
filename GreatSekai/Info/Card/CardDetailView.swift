@@ -58,10 +58,48 @@ struct CardDetailView: View {
 //                    ArtsItem(title: "Card.arts.livesd", url: information.card.sdImageURL)
 //                }
 //            }
+            DetailArtsSection {
+                ArtsTab("Card.arts.full", ratio: 16.0 / 9.0) {
+                    ArtsItem(title: "Card.arts.normal", url: information.beforeTrainingArtURL)
+                    if let url = information.afterTrainingArtURL {
+                        ArtsItem(title: "Card.arts.trained", url: url)
+                    }
+                }
+                ArtsTab("Card.arts.thumb") {
+                    ArtsItem(title: "Card.arts.normal", url: information.beforeTrainingThumbnailURL)
+                    if let url = information.afterTrainingThumbnailURL {
+                        ArtsItem(title: "Card.arts.trained", url: url)
+                    }
+                }
+            }
             #if os(visionOS)
             .environment(\.imageSupportsCreateSpatial, true)
             #endif
-            ExternalLinksSection(links: [ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/card/\(information.id)")!)])
+            
+            ExternalLinksSection(links: [
+                ExternalLink(
+                    name: "External-link.sekai-viewer",
+                    url: URL(string: "https://sekai.best/card/\(information.id)")!
+                ),
+                
+//                ExternalLink(
+//                    name: "External-link.sekaipedia",
+//                    url: URL(string: "https://www.sekaipedia.org/wiki/\((information.fullName.localizedData?.forLocale(.en) ?? "").replacingOccurrences(of: " ", with: "_"))")!
+//                ),
+                
+                ExternalLink(
+                    name: "External-link.cleista",
+                    url: URL(string: "https://pjsk.cleista.cc/#/cards/\(SekaiCache.preCache.character(id: information.characterID)?.givenName.forLocale(.en)?.lowercased() ?? "")-\(information.id)")!
+                ),
+                ExternalLink(
+                    name: "External-link.moesekai",
+                    url: URL(string: "https://pjsk.moe/cards/\(information.id)/")!
+                ),
+                ExternalLink(
+                    name: "External-link.haruki",
+                    url: URL(string: "https://haruki.seiunx.com/cards/\(information.id)")!
+                )
+            ])
         } switcherDestination: {
             CardSearchView()
         }

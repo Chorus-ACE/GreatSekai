@@ -26,7 +26,11 @@ struct SongDetailView: View {
     var body: some View {
         DetailViewBase(previewList: allSongs, initialID: id) { information in
             SongDetailOverviewView(information: information)
-            SongDetailVocalsView(information: information)
+            
+            if !(information.vocals?.isEmpty ?? true) {
+                SongDetailVocalsView(information: information)
+            }
+            
             SongDetailDifficultiesView(information: information)
 //            SongDetailGameplayView(information: information)
 //            SongDetailMusicMovieView(musicVideos: information.song.musicVideos)
@@ -35,25 +39,41 @@ struct SongDetailView: View {
 //            if #available(iOS 26.0, macOS 26.0, visionOS 26.0, *), let lyrics {
 //                SongDetailLyricsView(lyrics: lyrics)
 //            }
-//            DetailArtsSection {
-//                ArtsTab("Song.arts.cover", ratio: 1) {
-//                    for locale in DoriLocale.allCases {
-//                        if let urls = information.song.jacketImageURLs(in: locale, allowsFallback: false) {
-//                            for (index, url) in urls.enumerated() {
-//                                ArtsItem(
-//                                    title: .init(stringLiteral: "\(locale.rawValue.uppercased())\(urls.count > 1 ? " \(index + 1)" : "")"),
-//                                    url: url,
-//                                    ratio: 1
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+
+            
+            DetailArtsSection {
+                ArtsTab("Song.arts.cover") {
+                    for locale in SekaiLocale.allCases where information.song.title.localizedData?.availableInLocale(locale) == true {
+                        ArtsItem(title: .init(stringLiteral: locale.rawValue.uppercased()), url: information.song.coverImageURL(in: locale))
+                    }
+                }
+            }
+            
             ExternalLinksSection(links: [
-                ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/music/\(information.id)")!),
-                ExternalLink(name: "External-link.pjsekai-moe", url: URL(string: "https://pjsekai.moe/#/music/\(information.id)")!),
-                ExternalLink(name: "External-link.sonolus", url: URL(string: "https://sonolus.sekai.best/playlists/sekai-best-\(information.id)")!),
+                ExternalLink(
+                    name: "External-link.sekai-viewer",
+                    url: URL(string: "https://sekai.best/music/\(information.id)")!
+                ),
+                ExternalLink(
+                    name: "External-link.sonolus",
+                    url: URL(string: "https://sonolus.sekai.best/playlists/sekai-best-\(information.id)")!
+                ),
+                ExternalLink(
+                    name: "External-link.cleista",
+                    url: URL(string: "https://pjsk.cleista.cc/#/music/\(information.id)")!
+                ),
+                ExternalLink(
+                    name: "External-link.moesekai",
+                    url: URL(string: "https://pjsk.moe/music/\(information.id)/")!
+                ),
+                ExternalLink(
+                    name: "External-link.haruki",
+                    url: URL(string: "https://haruki.seiunx.com/music/\(information.id)")!
+                ),
+                ExternalLink(
+                    name: "External-link.pjsekai-moe",
+                    url: URL(string: "https://pjsekai.moe/#/music/\(information.id)")!
+                )
             ])
         } switcherDestination: {
             SongSearchView()

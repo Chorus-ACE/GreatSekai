@@ -41,7 +41,8 @@ struct ContentView: View {
     @State var showPreCacheAlert = false
     @State var showCrashAlert = false
     @State var showWhatsNewSheet = false
-    
+    @State private var showCollectionsFromWidget = false
+
     var body: some View {
         if mainAppShouldBeDisplayed {
             Group {
@@ -51,7 +52,7 @@ struct ContentView: View {
                         Tab("App.home", systemImage: "house", value: .home) {
                             HomeView()
                         }
-                        
+
                         if sizeClass == .regular {
                             TabSection(content: {
                                 ForEach(0..<allInfoDestinationItems.count, id: \.self) { itemIndex in
@@ -75,31 +76,31 @@ struct ContentView: View {
                                 InfoView()
                             }
                         }
-                        
-//                        if sizeClass == .regular {
-//                            TabSection(content: {
-//                                ForEach(0..<allToolsDestinationItems.count, id: \.self) { itemIndex in
-//                                    Tab(value: AppSection.tools(allToolsDestinationItems[itemIndex].tabValue), content: {
-//                                        NavigationStack {
-//                                            allToolsDestinationItems[itemIndex].destination()
-//                                        }
-//                                    }, label: {
-//                                        Label(title: {
-//                                            Text(allToolsDestinationItems[itemIndex].title)
-//                                        }, icon: {
-//                                            Image(_internalSystemName: allToolsDestinationItems[itemIndex].symbol)
-//                                        })
-//                                    })
-//                                }
-//                            }, header: {
-//                                Label("App.tools", systemImage: "slider.horizontal.3")
-//                            })
-//                            
-//                        } else {
-//                            Tab("App.tools", systemImage: "slider.horizontal.3", value: .tools(.home)) {
-//                                ToolsView()
-//                            }
-//                        }
+
+                        if sizeClass == .regular {
+                            TabSection(content: {
+                                ForEach(0..<allToolsDestinationItems.count, id: \.self) { itemIndex in
+                                    Tab(value: AppSection.tools(allToolsDestinationItems[itemIndex].tabValue), content: {
+                                        NavigationStack {
+                                            allToolsDestinationItems[itemIndex].destination()
+                                        }
+                                    }, label: {
+                                        Label(title: {
+                                            Text(allToolsDestinationItems[itemIndex].title)
+                                        }, icon: {
+                                            Image(_internalSystemName: allToolsDestinationItems[itemIndex].symbol)
+                                        })
+                                    })
+                                }
+                            }, header: {
+                                Label("App.tools", systemImage: "slider.horizontal.3")
+                            })
+
+                        } else {
+                            Tab("App.tools", systemImage: "slider.horizontal.3", value: .tools(.home)) {
+                                ToolsView()
+                            }
+                        }
 #if os(iOS)
                         if sizeClass == .regular {
                             Tab("App.settings", systemImage: "gear", value: .settings) {
@@ -128,7 +129,7 @@ struct ContentView: View {
                             List(selection: $selection) {
                                 Label("App.home", systemImage: "house").tag(AppSection.home)
 //                                Label("App.community", systemImage: "at").tag(AppSection.community)
-                                
+
                                 Section("App.info", content: {
                                     ForEach(0..<allInfoDestinationItems.count, id: \.self) { itemIndex in
                                         Label(allInfoDestinationItems[itemIndex].title, systemImage: allInfoDestinationItems[itemIndex].symbol).tag(AppSection.info(allInfoDestinationItems[itemIndex].tabValue))
@@ -152,20 +153,36 @@ struct ContentView: View {
                             detailView(for: .home)
                                 .tabItem { Label("App.home", systemImage: "house") }
                                 .tag(AppSection.home)
-                            
+
 //                            detailView(for: .community)
 //                                .tabItem { Label("App.community", systemImage: "at") }
 //                                .tag(AppSection.community)
-                            
+
                             detailView(for: .info(.home))
                                 .tabItem { Label("App.info", systemImage: "rectangle.stack") }
                                 .tag(AppSection.info(.home))
-                            
+
 //                            detailView(for: .tools(.home))
 //                                .tabItem { Label("App.tools", systemImage: "slider.horizontal.3") }
 //                                .tag(AppSection.tools(.home))
                         }
                     }
+                }
+            }
+            .onOpenURL { url in
+                if url.scheme == "greatsekai", url.host == "collections" {
+                    if sizeClass == .regular || platform == .macOS {
+                        selection = .tools(.collections)
+                    } else {
+                        selection = .tools(.home)
+                        showCollectionsFromWidget = true
+                    }
+                }
+            }
+            .sheet(isPresented: $showCollectionsFromWidget) {
+                NavigationStack {
+                    CardCollectionsView()
+                        .toolbar { ToolbarItem { Button("General.done") { showCollectionsFromWidget = false } } }
                 }
             }
             .onAppear {
@@ -182,7 +199,7 @@ struct ContentView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     startUpSucceeded = true
                 }
-                
+
                 if !lastDebugPassword.isEmpty && lastDebugPassword != correctDebugPassword {
                     lastDebugPassword = ""
                     AppFlag.set(false, forKey: "DEBUG")
@@ -250,7 +267,7 @@ struct ContentView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     func detailView(for section: AppSection?) -> some View {
         switch section {
@@ -282,9 +299,9 @@ enum AppSection: Hashable {
 }
 
 enum InfoTab: Hashable {
-    case home, characters, cards, costumes, events, gacha, songs, songMeta, miracleTicket, comics
+    case home, characters, cards, costumes, events, gacha, stickers, songs, songMeta, miracleTicket, comics, fixtures
 }
 
 enum ToolTab: Hashable {
-    case home, eventTracker, chartSimulator, storyViewer, live2dViewer, assetExplorer, station, zeileEditor, eventCalculator
+    case home, eventTracker, chartSimulator, storyViewer, live2dViewer, assetExplorer, station, zeileEditor, eventCalculator, collections
 }

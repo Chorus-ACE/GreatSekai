@@ -111,10 +111,10 @@ struct SettingsAdvancedImageSection: View {
 }
 
 struct SettingsAdvancedUISection: View {
-    @AppStorage("showCharacterDetails") var showCharacterDetails = false
+    @AppStorage("showAdvancedDetails") var showAdvancedDetails = false
     var body: some View {
         Section {
-            Toggle(isOn: $showCharacterDetails, label: {
+            Toggle(isOn: $showAdvancedDetails, label: {
                 VStack(alignment: .leading) {
                     Text("Settings.advanced.ui.advanced-character-details")
                     Text("Settings.advanced.ui.advanced-character-details.description")

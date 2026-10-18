@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct SettingsDebugView: View {
-    @AppStorage("showCharacterDetails") var showCharacterDetails = false
+    @AppStorage("showAdvancedDetails") var showAdvancedDetails = false
     @AppStorage("useLiquidGlassCGB") var useLiquidGlassCGB = true
     var body: some View {
         Section("Settings.debug.flags") {
-            Toggle(isOn: $showCharacterDetails, label: {
-                Text(verbatim: "showCharacterDetails")
+            Toggle(isOn: $showAdvancedDetails, label: {
+                Text(verbatim: "showAdvancedDetails")
                     .fontDesign(.monospaced)
             })
             

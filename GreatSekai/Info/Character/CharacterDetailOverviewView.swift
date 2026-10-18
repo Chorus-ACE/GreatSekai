@@ -15,7 +15,7 @@ struct CharacterDetailOverviewView: View {
     
     @State var colorDetailsIsDisplaying = false
     
-    @AppStorage("showCharacterDetails") var showCharacterDetails = false
+    @AppStorage("showAdvancedDetails") var showAdvancedDetails = false
     
     var dateFormatter: DateFormatter {
         let df = DateFormatter()
@@ -41,7 +41,7 @@ struct CharacterDetailOverviewView: View {
                 DetailInfoItem("Character.color", content: {
                     HStack {
                         ColorLabel(color: color)
-                        if showCharacterDetails {
+                        if showAdvancedDetails {
                             Button(action: {
                                 colorDetailsIsDisplaying = true
                             }, label: {
@@ -65,14 +65,12 @@ struct CharacterDetailOverviewView: View {
                 UnitLabel(unit: information.unit)
             })
             
-            if showCharacterDetails {
+            if showAdvancedDetails {
                 DetailInfoItem("Character.advanced.support-unit-type", content: {
                     Text(information.supportUnitType.rawValue)
                         .fontDesign(.monospaced)
                 })
-            }
-            
-            if showCharacterDetails {
+
                 DetailInfoItem("Character.gender", text: information.gender.localizedName)
             }
             
@@ -88,7 +86,7 @@ struct CharacterDetailOverviewView: View {
                 Text(information.height, format: .measurement(width: .narrow, usage: .personHeight))
             })
             
-            if showCharacterDetails {
+            if showAdvancedDetails {
                 DetailInfoItem("Character.advanced.live2d-height-adjustment-value", content: {
                     Text("\(information.live2DHeightAdjustment)")
                         .fontDesign(.monospaced)
@@ -105,15 +103,17 @@ struct CharacterDetailOverviewView: View {
                 DetailInfoItem("Character.weakness", localizableText: information.weakness)
             }
             
-            DetailInfoItem("Character.advanced.figure", content: {
-                Text(information.figure.rawValue)
-                    .fontDesign(.monospaced)
-            })
-            
-            DetailInfoItem("Character.advanced.breast-size", content: {
-                Text(information.breastSize.rawValue)
-                    .fontDesign(.monospaced)
-            })
+            if showAdvancedDetails {
+                DetailInfoItem("Character.advanced.figure", content: {
+                    Text(information.figure.rawValue)
+                        .fontDesign(.monospaced)
+                })
+                
+                DetailInfoItem("Character.advanced.breast-size", content: {
+                    Text(information.breastSize.rawValue)
+                        .fontDesign(.monospaced)
+                })
+            }
             
             DetailInfoItem("Character.introduction", content: {
                 LocalizableText(information.introduction, showSecondaryText: false)
@@ -220,55 +220,135 @@ struct UnitLabel: View {
 
 struct CharacterWrappingHStack: View {
     var characters: [Int]
+    var wrapCompleteVirtualSingers: Bool
     
-    init(characters: [Int]) {
+    @State var virtualSingerIsHovering: Bool = false
+    
+    var mappedCharacters: [Int] {
+        if Set(21...26).isSubset(of: Set(characters)) {
+            var temp = characters
+            temp.removeAll(where: { (21...26).contains($0) })
+            temp.append(-831)
+            return temp
+        }
+        return characters
+    }
+    
+    init(characters: [Int], wrapCompleteVirtualSingers: Bool = false) {
         self.characters = characters
+        self.wrapCompleteVirtualSingers = wrapCompleteVirtualSingers
     }
     
-    init(characters: [Character]) {
+    init(characters: [Character], wrapCompleteVirtualSingers: Bool = false) {
         self.characters = characters.map(\.id)
+        self.wrapCompleteVirtualSingers = wrapCompleteVirtualSingers
     }
+    
     var body: some View {
         WrappingHStack(alignment: .trailing) {
-            ForEach(characters, id: \.self) { item in
+            ForEach(mappedCharacters, id: \.self) { item in
+                if item >= 0 {
 #if os(macOS)
-                NavigationLink(destination: {
-                    CharacterDetailView(id: item)
-                }, label: {
-                    WebImage(url: Character.iconImageURL(forID: item))
-                        .antialiased(true)
-                        .resizable()
-                        .frame(width: imageButtonSize, height: imageButtonSize)
-                })
-                .buttonStyle(.plain)
-#else
-                Menu(content: {
                     NavigationLink(destination: {
                         CharacterDetailView(id: item)
                     }, label: {
-                        HStack {
-                            WebImage(url: Character.iconImageURL(forID: item))
-                                .antialiased(true)
-                                .resizable()
-                                .frame(width: imageButtonSize, height: imageButtonSize)
-                            if let name = SekaiCache.preCache.character(id: item)?.fullName.forPreferredLocale() {
-                                Text(name)
-                            } else {
-                                Text(verbatim: "Lorum Ipsum")
-                                    .foregroundStyle(Color(UIColor.placeholderText))
-                                    .redacted(reason: .placeholder)
-                            }
-                        }
+                        WebImage(url: Character.iconImageURL(forID: item))
+                            .antialiased(true)
+                            .resizable()
+                            .frame(width: imageButtonSize, height: imageButtonSize)
                     })
-                }, label: {
-                    WebImage(url: Character.iconImageURL(forID: item))
-                        .antialiased(true)
-                        .resizable()
-                        .frame(width: imageButtonSize, height: imageButtonSize)
-                })
+                    .buttonStyle(.plain)
+#else
+                    Menu(content: {
+                        NavigationLink(destination: {
+                            CharacterDetailView(id: item)
+                        }, label: {
+                            HStack {
+                                WebImage(url: Character.iconImageURL(forID: item))
+                                    .antialiased(true)
+                                    .resizable()
+                                    .frame(width: imageButtonSize, height: imageButtonSize)
+                                if let name = SekaiCache.preCache.character(id: item)?.fullName.forPreferredLocale() {
+                                    Text(name)
+                                } else {
+                                    Text(verbatim: "Lorum Ipsum")
+                                        .foregroundStyle(Color(UIColor.placeholderText))
+                                        .redacted(reason: .placeholder)
+                                }
+                            }
+                        })
+                    }, label: {
+                        WebImage(url: Character.iconImageURL(forID: item))
+                            .antialiased(true)
+                            .resizable()
+                            .frame(width: imageButtonSize, height: imageButtonSize)
+                    })
 #endif
+                } else if item == -831 {
+                    allVirtualSingers()
+                }
             }
         }
         .frame(maxWidth: CGFloat(characters.count) * (imageButtonSize + 10))
+    }
+    
+    @ViewBuilder
+    func allVirtualSingers() -> some View {
+        Group {
+            #if os(macOS)
+            WebImage(url: Unit.virtualSinger.iconImageURL)
+                .antialiased(true)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: imageButtonSize, maxHeight: imageButtonSize)
+                .onHover { isHovering in
+                    self.virtualSingerIsHovering = isHovering
+                }
+                .popover(isPresented: $virtualSingerIsHovering, arrowEdge: .bottom) {
+                    VStack {
+                        Text("Characters.all-virtual-singers")
+                        HStack {
+                            ForEach(21...26, id: \.self) { item in
+                                WebImage(url: Character.iconImageURL(forID: item))
+                                    .antialiased(true)
+                                    .resizable()
+                                    .frame(width: imageButtonSize, height: imageButtonSize)
+                            }
+                        }
+                    }
+                    .padding()
+                }
+            #elseif os(iOS)
+            Menu(content: {
+                Section("Characters.all-virtual-singers") {
+                    ForEach(21...26, id: \.self) { item in
+                        NavigationLink(destination: {
+                            CharacterDetailView(id: item)
+                        }, label: {
+                            HStack {
+                                WebImage(url: Character.iconImageURL(forID: item))
+                                    .antialiased(true)
+                                    .resizable()
+                                    .frame(width: imageButtonSize, height: imageButtonSize)
+                                if let name = SekaiCache.preCache.character(id: item)?.fullName.forPreferredLocale() {
+                                    Text(name)
+                                } else {
+                                    Text(verbatim: "Lorum Ipsum")
+                                        .foregroundStyle(Color(UIColor.placeholderText))
+                                        .redacted(reason: .placeholder)
+                                }
+                            }
+                        })
+                    }
+                }
+            }, label: {
+                WebImage(url: Unit.virtualSinger.iconImageURL)
+                    .antialiased(true)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: imageButtonSize, maxHeight: imageButtonSize)
+            })
+            #endif
+        }
     }
 }

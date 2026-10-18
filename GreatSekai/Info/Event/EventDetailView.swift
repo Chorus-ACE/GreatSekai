@@ -23,66 +23,50 @@ struct EventDetailView: View {
             Group {
                 EventDetailOverviewView(information: information)
                 DetailsCardsSection(cards: parsedCards)
+                
                 if !(parsedSongs?.isEmpty ?? false) {
                     DetailsSongsSection(songs: parsedSongs)
                 }
-                //            DetailsGachasSection(gachas: information.gacha, applyLocaleFilter: true)
-                //            DetailsSongsSection(
-                //                songs: .init(
-                //                    _jp: songs(for: .jp, with: information),
-                //                    en: songs(for: .en, with: information),
-                //                    tw: songs(for: .tw, with: information),
-                //                    cn: songs(for: .cn, with: information),
-                //                    kr: songs(for: .kr, with: information)
-                //                ),
-                //                subtitles: {
-                //                    var result: [Int: LocalizedStringKey] = [:]
-                //                    for song in information.songs {
-                //                        result.updateValue("Detail.source.release-during-event", forKey: song.id)
-                //                    }
-                //                    for locale in DoriLocale.allCases {
-                //                        information.eventSongs?.forLocale(locale)?.forEach {
-                //                            result.updateValue("Detail.songs.source.event-song", forKey: $0.id)
-                //                        }
-                //                    }
-                //                    return result
-                //                }()
-                //            )
-                //            .wrapIf(information.event.eventType == .teamLiveFestival) {
-                //                $0.appendingView { EventDetailRotationMusicView(information: information) }
-                //            }
-                //            EventDetailStageView(information: information)
-                //            EventDetailGoalsView(information: information)
-                //            EventDetailTeamsView(information: information)
-                //            EventDetailDegreesView(information: information)
-                //            EventDetailRewardsView(information: information)
-                //            EventDetailStoriesView(information: information)
-                //            DetailArtsSection {
-                //                ArtsTab("Event.arts.banner", ratio: 3) {
-                //                    for locale in DoriLocale.allCases {
-                //                        if let url = information.event.bannerImageURL(in: locale, allowsFallback: false) {
-                //                            ArtsItem(title: LocalizedStringResource(stringLiteral: locale.rawValue.uppercased()), url: url)
-                //                        }
-                //                        if let url = information.event.homeBannerImageURL(in: locale, allowsFallback: false) {
-                //                            ArtsItem(title: LocalizedStringResource(stringLiteral: locale.rawValue.uppercased()), url: url)
-                //                        }
-                //
-                //                    }
-                //                }
-                //                ArtsTab("Event.arts.logo", ratio: 450/200) {
-                //                    for locale in DoriLocale.allCases {
-                //                        if let url = information.event.logoImageURL(in: locale, allowsFallback: false) {
-                //                            ArtsItem(title: LocalizedStringResource(stringLiteral: locale.rawValue.uppercased()), url: url)
-                //                        }
-                //                    }
-                //                }
-                //                ArtsTab("Event.arts.home-screen") {
-                //                    ArtsItem(title: "Event.arts.home-screen.characters", url: information.event.topScreenTrimmedImageURL, ratio: 1)
-                //                    ArtsItem(title: "Event.arts.home-screen.background", url: information.event.topScreenBackgroundImageURL, ratio: 816/613)
-                //                }
-                //            }
                 
-                ExternalLinksSection(links: [ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/event/\(information.id)")!)])
+                EventEpisodesSection(event: information.event).id(information.id)
+                DetailArtsSection {
+                    ArtsTab("Event.arts.banner", ratio: bannerRatio) {
+                        for locale in SekaiLocale.allCases where information.event.title.localizedData?.availableInLocale(locale) == true {
+                            ArtsItem(title: .init(stringLiteral: locale.rawValue.uppercased()), url: information.event.bannerImageURL(in: locale))
+                        }
+                    }
+                    
+                    ArtsTab("Event.arts.banner-home", ratio: bannerRatio) {
+                        for locale in SekaiLocale.allCases where information.event.title.localizedData?.availableInLocale(locale) == true {
+                            ArtsItem(title: .init(stringLiteral: locale.rawValue.uppercased()), url: information.event.bannerImageAltURL(in: locale))
+                        }
+                    }
+                    
+                    ArtsTab("Event.arts.logo", ratio: 2) {
+                        for locale in SekaiLocale.allCases where information.event.title.localizedData?.availableInLocale(locale) == true {
+                            ArtsItem(title: .init(stringLiteral: locale.rawValue.uppercased()), url: information.event.logoImageURL(in: locale))
+                        }
+                    }
+                }
+                
+                ExternalLinksSection(links: [
+                    ExternalLink(
+                        name: "External-link.sekai-viewer",
+                        url: URL(string: "https://sekai.best/event/\(information.id)")!
+                    ),
+                    ExternalLink(
+                        name: "External-link.cleista",
+                        url: URL(string: "https://pjsk.cleista.cc/#/event-story/\(information.id)/episode-list")!
+                    ),
+                    ExternalLink(
+                        name: "External-link.moesekai",
+                        url: URL(string: "https://pjsk.moe/events/\(information.id)/")!
+                    ),
+                    ExternalLink(
+                        name: "External-link.haruki",
+                        url: URL(string: "https://haruki.seiunx.com/events/\(information.id)")!
+                    )
+                ])
             }
             .onAppear {
                 parsedCards = nil

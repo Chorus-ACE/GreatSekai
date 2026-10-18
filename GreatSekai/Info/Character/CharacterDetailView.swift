@@ -77,8 +77,36 @@ struct CharacterDetailView: View {
 //                }
 //            }
 //            
+            DetailArtsSection {
+                ArtsTab("Character.arts.selection", ratio: 0.45) {
+                    for locale in SekaiLocale.allCases where information.givenName.localizedData?.availableInLocale(locale) == true {
+                        ArtsItem(title: .init(stringLiteral: locale.rawValue.uppercased()), url: information.selectionImageURL(in: locale))
+                    }
+                }
+                if let url = information.iconImageURL {
+                    ArtsTab("Character.arts.icon") {
+                        ArtsItem(title: .init(stringLiteral: information.fullName.majorValue ?? ""), url: url)
+                    }
+                }
+            }
+            
             ExternalLinksSection(links: [
-                ExternalLink(name: "External-link.sekai-viewer", url: URL(string: "https://sekai.best/chara/\(information.id)")!)
+                ExternalLink(
+                    name: "External-link.sekai-viewer",
+                    url: URL(string: "https://sekai.best/chara/\(information.id)")!
+                ),
+                ExternalLink(
+                    name: "External-link.sekaipedia",
+                    url: URL(string: "https://www.sekaipedia.org/wiki/\((information.fullName.localizedData?.forLocale(.en) ?? "").replacingOccurrences(of: " ", with: "_"))")!
+                ),
+                ExternalLink(
+                    name: "External-link.cleista",
+                    url: URL(string: "https://pjsk.cleista.cc/#/characters/\(information.givenNameEnglish.lowercased())")!
+                ),
+                ExternalLink(
+                    name: "External-link.moesekai",
+                    url: URL(string: "https://pjsk.moe/character/\(information.id)/")!
+                )
             ])
         } switcherDestination: {
             CharacterSearchView()

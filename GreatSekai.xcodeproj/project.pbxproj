@@ -7,6 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0DBA180AF275468A97DFFBFD /* Live2DViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF1C572D42A410392AF68F8 /* Live2DViewerView.swift */; };
+		10D7563A373B4F1B85D3D343 /* ComicInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759F59FB12014EFA87B3CF5C /* ComicInfo.swift */; };
+		12078E3C0BCC4600812A0332 /* AppShared/CardCollectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE87947E737C4350B7234D7B /* AppShared/CardCollectionStore.swift */; };
+		185D4CBF57584F30B5809401 /* StoryViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2406D8CDA925482EAD99A31F /* StoryViewerView.swift */; };
+		2131E269C7F241EBA1410EA7 /* ComicDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DD2B303F6A44D4ABFF3901F /* ComicDetailView.swift */; };
+		2E20B427B462497EA76F0A42 /* MusicMetaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ADB8F0C4DCE48968E96AA3D /* MusicMetaView.swift */; };
+		358F9609CF414A3C972CBAA9 /* AppShared/CardCollectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE87947E737C4350B7234D7B /* AppShared/CardCollectionStore.swift */; };
+		4E9C95564613CBC450C65326 /* StickerSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D862E983CCD94C5769C4A538 /* StickerSearchView.swift */; };
+		528AF1B6CDCC4F2C97F67EB7 /* NativeLive2DPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E55A14D504146498C316AA8 /* NativeLive2DPlayer.swift */; };
+		5795D870190F4D12B77CA333 /* GreatSekaiWidgets/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 7856908627ED496EB2582FED /* GreatSekaiWidgets/Localizable.xcstrings */; };
+		5B57A0A1D2204E29820B9315 /* StickerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99306BFB1CF4087B4A201AB /* StickerInfo.swift */; };
+		6077A621EA2E5D4C2E91158C /* GachaDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2118D74B499E8A9B9BBD02 /* GachaDetailView.swift */; };
+		6E6C23B2AA87422B86EF4CCD /* GreatSekaiWidgets/CardCollectionWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BDCE99279DA4D5EB09D770F /* GreatSekaiWidgets/CardCollectionWidget.swift */; };
+		6F4974E09387419AA413C935 /* GachaDetailPaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06F3EFF5F5D42B58D6CEFCB /* GachaDetailPaymentView.swift */; };
+		738A3DCEB5BF4ABBA4376C40 /* GachaDetailRatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E77F48E2AF1F48D48DD857F3 /* GachaDetailRatesView.swift */; };
+		7550ABBA3B3C75889C5905D5 /* GachaSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCACD85661D542DAD507090 /* GachaSearchView.swift */; };
+		8FA9C2DDD2E3472AB1C72738 /* Live2DKit in Frameworks */ = {isa = PBXBuildFile; productRef = B9CB5DD6B6774B22BBDB659C /* Live2DKit */; };
+		8FD387BE52B844E184BA2B29 /* CardCollectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0639E8DD198D459E92890B32 /* CardCollectionsView.swift */; };
+		A498D037E5834DDF8B700919 /* MySekaiFixtureDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F87278AA85A547ED836C6684 /* MySekaiFixtureDetailView.swift */; };
+		B63999876492E28397E093DD /* StickerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED49AC16127A4427C94DB2ED /* StickerDetailView.swift */; };
 		B705231F3022A4EC004D6CDF /* CardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B705231E3022A4EC004D6CDF /* CardDetailView.swift */; };
 		B70523213022A626004D6CDF /* CardDetailOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70523203022A626004D6CDF /* CardDetailOverviewView.swift */; };
 		B7105918302E9C5000039F00 /* SongSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7105915302E9C5000039F00 /* SongSearchView.swift */; };
@@ -16,6 +36,10 @@
 		B710591D302E9D3C00039F00 /* SongDifficultyIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = B710591C302E9D3C00039F00 /* SongDifficultyIndicators.swift */; };
 		B716232D3025566C00228E92 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B716232C3025566900228E92 /* EventDetailView.swift */; };
 		B716232F3025583300228E92 /* EventDetailOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B716232E3025583300228E92 /* EventDetailOverviewView.swift */; };
+		B7850001301CE604005B6B45 /* EventInfoForHome.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7850002301CE604005B6B45 /* EventInfoForHome.swift */; };
+		C0085B0BB1464490ACCFAB5C /* GreatSekaiWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C61F1100241C4822BB60D84A /* GachaDetailCardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC646889C0944306B6E14563 /* GachaDetailCardsView.swift */; };
+		D4CC6966FE964764AC8C8CC0 /* MySekaiFixtureInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D9CCFD0EDBF40BFA9E5BB7B /* MySekaiFixtureInfo.swift */; };
 		E904D24C3026FBDA0012FDAD /* DetailsCardsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E904D24B3026FBDA0012FDAD /* DetailsCardsSection.swift */; };
 		E90629822F727BA900EDCDC6 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E90629812F727BA900EDCDC6 /* Localizable.xcstrings */; };
 		E90629842F727BD400EDCDC6 /* SettingsDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90629832F727BD200EDCDC6 /* SettingsDebugView.swift */; };
@@ -67,9 +91,49 @@
 		E9D6676C3014DD2800F6A422 /* FilterSorterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */; };
 		E9D6676E3014EDF100F6A422 /* CardSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */; };
 		E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D667703014EE1800F6A422 /* EventInfoView.swift */; };
+		F175E196AE87424785FA95F5 /* ComicSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C2EAC179464F458A64E406 /* ComicSearchView.swift */; };
+		F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3246A9AE073042688B53578E /* MySekaiFixtureSearchView.swift */; };
+		F6EC2707B9FF4DCD87E86390 /* CardCollectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F96B168B856E4E35AE593DFD /* CardCollectionManager.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		F603C04A89824F81984F2A1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E9C55F442F53F1E700DCFD2D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7E1D8BEF10EA412C803C84B7;
+			remoteInfo = GreatSekaiWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		84ACB0B2EDF049FDBFFEF5A4 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C0085B0BB1464490ACCFAB5C /* GreatSekaiWidgets.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		0639E8DD198D459E92890B32 /* CardCollectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CardCollectionsView.swift; path = GreatSekai/Tools/Collections/CardCollectionsView.swift; sourceTree = SOURCE_ROOT; };
+		0D9CCFD0EDBF40BFA9E5BB7B /* MySekaiFixtureInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MySekaiFixtureInfo.swift; path = GreatSekai/Info/MySekaiFixture/MySekaiFixtureInfo.swift; sourceTree = SOURCE_ROOT; };
+		2406D8CDA925482EAD99A31F /* StoryViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StoryViewerView.swift; path = GreatSekai/Tools/StoryViewer/StoryViewerView.swift; sourceTree = SOURCE_ROOT; };
+		3246A9AE073042688B53578E /* MySekaiFixtureSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MySekaiFixtureSearchView.swift; path = GreatSekai/Info/MySekaiFixture/MySekaiFixtureSearchView.swift; sourceTree = SOURCE_ROOT; };
+		3E55A14D504146498C316AA8 /* NativeLive2DPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NativeLive2DPlayer.swift; path = GreatSekai/Tools/Live2DViewer/NativeLive2DPlayer.swift; sourceTree = SOURCE_ROOT; };
+		6ADB8F0C4DCE48968E96AA3D /* MusicMetaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MusicMetaView.swift; path = GreatSekai/Info/MusicMeta/MusicMetaView.swift; sourceTree = SOURCE_ROOT; };
+		759F59FB12014EFA87B3CF5C /* ComicInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ComicInfo.swift; path = GreatSekai/Info/Comic/ComicInfo.swift; sourceTree = SOURCE_ROOT; };
+		7856908627ED496EB2582FED /* GreatSekaiWidgets/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = GreatSekaiWidgets/Localizable.xcstrings; sourceTree = SOURCE_ROOT; };
+		7DD2B303F6A44D4ABFF3901F /* ComicDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ComicDetailView.swift; path = GreatSekai/Info/Comic/ComicDetailView.swift; sourceTree = SOURCE_ROOT; };
+		8A2118D74B499E8A9B9BBD02 /* GachaDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailView.swift; sourceTree = "<group>"; };
+		9BDCE99279DA4D5EB09D770F /* GreatSekaiWidgets/CardCollectionWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreatSekaiWidgets/CardCollectionWidget.swift; sourceTree = SOURCE_ROOT; };
+		A5C2EAC179464F458A64E406 /* ComicSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ComicSearchView.swift; path = GreatSekai/Info/Comic/ComicSearchView.swift; sourceTree = SOURCE_ROOT; };
+		ADCACD85661D542DAD507090 /* GachaSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaSearchView.swift; sourceTree = "<group>"; };
 		B705231E3022A4EC004D6CDF /* CardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDetailView.swift; sourceTree = "<group>"; };
 		B70523203022A626004D6CDF /* CardDetailOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDetailOverviewView.swift; sourceTree = "<group>"; };
 		B7105914302E9C5000039F00 /* SongInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongInfo.swift; sourceTree = "<group>"; };
@@ -79,6 +143,13 @@
 		B710591C302E9D3C00039F00 /* SongDifficultyIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongDifficultyIndicators.swift; sourceTree = "<group>"; };
 		B716232C3025566900228E92 /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
 		B716232E3025583300228E92 /* EventDetailOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailOverviewView.swift; sourceTree = "<group>"; };
+		B7850002301CE604005B6B45 /* EventInfoForHome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInfoForHome.swift; sourceTree = "<group>"; };
+		C06F3EFF5F5D42B58D6CEFCB /* GachaDetailPaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailPaymentView.swift; sourceTree = "<group>"; };
+		CAF1C572D42A410392AF68F8 /* Live2DViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Live2DViewerView.swift; path = GreatSekai/Tools/Live2DViewer/Live2DViewerView.swift; sourceTree = SOURCE_ROOT; };
+		CC646889C0944306B6E14563 /* GachaDetailCardsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailCardsView.swift; sourceTree = "<group>"; };
+		D862E983CCD94C5769C4A538 /* StickerSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerSearchView.swift; sourceTree = "<group>"; };
+		D99306BFB1CF4087B4A201AB /* StickerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerInfo.swift; sourceTree = "<group>"; };
+		E77F48E2AF1F48D48DD857F3 /* GachaDetailRatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailRatesView.swift; sourceTree = "<group>"; };
 		E904D24B3026FBDA0012FDAD /* DetailsCardsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsCardsSection.swift; sourceTree = "<group>"; };
 		E90629812F727BA900EDCDC6 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E90629832F727BD200EDCDC6 /* SettingsDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDebugView.swift; sourceTree = "<group>"; };
@@ -129,6 +200,11 @@
 		E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSorterView.swift; sourceTree = "<group>"; };
 		E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardSearchView.swift; sourceTree = "<group>"; };
 		E9D667703014EE1800F6A422 /* EventInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInfoView.swift; sourceTree = "<group>"; };
+		ED49AC16127A4427C94DB2ED /* StickerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerDetailView.swift; sourceTree = "<group>"; };
+		EE87947E737C4350B7234D7B /* AppShared/CardCollectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShared/CardCollectionStore.swift; sourceTree = SOURCE_ROOT; };
+		F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = GreatSekaiWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F87278AA85A547ED836C6684 /* MySekaiFixtureDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MySekaiFixtureDetailView.swift; path = GreatSekai/Info/MySekaiFixture/MySekaiFixtureDetailView.swift; sourceTree = SOURCE_ROOT; };
+		F96B168B856E4E35AE593DFD /* CardCollectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CardCollectionManager.swift; path = GreatSekai/Tools/Collections/CardCollectionManager.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -145,10 +221,18 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		48236BFF6B1043FC9C673296 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E9C55F492F53F1E700DCFD2D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8FA9C2DDD2E3472AB1C72738 /* Live2DKit in Frameworks */,
 				E9C55FA02F53F28800DCFD2D /* SDWebImageSVGCoder in Frameworks */,
 				E9C55F9D2F53F27000DCFD2D /* SDWebImageSwiftUI in Frameworks */,
 				E9C55F5C2F53F21200DCFD2D /* SekaiKit in Frameworks */,
@@ -159,6 +243,90 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1ADDCF3A1745468984519658 /* Live2DViewer */ = {
+			isa = PBXGroup;
+			children = (
+				CAF1C572D42A410392AF68F8 /* Live2DViewerView.swift */,
+				3E55A14D504146498C316AA8 /* NativeLive2DPlayer.swift */,
+			);
+			name = Live2DViewer;
+			sourceTree = "<group>";
+		};
+		2B795AA14F074DB99E45F726 /* AppShared */ = {
+			isa = PBXGroup;
+			children = (
+				EE87947E737C4350B7234D7B /* AppShared/CardCollectionStore.swift */,
+			);
+			name = AppShared;
+			sourceTree = "<group>";
+		};
+		2E3091CBFB144A8082840C66 /* Collections */ = {
+			isa = PBXGroup;
+			children = (
+				F96B168B856E4E35AE593DFD /* CardCollectionManager.swift */,
+				0639E8DD198D459E92890B32 /* CardCollectionsView.swift */,
+			);
+			name = Collections;
+			sourceTree = "<group>";
+		};
+		30D793D72021013EEEFF6B7C /* Gacha */ = {
+			isa = PBXGroup;
+			children = (
+				ADCACD85661D542DAD507090 /* GachaSearchView.swift */,
+				8A2118D74B499E8A9B9BBD02 /* GachaDetailView.swift */,
+				C06F3EFF5F5D42B58D6CEFCB /* GachaDetailPaymentView.swift */,
+				E77F48E2AF1F48D48DD857F3 /* GachaDetailRatesView.swift */,
+				CC646889C0944306B6E14563 /* GachaDetailCardsView.swift */,
+			);
+			path = Gacha;
+			sourceTree = "<group>";
+		};
+		55E08617B5C94265B2757AE9 /* MusicMeta */ = {
+			isa = PBXGroup;
+			children = (
+				6ADB8F0C4DCE48968E96AA3D /* MusicMetaView.swift */,
+			);
+			name = MusicMeta;
+			sourceTree = "<group>";
+		};
+		66C352CEE3E44A62A2D17DBA /* StoryViewer */ = {
+			isa = PBXGroup;
+			children = (
+				2406D8CDA925482EAD99A31F /* StoryViewerView.swift */,
+			);
+			name = StoryViewer;
+			sourceTree = "<group>";
+		};
+		86410AB23903441EAE875626 /* Comic */ = {
+			isa = PBXGroup;
+			children = (
+				7DD2B303F6A44D4ABFF3901F /* ComicDetailView.swift */,
+				A5C2EAC179464F458A64E406 /* ComicSearchView.swift */,
+				759F59FB12014EFA87B3CF5C /* ComicInfo.swift */,
+			);
+			name = Comic;
+			sourceTree = "<group>";
+		};
+		9966449008173E3C5AF7C86D /* Sticker */ = {
+			isa = PBXGroup;
+			children = (
+				D862E983CCD94C5769C4A538 /* StickerSearchView.swift */,
+				ED49AC16127A4427C94DB2ED /* StickerDetailView.swift */,
+				D99306BFB1CF4087B4A201AB /* StickerInfo.swift */,
+			);
+			path = Sticker;
+			sourceTree = "<group>";
+		};
+		A353F3CFFF3A4E379E189EDB /* MySekaiFixture */ = {
+			isa = PBXGroup;
+			children = (
+				3246A9AE073042688B53578E /* MySekaiFixtureSearchView.swift */,
+				0D9CCFD0EDBF40BFA9E5BB7B /* MySekaiFixtureInfo.swift */,
+				F87278AA85A547ED836C6684 /* MySekaiFixtureDetailView.swift */,
+			);
+			name = MySekaiFixture;
+			sourceTree = "<group>";
+		};
 		B7105913302E9C4900039F00 /* Song */ = {
 			isa = PBXGroup;
 			children = (
@@ -172,6 +340,26 @@
 				E938722530301975006F22C1 /* DetailsSongsSection.swift */,
 			);
 			path = Song;
+			sourceTree = "<group>";
+		};
+		C16197C1BD464C9F9E6CF714 /* GreatSekaiWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				9BDCE99279DA4D5EB09D770F /* GreatSekaiWidgets/CardCollectionWidget.swift */,
+				7856908627ED496EB2582FED /* GreatSekaiWidgets/Localizable.xcstrings */,
+			);
+			name = GreatSekaiWidgets;
+			sourceTree = "<group>";
+		};
+		DDE3FCD1B4B64586B9D07CBB /* Tools */ = {
+			isa = PBXGroup;
+			children = (
+				55E08617B5C94265B2757AE9 /* MusicMeta */,
+				1ADDCF3A1745468984519658 /* Live2DViewer */,
+				2E3091CBFB144A8082840C66 /* Collections */,
+				66C352CEE3E44A62A2D17DBA /* StoryViewer */,
+			);
+			name = Tools;
 			sourceTree = "<group>";
 		};
 		E912E5E82F6FAD7700B7220C /* Character */ = {
@@ -225,6 +413,10 @@
 				E9D6676F3014EDF500F6A422 /* Card */,
 				E9D667723014EE1E00F6A422 /* Event */,
 				B7105913302E9C4900039F00 /* Song */,
+				30D793D72021013EEEFF6B7C /* Gacha */,
+				86410AB23903441EAE875626 /* Comic */,
+				9966449008173E3C5AF7C86D /* Sticker */,
+				A353F3CFFF3A4E379E189EDB /* MySekaiFixture */,
 				E93153442F540A45002D102D /* Other */,
 			);
 			path = Info;
@@ -259,6 +451,8 @@
 		E9C55F432F53F1E700DCFD2D = {
 			isa = PBXGroup;
 			children = (
+				C16197C1BD464C9F9E6CF714 /* GreatSekaiWidgets */,
+				2B795AA14F074DB99E45F726 /* AppShared */,
 				E9C55FCB2F53F3C100DCFD2D /* GreatSekai */,
 				E9C55F4D2F53F1E700DCFD2D /* Products */,
 			);
@@ -267,6 +461,7 @@
 		E9C55F4D2F53F1E700DCFD2D /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */,
 				E9C55F4C2F53F1E700DCFD2D /* GreatSekai.app */,
 			);
 			name = Products;
@@ -298,6 +493,7 @@
 				E931520C2F5401D1002D102D /* UI Basics */,
 				E93152AE2F540621002D102D /* Settings */,
 				E93153402F540A40002D102D /* Info */,
+				DDE3FCD1B4B64586B9D07CBB /* Tools */,
 				E95A81C73027528E0017DE54 /* Documents */,
 				E9C55FC72F53F3C100DCFD2D /* Methods */,
 			);
@@ -322,6 +518,7 @@
 			isa = PBXGroup;
 			children = (
 				E9D667703014EE1800F6A422 /* EventInfoView.swift */,
+				B7850002301CE604005B6B45 /* EventInfoForHome.swift */,
 				E960BAD4301DF12000B86B8A /* EventSearchView.swift */,
 				B716232C3025566900228E92 /* EventDetailView.swift */,
 				B716232E3025583300228E92 /* EventDetailOverviewView.swift */,
@@ -332,17 +529,37 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E9C55F4B2F53F1E700DCFD2D /* GreatSekai */ = {
+		7E1D8BEF10EA412C803C84B7 /* GreatSekaiWidgets */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E9C55F572F53F1E800DCFD2D /* Build configuration list for PBXNativeTarget "GreatSekai" */;
+			buildConfigurationList = 8C949C6CA2C040B9B007957D /* Build configuration list for PBXNativeTarget "GreatSekaiWidgets" */;
 			buildPhases = (
-				E9C55F482F53F1E700DCFD2D /* Sources */,
-				E9C55F492F53F1E700DCFD2D /* Frameworks */,
-				E9C55F4A2F53F1E700DCFD2D /* Resources */,
+				B7ED03611A3B4651A3EC4B13 /* Sources */,
+				48236BFF6B1043FC9C673296 /* Frameworks */,
+				B4CEE6B15CE248C98AE07DAC /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+			);
+			name = GreatSekaiWidgets;
+			productName = GreatSekaiWidgets;
+			productReference = F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		E9C55F4B2F53F1E700DCFD2D /* GreatSekai */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E9C55F572F53F1E800DCFD2D /* Build configuration list for PBXNativeTarget "GreatSekai" */;
+			buildPhases = (
+				84ACB0B2EDF049FDBFFEF5A4 /* Embed App Extensions */,
+				E9C55F482F53F1E700DCFD2D /* Sources */,
+				E9C55F492F53F1E700DCFD2D /* Frameworks */,
+				E9C55F4A2F53F1E700DCFD2D /* Resources */,
+				EC82759F3655435696F63520 /* Embed Cubism Metal Shaders */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5CCBA999F432477F90CD952D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E95A81D4302752C30017DE54 /* zh-Hans.lproj */,
@@ -350,6 +567,7 @@
 			);
 			name = GreatSekai;
 			packageProductDependencies = (
+				B9CB5DD6B6774B22BBDB659C /* Live2DKit */,
 				E9C55F5B2F53F21200DCFD2D /* SekaiKit */,
 				E9C55F9C2F53F27000DCFD2D /* SDWebImageSwiftUI */,
 				E9C55F9F2F53F28800DCFD2D /* SDWebImageSVGCoder */,
@@ -385,6 +603,7 @@
 			mainGroup = E9C55F432F53F1E700DCFD2D;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				322F04C3BA2B4DFBA8950DD5 /* XCLocalSwiftPackageReference "Packages/Live2DKit" */,
 				E9C55F5A2F53F21100DCFD2D /* XCLocalSwiftPackageReference "../SekaiKit" */,
 				E9C55F9B2F53F27000DCFD2D /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 				E9C55F9E2F53F28800DCFD2D /* XCRemoteSwiftPackageReference "SDWebImageSVGCoder" */,
@@ -396,11 +615,20 @@
 			projectRoot = "";
 			targets = (
 				E9C55F4B2F53F1E700DCFD2D /* GreatSekai */,
+				7E1D8BEF10EA412C803C84B7 /* GreatSekaiWidgets */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B4CEE6B15CE248C98AE07DAC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5795D870190F4D12B77CA333 /* GreatSekaiWidgets/Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E9C55F4A2F53F1E700DCFD2D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -414,16 +642,70 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		EC82759F3655435696F63520 /* Embed Cubism Metal Shaders */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Packages/Live2DKit/Vendor",
+			);
+			name = "Embed Cubism Metal Shaders";
+			outputFileListPaths = (
+				"$(SRCROOT)/Packages/Live2DKit/Scripts/FrameworkMetallibsOutputs.xcfilelist",
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/FrameworkMetallibs/",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -eu\nshader_source=\"$SRCROOT/Packages/Live2DKit/Vendor/FrameworkMetallibs-$PLATFORM_NAME\"\nif [ -d \"$SRCROOT/Packages/Live2DKit/Vendor/Live2DCubismCore.xcframework\" ]; then\n    if [ ! -f \"$shader_source/MetalShaders.metallib\" ]; then\n        echo \"error: Cubism shaders missing. Run Packages/Live2DKit/Scripts/build-metallibs.sh $PLATFORM_NAME first.\"\n        exit 1\n    fi\n    /bin/mkdir -p \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/FrameworkMetallibs\"\n    /bin/cp -X \"$shader_source\"/*.metallib \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/FrameworkMetallibs/\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		B7ED03611A3B4651A3EC4B13 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6E6C23B2AA87422B86EF4CCD /* GreatSekaiWidgets/CardCollectionWidget.swift in Sources */,
+				12078E3C0BCC4600812A0332 /* AppShared/CardCollectionStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E9C55F482F53F1E700DCFD2D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				528AF1B6CDCC4F2C97F67EB7 /* NativeLive2DPlayer.swift in Sources */,
+				0DBA180AF275468A97DFFBFD /* Live2DViewerView.swift in Sources */,
+				358F9609CF414A3C972CBAA9 /* AppShared/CardCollectionStore.swift in Sources */,
+				8FD387BE52B844E184BA2B29 /* CardCollectionsView.swift in Sources */,
+				F6EC2707B9FF4DCD87E86390 /* CardCollectionManager.swift in Sources */,
+				185D4CBF57584F30B5809401 /* StoryViewerView.swift in Sources */,
+				2E20B427B462497EA76F0A42 /* MusicMetaView.swift in Sources */,
+				A498D037E5834DDF8B700919 /* MySekaiFixtureDetailView.swift in Sources */,
+				D4CC6966FE964764AC8C8CC0 /* MySekaiFixtureInfo.swift in Sources */,
+				F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */,
+				10D7563A373B4F1B85D3D343 /* ComicInfo.swift in Sources */,
+				F175E196AE87424785FA95F5 /* ComicSearchView.swift in Sources */,
+				2131E269C7F241EBA1410EA7 /* ComicDetailView.swift in Sources */,
+				7550ABBA3B3C75889C5905D5 /* GachaSearchView.swift in Sources */,
+				6077A621EA2E5D4C2E91158C /* GachaDetailView.swift in Sources */,
+				6F4974E09387419AA413C935 /* GachaDetailPaymentView.swift in Sources */,
+				738A3DCEB5BF4ABBA4376C40 /* GachaDetailRatesView.swift in Sources */,
+				C61F1100241C4822BB60D84A /* GachaDetailCardsView.swift in Sources */,
+				4E9C95564613CBC450C65326 /* StickerSearchView.swift in Sources */,
+				B63999876492E28397E093DD /* StickerDetailView.swift in Sources */,
+				5B57A0A1D2204E29820B9315 /* StickerInfo.swift in Sources */,
 				E9C55FCE2F53F3C100DCFD2D /* CardCollectionCoding.swift in Sources */,
 				E9C55FCF2F53F3C100DCFD2D /* Extensions.swift in Sources */,
 				E9C55FD02F53F3C100DCFD2D /* Functions.swift in Sources */,
 				E99FB7B4301F030E00020F06 /* CardImage.swift in Sources */,
 				E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */,
+				B7850001301CE604005B6B45 /* EventInfoForHome.swift in Sources */,
 				E9C55FD12F53F3C100DCFD2D /* QuickLook.swift in Sources */,
 				E938722630301975006F22C1 /* DetailsSongsSection.swift in Sources */,
 				E9C55FD22F53F3C100DCFD2D /* StableHasher.swift in Sources */,
@@ -476,6 +758,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		5CCBA999F432477F90CD952D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7E1D8BEF10EA412C803C84B7 /* GreatSekaiWidgets */;
+			targetProxy = F603C04A89824F81984F2A1D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		E9BCABB83021F5270076FAA5 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
@@ -489,6 +779,80 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		36CF0AD84B8A4132A33F1E29 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = GreatSekaiWidgets/GreatSekaiWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MU2GGQV46U;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GreatSekaiWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "GreatSekai Collections";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.chorus-ace.GreatSekai.Widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		B0C2E35828314879939F88C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = GreatSekaiWidgets/GreatSekaiWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MU2GGQV46U;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GreatSekaiWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "GreatSekai Collections";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.chorus-ace.GreatSekai.Widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
 		E9C55F552F53F1E800DCFD2D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -549,6 +913,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				USE_RECURSIVE_SCRIPT_INPUTS_IN_SCRIPT_PHASES = YES;
 			};
 			name = Debug;
 		};
@@ -604,6 +969,7 @@
 				MTL_FAST_MATH = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				USE_RECURSIVE_SCRIPT_INPUTS_IN_SCRIPT_PHASES = YES;
 			};
 			name = Release;
 		};
@@ -612,6 +978,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = GreatSekai/GreatSekai.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MU2GGQV46U;
@@ -639,28 +1006,30 @@
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "-enable-experimental-feature BuiltinModule -enable-experimental-feature CompileTimeValues";
-				PRODUCT_BUNDLE_IDENTIFIER = com.qastor.GreatSekai;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.chorus-ace.GreatSekai";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 18.0;
 			};
 			name = Debug;
@@ -670,6 +1039,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = GreatSekai/GreatSekai.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MU2GGQV46U;
@@ -697,28 +1067,30 @@
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "-enable-experimental-feature BuiltinModule -enable-experimental-feature CompileTimeValues";
-				PRODUCT_BUNDLE_IDENTIFIER = com.qastor.GreatSekai;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.chorus-ace.GreatSekai";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 18.0;
 			};
 			name = Release;
@@ -726,6 +1098,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		8C949C6CA2C040B9B007957D /* Build configuration list for PBXNativeTarget "GreatSekaiWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0C2E35828314879939F88C2 /* Debug */,
+				36CF0AD84B8A4132A33F1E29 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E9C55F472F53F1E700DCFD2D /* Build configuration list for PBXProject "GreatSekai" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -747,6 +1128,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		322F04C3BA2B4DFBA8950DD5 /* XCLocalSwiftPackageReference "Packages/Live2DKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Live2DKit;
+		};
 		E9C55F5A2F53F21100DCFD2D /* XCLocalSwiftPackageReference "../SekaiKit" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../SekaiKit;
@@ -781,6 +1166,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B9CB5DD6B6774B22BBDB659C /* Live2DKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Live2DKit;
+		};
 		E93152C22F540687002D102D /* MarkdownUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E93152C12F540687002D102D /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;

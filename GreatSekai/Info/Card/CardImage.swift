@@ -30,6 +30,7 @@ struct CardImage: View {
     private var showNavigationHints: Bool
     
     @State var showCardDetailView: Bool = false
+    @State var isNormalImageUnavailable: Bool = false
     
     @State var normalCardIsOnHover = false
     @State var trainedCardIsOnHover = false
@@ -42,7 +43,7 @@ struct CardImage: View {
     }
     var body: some View {
         ZStack {
-            CardCoverImageBorder(card, showNavigationHints: showNavigationHints, displayType: displayType, normalCardIsOnHover: $normalCardIsOnHover, trainedCardIsOnHover: $trainedCardIsOnHover)
+            CardCoverImageBorder(card, isNormalImageUnavailable: $isNormalImageUnavailable, showNavigationHints: showNavigationHints, displayType: displayType, normalCardIsOnHover: $normalCardIsOnHover, trainedCardIsOnHover: $trainedCardIsOnHover)
             
             // The Image may not be in expected ratio. Gosh.
             // Why the heck will the image has a different ratio with the border???
@@ -92,7 +93,7 @@ struct CardImage: View {
         .accessibilityCustomContent("Card.type", card.sourceType.localizedName)
         .imageContextMenu({
             var result: [ImageInfo?] = []
-            let beforeTraining = ImageInfo(url: card.beforeTrainingArtURL, description: "Image.card.normal")
+            let beforeTraining = isNormalImageUnavailable ? nil : ImageInfo(url: card.beforeTrainingArtURL, description: "Image.card.normal")
             let afterTraining = card.canTrain ? ImageInfo(url: card.afterTrainingArtURL!, description: "Image.card.trained") : nil
             
             if normalCardIsOnHover {
@@ -120,6 +121,9 @@ struct CardImage: View {
         .navigationDestination(isPresented: $showCardDetailView, destination: {
             CardDetailView(id: card.id)
         })
+        .onChange(of: card.id) {
+            isNormalImageUnavailable = false
+        }
     }
 }
 
@@ -129,13 +133,15 @@ struct CardCoverImageBorder: View {
     var displayType: CardImageDisplayType
     var showNavigationHints: Bool
     
+    @Binding var isNormalImageUnavailable: Bool
     @Binding var normalCardIsOnHover: Bool
     @Binding var trainedCardIsOnHover: Bool
     
     @State var showCardDetailView: Bool = false
     
-    init(_ card: Card, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both, normalCardIsOnHover: Binding<Bool>, trainedCardIsOnHover: Binding<Bool>) {
+    init(_ card: Card, isNormalImageUnavailable: Binding<Bool>, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both, normalCardIsOnHover: Binding<Bool>, trainedCardIsOnHover: Binding<Bool>) {
         self.card = card
+        self._isNormalImageUnavailable = isNormalImageUnavailable
         self.showNavigationHints = showNavigationHints
         self.displayType = displayType
         
@@ -158,7 +164,7 @@ struct CardCoverImageBorder: View {
             GeometryReader { proxy in
                 Group {
                     if let afterTrainingArtURL = card.afterTrainingArtURL, displayType != .normalOnly {
-                        if displayType == .both {
+                        if displayType == .both && !isNormalImageUnavailable {
                             HStack(spacing: 0) {
                                 WebImage(url: card.beforeTrainingArtURL) { image in
                                     image
@@ -167,6 +173,13 @@ struct CardCoverImageBorder: View {
                                         .fill(getPlaceholderColor())
                                 }
                                 .resizable()
+                                .onFailure { _ in
+                                    DispatchQueue.main.async {
+                                        isNormalImageUnavailable = true
+//                                        normalCardIsOnHover = false
+//                                        trainedCardIsOnHover = false
+                                    }
+                                }
                                 .interpolation(.high)
                                 .antialiased(true)
                                 .scaledToFill()

@@ -72,13 +72,16 @@ struct FallbackableWebImage<Content: View>: View {
         self.isAnimating = isAnimating
         self.transaction = transaction
         self.content = content
-        self._currentImageURLIndex = State(initialValue: !urls.isEmpty ? 0 : nil)
+        self._currentImageURLIndex = State(initialValue: !self.urls.isEmpty ? 0 : nil)
     }
     
     @State var currentImageURLIndex: Array<Content>.Index?
     
     var body: some View {
         _makeView()
+            .onChange(of: urls) {
+                currentImageURLIndex = urls.isEmpty ? nil : 0
+            }
     }
     
     private func _makeView() -> some View {
@@ -91,8 +94,10 @@ struct FallbackableWebImage<Content: View>: View {
             }
         }
         
+        let index = currentImageURLIndex.flatMap { urls.indices.contains($0) ? $0 : nil }
+        let currentURL = index.map { urls[$0] }
         var result = WebImage(
-            url: currentImageURLIndex != nil ? urls[currentImageURLIndex!] : nil,
+            url: currentURL,
             scale: scale,
             options: options,
             context: context,
@@ -102,13 +107,15 @@ struct FallbackableWebImage<Content: View>: View {
         )
             .onFailure { _ in
                 DispatchQueue.main.async {
-                    currentImageURLIndex! + 1 < urls.count ? (currentImageURLIndex! += 1) : ()
+                    guard let index, currentImageURLIndex == index,
+                          urls.indices.contains(index + 1) else { return }
+                    currentImageURLIndex = index + 1
                 }
             }
         for modifier in modifiers {
             result = modifier(result)
         }
-        return addUpscaler(result)
+        return addUpscaler(result).id(currentURL)
     }
 }
 

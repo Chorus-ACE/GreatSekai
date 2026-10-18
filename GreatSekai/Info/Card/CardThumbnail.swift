@@ -16,12 +16,15 @@ struct CardThumbnail: View {
     private var sideLength: CGFloat = 72
     private var showNavigationHints: Bool
     
+    private var onFailure: (() -> Void)?
+
     @State var showCardDetailView = false
     @State var cardNavigationDestinationID: Int = 0
     @State var isHovering: Bool = false
     
-    init(_ card: Card, showTrainedVersion: Bool = false, sideLength: CGFloat = 72, showNavigationHints: Bool = false) {
+    init(_ card: Card, showTrainedVersion: Bool = false, sideLength: CGFloat = 72, showNavigationHints: Bool = false, onFailure: (() -> Void)? = nil) {
         self.card = card
+        self.onFailure = onFailure
         self.showTrainedVersion = showTrainedVersion
         self.sideLength = sideLength
         self.showNavigationHints = showNavigationHints
@@ -41,6 +44,9 @@ struct CardThumbnail: View {
                     .aspectRatio(1, contentMode: .fit)
             }
             .resizable()
+            .onFailure { _ in
+                DispatchQueue.main.async { onFailure?() }
+            }
             .clipped()
             .frame(width: sideLength, height: sideLength)
             
