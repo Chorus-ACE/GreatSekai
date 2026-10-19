@@ -70,7 +70,7 @@ struct SettingsAboutDetailIconView: View {
                 .bold()
                 .font(.largeTitle)
             Group {
-                if AppFlag.DEBUG {
+                if AppFlag["DEBUG"] {
                     Text("Settings.about.version.\(appVersion)") + Text(verbatim: " - ") + Text(verbatim: "DEBUG")
                 } else if isSayuruVersion {
                     Text("Settings.about.version.\(appVersion)") + Text(verbatim: " - ") + Text(verbatim: "Botan")
@@ -81,7 +81,7 @@ struct SettingsAboutDetailIconView: View {
             .foregroundStyle(.secondary)
             .font(.title3)
             .onTapGesture(count: 3) {
-                if !AppFlag.DEBUG {
+                if !AppFlag["DEBUG"] {
                     showDebugVerificationAlert = true
                 } else {
                     showDebugDeactivateAlert = true
@@ -101,7 +101,7 @@ struct SettingsAboutDetailIconView: View {
                 Button(action: {
                     if password == correctDebugPassword {
                         lastDebugPassword = password
-                        AppFlag.set(true, forKey: "DEBUG")
+                        AppFlag["DEBUG"] = true
                         showDebugVerificationAlert = false
                         showDebugUnlockAlert = true
                     }
@@ -116,7 +116,7 @@ struct SettingsAboutDetailIconView: View {
             .alert("Settings.debug.activate-alert.succeed", isPresented: $showDebugUnlockAlert) {}
             .alert("Settings.debug.deactivate-alert.title", isPresented: $showDebugDeactivateAlert) {
                 Button("Settings.debug.deactivate-alert.confirm") {
-                    AppFlag.set(false, forKey: "DEBUG")
+                    AppFlag["DEBUG"] = false
                 }
                 .keyboardShortcut(.defaultAction)
                 Button("Settings.debug.deactivate-alert.cancel") {}

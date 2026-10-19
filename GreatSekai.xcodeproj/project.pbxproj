@@ -95,6 +95,7 @@
 		E9D6676C3014DD2800F6A422 /* FilterSorterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */; };
 		E9D6676E3014EDF100F6A422 /* CardSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */; };
 		E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D667703014EE1800F6A422 /* EventInfoView.swift */; };
+		E9F40685308627B6001CEAD5 /* Sekaipedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F40684308627B6001CEAD5 /* Sekaipedia.swift */; };
 		F175E196AE87424785FA95F5 /* ComicSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C2EAC179464F458A64E406 /* ComicSearchView.swift */; };
 		F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3246A9AE073042688B53578E /* MySekaiFixtureSearchView.swift */; };
 		F6EC2707B9FF4DCD87E86390 /* CardCollectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F96B168B856E4E35AE593DFD /* CardCollectionManager.swift */; };
@@ -209,6 +210,7 @@
 		E9D6676B3014DD2800F6A422 /* FilterSorterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSorterView.swift; sourceTree = "<group>"; };
 		E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardSearchView.swift; sourceTree = "<group>"; };
 		E9D667703014EE1800F6A422 /* EventInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInfoView.swift; sourceTree = "<group>"; };
+		E9F40684308627B6001CEAD5 /* Sekaipedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sekaipedia.swift; sourceTree = "<group>"; };
 		ED49AC16127A4427C94DB2ED /* StickerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerDetailView.swift; sourceTree = "<group>"; };
 		EE87947E737C4350B7234D7B /* AppShared/CardCollectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShared/CardCollectionStore.swift; sourceTree = SOURCE_ROOT; };
 		F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = GreatSekaiWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -488,6 +490,7 @@
 				E9C55FC52F53F3C100DCFD2D /* TypeNames.swift */,
 				E9C55FC62F53F3C100DCFD2D /* ViewModifiers.swift */,
 				E9A92B1C30852DEF0037CFA6 /* ImageInfo.swift */,
+				E9F40684308627B6001CEAD5 /* Sekaipedia.swift */,
 			);
 			path = Methods;
 			sourceTree = "<group>";
@@ -717,6 +720,7 @@
 				E9C55FCE2F53F3C100DCFD2D /* CardCollectionCoding.swift in Sources */,
 				E9C55FCF2F53F3C100DCFD2D /* Extensions.swift in Sources */,
 				E9C55FD02F53F3C100DCFD2D /* Functions.swift in Sources */,
+				E9F40685308627B6001CEAD5 /* Sekaipedia.swift in Sources */,
 				E99FB7B4301F030E00020F06 /* CardImage.swift in Sources */,
 				E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */,
 				B7850001301CE604005B6B45 /* EventInfoForHome.swift in Sources */,
@@ -1028,7 +1032,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -1090,7 +1094,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;

@@ -54,6 +54,9 @@ struct EventDetailView: View {
                     ExternalLink(.sekaiViewer,
                         url: URL(string: "https://sekai.best/event/\(information.id)")!
                     ),
+                    ExternalLink(.sekaipedia, url: {
+                        await Sekaipedia.url(for: .event, id: information.id)
+                    }, note: "SekaipediaDynamicFetch"),
                     ExternalLink(.cleista,
                         url: URL(string: "https://pjsk.cleista.cc/#/event-story/\(information.id)/episode-list")!
                     ),

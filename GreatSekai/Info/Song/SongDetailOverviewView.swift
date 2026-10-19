@@ -20,9 +20,32 @@ import SwiftUI
 struct SongDetailOverviewView: View {
     @Environment(\.horizontalSizeClass) var sizeClass
     let information: ExtendedSong
+    @State private var selectedVocalID: Int?
+
+    private var availableVocals: [Song.VocalVersion] {
+        (information.vocals ?? []).filter {
+            !$0.assetBundleName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+    }
+
+    private var selectedVocal: Song.VocalVersion? {
+        availableVocals.first(where: { $0.id == selectedVocalID })
+            ?? availableVocals.first(where: { $0.type == .sekai })
+            ?? availableVocals.first(where: { $0.type == .virtualSinger })
+            ?? availableVocals.first
+    }
+
+    private var vocalSelection: Binding<Int?> {
+        Binding(
+            get: { selectedVocal?.id },
+            set: { selectedVocalID = $0 }
+        )
+    }
+    
     
     let coverSideLengthRegular: CGFloat = 260
     let coverSideLengthCompact: CGFloat = 220
+    
     var body: some View {
         DetailInfoBase(content: {
             DetailInfoItem("Song.title", localizableText: information.song.title)
@@ -90,18 +113,59 @@ struct SongDetailOverviewView: View {
                 //                }
                 
                 
-                CustomGroupBox {
-                    VStack {
-                        CompactAudioPlayer(url: information.song.musicURL(vocalAssetBundleName: "FIXME")) // FIXME: No vocal asset bundle name yet
-                        Divider()
-                        ListItem(title: {
-                            Text("Song.player.version")
-                        }, value: {
-                            
-                        })
+                if let selectedVocal {
+                    CustomGroupBox {
+                        VStack {
+                            CompactAudioPlayer(
+                                url: information.song.musicURL(vocalAssetBundleName: selectedVocal.assetBundleName),
+                                startOffset: information.song.fillerSec
+                            )
+                            Divider()
+                            ListItem(title: {
+                                Text("Song.player.version")
+                            }, value: {
+                                Picker("Song.player.version", selection: vocalSelection, content: {
+                                    ForEach(availableVocals) { vocal in
+                                        // The menu uses the two Text labels as its title and subtitle.
+                                        // Picker handles selection through the tag on the entire option.
+                                        Button(action: {}, label: {
+                                            Text(vocal.caption.majorValue ?? String(localized: "Info.unknown"))
+                                            if !vocal.vocalLabel.isEmpty {
+                                                Text(vocal.vocalLabel)
+                                            }
+                                        })
+                                        .tag(Optional(vocal.id))
+                                    }
+                                }, currentValueLabel: {
+                                    Text(selectedVocal.conclusionTitle)
+                                })
+                                .labelsHidden()
+                                .pickerStyle(.menu)
+                            })
+                        }
                     }
                 }
             }
         })
+    }
+}
+
+extension Song.VocalVersion {
+    var vocalLabel: String {
+        ListFormatter.localizedString(byJoining: self.characters.compactMap({
+            $0.isInternalCharacter
+                ? (SekaiCache.preCache.character(id: $0.characterID)?.fullName.forPreferredLocale() ?? $0.name.majorValue)
+                : $0.name.majorValue
+        }))
+    }
+    
+    var conclusionTitle: String {
+        var body = self.caption.majorValue ?? String(localized: "Info.unknown")
+        if self.type == .anotherVocal {
+            let appendix = self.vocalLabel
+            let suffix = [SekaiLocale.en, .kr].contains(.primaryLocale) ? " (\(appendix))" : "（\(appendix)）"
+            body.append(suffix)
+        }
+        return body
     }
 }

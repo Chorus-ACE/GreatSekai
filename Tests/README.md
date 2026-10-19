@@ -7,6 +7,7 @@ SEKAI_MASTER_TEST_DATA=/path/to/regional-fixtures \
 SEKAI_ADDITIONAL_TEST_DATA=/path/to/content-fixtures \
 swift test --package-path SekaiKit --filter 'GachaStickerTests|AdditionalContentTests'
 sh GreatSekai/Tests/run-collection-tests.sh
+sh GreatSekai/Tests/run-sekaipedia-tests.sh
 ```
 
 AdditionalContentTests expects the original `tips`, `mysekaiFixtures`, `eventStories`,
@@ -15,6 +16,10 @@ that environment variable, only the external-fixture test is skipped. The collec
 runner compiles the production codec and shared storage directly and uses a temporary
 directory. It checks persistence, corruption reporting, Unicode names, trained and
 normal variants, empty collections and malformed import codes.
+
+The Sekaipedia runner compiles the production resolver and intercepts its HTTP requests
+locally. It checks card/event/music ID mappings, separate caches, missing and malformed
+results, HTTP failures, timeouts, and successful retries without network access.
 
 The app target embeds GreatSekaiWidgets on macOS and iOS. Both targets use
 `group.com.qastor.GreatSekai.Widgets`; device signing must provision that App Group

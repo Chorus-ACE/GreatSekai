@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingsDebugView: View {
     @AppStorage("showAdvancedDetails") var showAdvancedDetails = false
     @AppStorage("useLiquidGlassCGB") var useLiquidGlassCGB = true
+    
     var body: some View {
         Section("Settings.debug.flags") {
             Toggle(isOn: $showAdvancedDetails, label: {
@@ -19,6 +20,11 @@ struct SettingsDebugView: View {
             
             Toggle(isOn: $useLiquidGlassCGB, label: {
                 Text(verbatim: "useLiquidGlassCGB")
+                    .fontDesign(.monospaced)
+            })
+
+            Toggle(isOn: AppFlag.bindingValue(forKey: "SekaipediaDynamicFetch"), label: {
+                Text(verbatim: "SekaipediaDynamicFetch")
                     .fontDesign(.monospaced)
             })
         }

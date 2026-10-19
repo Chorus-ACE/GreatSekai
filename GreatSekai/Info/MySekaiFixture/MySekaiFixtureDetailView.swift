@@ -57,7 +57,7 @@ private struct FixtureMaterialsSection: View {
                                 HStack {
                                     WebImage(url: material.imageURL(in: locale)) { $0.resizable().scaledToFit() } placeholder: { Color.clear }
                                         .frame(width: 40, height: 40)
-                                    Text(material.name)
+                                    Text(material.name ?? "#\(material.id)")
                                     Spacer()
                                     Text(verbatim: "×\(material.quantity)")
                                         .monospacedDigit()

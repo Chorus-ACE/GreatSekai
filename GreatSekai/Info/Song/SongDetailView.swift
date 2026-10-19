@@ -53,6 +53,9 @@ struct SongDetailView: View {
                 ExternalLink(.sekaiViewer,
                     url: URL(string: "https://sekai.best/music/\(information.id)")!
                 ),
+                ExternalLink(.sekaipedia, url: {
+                    await Sekaipedia.url(for: .music, id: information.id)
+                }, note: "SekaipediaDynamicFetch"),
                 ExternalLink(.sonolus,
                     url: URL(string: "https://sonolus.sekai.best/playlists/sekai-best-\(information.id)")!
                 ),

@@ -11,7 +11,12 @@ import SwiftUI
 
 struct SongDetailVocalsView: View {
     var information: ExtendedSong
-    @State var vocal: Song.VocalVersion? = nil
+    @State private var expanded = false
+
+    private var displayedVocals: [Song.VocalVersion] {
+        let vocals = information.vocals ?? []
+        return expanded ? vocals : Array(vocals.prefix(3))
+    }
     
     let dateFormatter = {
         let df = DateFormatter()
@@ -22,7 +27,7 @@ struct SongDetailVocalsView: View {
     var body: some View {
         Section(content: {
             VStack {
-                ForEach(information.vocals ?? []) { vocal in
+                ForEach(displayedVocals) { vocal in
                     CustomGroupBox {
                         VStack {
                             Group {
@@ -93,26 +98,20 @@ struct SongDetailVocalsView: View {
                 Text("Song.vocal")
                     .font(.title2)
                     .bold()
-//                if let vocals = information.vocals {
-//                    DetailSectionOptionPicker(
-//                        selection: $vocal,
-//                        options: vocals,
-//                        labels: Dictionary(uniqueKeysWithValues: zip(
-//                            vocals,
-//                            vocals.map({ $0.caption.majorValue ?? "" })
-//                        ))
-//                    )
-//                    .disabled(vocals.count <= 1)
-//                }
                 Spacer()
+                if (information.vocals?.count ?? 0) > 3 {
+                    Button(expanded ? "Details.show-less" : "Details.show-all.\(information.vocals?.count ?? 0)") {
+                        expanded.toggle()
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                }
             }
             .frame(maxWidth: 615)
             .detailSectionHeader()
         })
-        .onAppear {
-            if vocal == nil {
-                vocal = information.vocals?.first(where: { $0.type == .sekai }) ?? information.vocals?.first
-            }
+        .onChange(of: information.id) {
+            expanded = false
         }
     }
 }

@@ -80,6 +80,10 @@ struct CardDetailView: View {
                 ExternalLink(.sekaiViewer, url:
                                 URL(string: "https://sekai.best/card/\(information.id)")!
                             ),
+
+                ExternalLink(.sekaipedia, url: {
+                    await Sekaipedia.url(for: .card, id: information.id)
+                }, note: "SekaipediaDynamicFetch"),
                 
                 ExternalLink(.cleista, url:
                                 URL(string: "https://pjsk.cleista.cc/#/cards/\(SekaiCache.preCache.character(id: information.characterID)?.givenName.forLocale(.en)?.lowercased() ?? "")-\(information.id)")!

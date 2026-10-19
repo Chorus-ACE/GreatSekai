@@ -202,7 +202,8 @@ struct ContentView: View {
 
                 if !lastDebugPassword.isEmpty && lastDebugPassword != correctDebugPassword {
                     lastDebugPassword = ""
-                    AppFlag.set(false, forKey: "DEBUG")
+                    AppFlag["DEBUG"] = false
+//                    AppFlag.set(false, forKey: "DEBUG")
                 }
             }
             .sheet(isPresented: $showWelcomeScreen, onDismiss: {

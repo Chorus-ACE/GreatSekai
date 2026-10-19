@@ -17,13 +17,20 @@ import SwiftUI
 
 struct ExternalLinksSection: View {
     var links: [ExternalLink?] = []
+
+    private var visibleLinks: [ExternalLink] {
+        links.compactMap { $0 }.filter {
+            $0.note != "SekaipediaDynamicFetch" || AppFlag["SekaipediaDynamicFetch"]
+        }
+    }
+
     var body: some View {
-        if links.contains(where: { $0 != nil }) {
+        if !visibleLinks.isEmpty {
             Section {
                 VStack {
                     CustomGroupBox {
                         VStack {
-                            ForEach(links.compactMap({ $0 })) { item in
+                            ForEach(visibleLinks) { item in
                                 ExternalLinkRow(item: item)
                             }
                             .insert {
@@ -60,18 +67,32 @@ struct ExternalLink: Hashable, Identifiable {
     let id: UUID = .init()
     let name: LocalizedStringResource
     let icon: String?
+    let source: DefaultSource?
     let url: @MainActor () async -> URL
+    let note: String?
     
-    init(name: LocalizedStringResource, icon: String? = nil, url: URL) {
+    init(name: LocalizedStringResource, icon: String? = nil, url: URL, note: String? = nil) {
         self.name = name
         self.icon = icon
+        self.source = nil
         self.url = { url }
+        self.note = note
     }
     
-    init(_ source: DefaultSource, url: URL) {
+    init(_ source: DefaultSource, url: URL, note: String? = nil) {
         self.name = source.localizedName
         self.icon = source.icon
+        self.source = source
         self.url = { url }
+        self.note = note
+    }
+
+    init(_ source: DefaultSource, url: @escaping @MainActor () async -> URL, note: String? = nil) {
+        self.name = source.localizedName
+        self.icon = source.icon
+        self.source = source
+        self.url = url
+        self.note = note
     }
     
     static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
@@ -124,20 +145,30 @@ private struct ExternalLinkRow: View {
             Task { @MainActor in
                 defer { opening = false }
                 let url = await item.url()
-                await openURL(url)
+                openURL(url)
             }
         } label: {
             HStack {
                 Group {
-                    if let icon = item.icon { Image(icon).resizable().scaledToFit() }
-                    else { Image(systemName: "globe") }
+                    if let icon = item.icon {
+                        Image(icon).resizable().scaledToFit()
+                    } else {
+                        Image(systemName: "globe")
+                    }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 5))
                 .frame(width: 20, height: 20)
                 Text(item.name)
                 Spacer()
-                if opening { ProgressView().controlSize(.small) }
-                else { Image(systemName: "arrow.up.forward.app").foregroundStyle(.secondary) }
+                if opening {
+                    Text("External-link.fetching")
+                        .foregroundStyle(.secondary)
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Image(systemName: "arrow.up.forward.app")
+                        .foregroundStyle(.secondary)
+                }
             }
             .contentShape(Rectangle())
         }

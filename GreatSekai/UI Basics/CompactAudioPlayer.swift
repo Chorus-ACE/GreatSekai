@@ -30,11 +30,13 @@ public typealias PlatformImage = NSImage
 struct CompactAudioPlayer: View {
     @State private var player: AVPlayer
     var url: URL
+    let startOffset: Double
     var showPlayButtonOnly: Bool
     var mediaInfo: (title: String?, artist: String?, artwork: URL?)?
     
-    init(url: URL, mediaInfo: (title: String?, artist: String?, artwork: URL?)? = nil, showPlayButtonOnly: Bool = false) {
+    init(url: URL, mediaInfo: (title: String?, artist: String?, artwork: URL?)? = nil, showPlayButtonOnly: Bool = false, startOffset: Double = 0) {
         self.url = url
+        self.startOffset = startOffset.isFinite ? max(0, startOffset) : 0
         self.mediaInfo = mediaInfo
         self.showPlayButtonOnly = showPlayButtonOnly
         self._player = .init(initialValue: .init(url: url))
@@ -52,13 +54,13 @@ struct CompactAudioPlayer: View {
                 try? AVAudioSession.sharedInstance().setActive(!isPlaying)
                 #endif
                 if let mediaInfo {
-                    configureNowPlaying(title: mediaInfo.title, artist: mediaInfo.artist, player: player, artworkURL: mediaInfo.artwork)
+                    configureNowPlaying(title: mediaInfo.title, artist: mediaInfo.artist, player: player, artworkURL: mediaInfo.artwork, startOffset: startOffset)
                 }
                 if isPlaying {
                     player.pause()
                 } else {
-                    if duration - currentTime < 0.1 {
-                        player.seek(to: .init(seconds: 0, preferredTimescale: CMTimeScale(NSEC_PER_SEC)))
+                    if duration > 0 && duration - currentTime < 0.1 {
+                        seek(to: 0)
                     }
                     player.play()
                 }
@@ -73,7 +75,7 @@ struct CompactAudioPlayer: View {
                     }
                 Slider(value: $currentTime, in: 0...duration) { isEditing in
                     if !isEditing {
-                        player.seek(to: .init(seconds: currentTime, preferredTimescale: CMTimeScale(NSEC_PER_SEC)))
+                        seek(to: currentTime)
                     }
                     isTimeEditing = isEditing
                 }
@@ -87,27 +89,64 @@ struct CompactAudioPlayer: View {
             }
         }
         .onAppear {
-            timeUpdateTimer = .scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-                DispatchQueue.main.async {
-                    if !isTimeEditing {
-                        currentTime = player.currentTime().seconds
-                    }
-                }
-            }
+            seek(to: 0)
+            startTimeUpdates()
         }
         .onDisappear {
             timeUpdateTimer?.invalidate()
+            timeUpdateTimer = nil
+            player.pause()
+        }
+        .onChange(of: url) {
+            reloadAudio()
+        }
+        .onChange(of: startOffset) {
+            reloadAudio()
         }
         .onReceive(player.publisher(for: \.timeControlStatus)) { status in
             isPlaying = status == .playing
         }
         .onReceive(player.publisher(for: \.currentItem?.duration)) { duration in
             if let duration, duration.seconds.isFinite {
-                self.duration = duration.seconds
+                self.duration = max(0, duration.seconds - startOffset)
+                currentTime = min(currentTime, self.duration)
             }
         }
     }
     
+    private func startTimeUpdates() {
+        timeUpdateTimer?.invalidate()
+        timeUpdateTimer = .scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            DispatchQueue.main.async {
+                if !isTimeEditing {
+                    let seconds = player.currentTime().seconds
+                    if seconds.isFinite {
+                        currentTime = min(max(0, seconds - startOffset), duration)
+                    }
+                }
+            }
+        }
+    }
+
+    private func reloadAudio() {
+        player.pause()
+        isPlaying = false
+        isTimeEditing = false
+        currentTime = 0
+        duration = 0
+        player.replaceCurrentItem(with: AVPlayerItem(url: url))
+        seek(to: 0)
+        startTimeUpdates()
+    }
+
+    private func seek(to time: Double) {
+        player.seek(
+            to: CMTime(seconds: time + startOffset, preferredTimescale: CMTimeScale(NSEC_PER_SEC)),
+            toleranceBefore: .zero,
+            toleranceAfter: .zero
+        )
+    }
+
     private func formatTime(_ time: Double) -> String {
         var minutes = String(Int(time) / 60)
         var seconds = String(Int(time.truncatingRemainder(dividingBy: 60)))
@@ -126,6 +165,7 @@ func configureNowPlaying(
     artist: String?,
     player: AVPlayer,
     artworkURL: URL?,
+    startOffset: Double = 0,
     skipForwardSeconds: Double = 10,
     skipBackwardSeconds: Double = 10
 ) {
@@ -142,15 +182,15 @@ func configureNowPlaying(
 
     // 进度条 (duration / elapsedTime)
     if let item = player.currentItem {
-        let duration = item.asset.duration
+        let duration = item.duration
         let durationSeconds = CMTimeGetSeconds(duration)
 
         if durationSeconds.isFinite {
-            info[MPMediaItemPropertyPlaybackDuration] = durationSeconds
+            info[MPMediaItemPropertyPlaybackDuration] = max(0, durationSeconds - startOffset)
         }
 
         let currentTime = CMTimeGetSeconds(player.currentTime())
-        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentTime
+        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = max(0, currentTime - startOffset)
 
         info[MPNowPlayingInfoPropertyPlaybackRate] =
             (player.timeControlStatus == .playing) ? 1.0 : 0.0
@@ -165,13 +205,13 @@ func configureNowPlaying(
     // 播放 / 暂停
     command.playCommand.addTarget { _ in
         player.play()
-        updateNowPlayingProgress(player: player)
+        updateNowPlayingProgress(player: player, startOffset: startOffset)
         return .success
     }
 
     command.pauseCommand.addTarget { _ in
         player.pause()
-        updateNowPlayingProgress(player: player)
+        updateNowPlayingProgress(player: player, startOffset: startOffset)
         return .success
     }
 
@@ -181,7 +221,7 @@ func configureNowPlaying(
         } else {
             player.play()
         }
-        updateNowPlayingProgress(player: player)
+        updateNowPlayingProgress(player: player, startOffset: startOffset)
         return .success
     }
 
@@ -192,9 +232,9 @@ func configureNowPlaying(
     command.skipBackwardCommand.preferredIntervals = [NSNumber(value: skipBackwardSeconds)]
     command.skipBackwardCommand.addTarget { event in
         guard let e = event as? MPSkipIntervalCommandEvent else { return .commandFailed }
-        let new = max(CMTimeGetSeconds(player.currentTime()) - e.interval, 0)
+        let new = max(CMTimeGetSeconds(player.currentTime()) - e.interval, startOffset)
         player.seek(to: CMTime(seconds: new, preferredTimescale: 600))
-        updateNowPlayingProgress(player: player)
+        updateNowPlayingProgress(player: player, startOffset: startOffset)
         return .success
     }
 
@@ -207,7 +247,7 @@ func configureNowPlaying(
         let duration = CMTimeGetSeconds(player.currentItem?.duration ?? .zero)
         let new = min(current + e.interval, duration)
         player.seek(to: CMTime(seconds: new, preferredTimescale: 600))
-        updateNowPlayingProgress(player: player)
+        updateNowPlayingProgress(player: player, startOffset: startOffset)
         return .success
     }
 
@@ -216,9 +256,9 @@ func configureNowPlaying(
     command.changePlaybackPositionCommand.isEnabled = true
     command.changePlaybackPositionCommand.addTarget { event in
         guard let e = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
-        let time = CMTime(seconds: e.positionTime, preferredTimescale: 600)
+        let time = CMTime(seconds: e.positionTime + startOffset, preferredTimescale: 600)
         player.seek(to: time) { _ in
-            updateNowPlayingProgress(player: player)
+            updateNowPlayingProgress(player: player, startOffset: startOffset)
         }
         return .success
     }
@@ -245,11 +285,11 @@ func configureNowPlaying(
 
 
 // MARK: - 更新 Now Playing 进度
-private func updateNowPlayingProgress(player: AVPlayer) {
+private func updateNowPlayingProgress(player: AVPlayer, startOffset: Double) {
     guard var now = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
 
     now[MPNowPlayingInfoPropertyElapsedPlaybackTime] =
-        CMTimeGetSeconds(player.currentTime())
+        max(0, CMTimeGetSeconds(player.currentTime()) - startOffset)
 
     now[MPNowPlayingInfoPropertyPlaybackRate] =
         (player.timeControlStatus == .playing) ? 1.0 : 0.0
@@ -257,7 +297,7 @@ private func updateNowPlayingProgress(player: AVPlayer) {
     if let item = player.currentItem {
         let duration = CMTimeGetSeconds(item.duration)
         if duration.isFinite {
-            now[MPMediaItemPropertyPlaybackDuration] = duration
+            now[MPMediaItemPropertyPlaybackDuration] = max(0, duration - startOffset)
         }
     }
 
