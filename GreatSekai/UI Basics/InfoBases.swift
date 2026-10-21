@@ -74,17 +74,26 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
     var body: some View {
         Group {
             if let information {
-                ScrollView {
-                    HStack {
-                        Spacer(minLength: 0)
-                        LazyVStack(spacing: 35, pinnedViews: .sectionHeaders) {
-                            makeContent(information)
-                        }
-                        Spacer(minLength: 0)
+                if #available(iOS 26.0, macOS 26.0, *) {
+                    NativeDetailSectionScrollView {
+                        makeContent(information)
                     }
-                    .padding()
+                    .id(information.id)
+                    .scrollDisablesPopover()
+                } else {
+                    ScrollView {
+                        HStack {
+                            Spacer(minLength: 0)
+                            VStack(spacing: 35) {
+                                makeContent(information)
+                            }
+                            .environment(\.usesNativeDetailSectionHeaders, true)
+                            Spacer(minLength: 0)
+                        }
+                        .padding()
+                    }
+                    .scrollDisablesPopover()
                 }
-                .scrollDisablesPopover()
             } else {
                 if infoIsAvailable {
                     ExtendedConstraints {
@@ -158,6 +167,109 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
                 infoIsAvailable = false
             }
         }
+    }
+}
+
+// Let the native bar provide header spacing instead of the legacy pinned-stack offsets.
+extension EnvironmentValues {
+    @Entry var usesNativeDetailSectionHeaders = false
+}
+
+struct DetailSectionHeaderLayout: ViewModifier {
+    @Environment(\.usesNativeDetailSectionHeaders) private var usesNativeBar
+
+    func body(content: Content) -> some View {
+        if usesNativeBar {
+            content
+        } else {
+            content
+                .padding(.bottom, -40)
+                .offset(y: 5)
+        }
+    }
+}
+
+/// Keeps section bodies mounted while sharing the system scroll edge effect with the toolbar.
+@available(iOS 26.0, macOS 26.0, *)
+private struct NativeDetailSectionScrollView<Content: View>: View {
+    @ViewBuilder var content: Content
+    @Namespace private var contentSpace
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var headerOffsets: [SectionConfiguration.ID: CGFloat] = [:]
+    @State private var scrollOffset: CGFloat = 0
+
+    var body: some View {
+        Group(sections: content) { sections in
+            let currentSection = sections.last { section in
+                !section.header.isEmpty
+                    && (headerOffsets[section.id] ?? .infinity) <= scrollOffset
+            }
+
+            ScrollView {
+                VStack(spacing: 35) {
+                    ForEach(sections) { section in
+                        VStack(spacing: 12) {
+                            if !section.header.isEmpty {
+                                HStack {
+                                    section.header
+                                }
+                                .frame(maxWidth: infoContentMaxWidth)
+                                .opacity(currentSection?.id == section.id ? 0 : 1)
+                                .allowsHitTesting(currentSection?.id != section.id)
+                                .accessibilityHidden(currentSection?.id == section.id)
+                                .onGeometryChange(for: CGFloat.self) { geometry in
+                                    geometry.frame(in: .named(contentSpace)).minY
+                                } action: { offset in
+                                    headerOffsets[section.id] = offset
+                                }
+                            }
+
+                            VStack(spacing: 12) {
+                                section.content
+                            }
+
+                            if !section.footer.isEmpty {
+                                HStack {
+                                    section.footer
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding()
+                .coordinateSpace(name: contentSpace)
+            }
+            .scrollEdgeEffectStyle(.soft, for: .top)
+            .onScrollGeometryChange(for: CGFloat.self) { geometry in
+                geometry.contentOffset.y + geometry.contentInsets.top
+            } action: { _, offset in
+                scrollOffset = offset
+            }
+            .safeAreaBar(edge: .top, spacing: 0) {
+                pinnedHeader(currentSection)
+            }
+            .scrollEdgeEffectStyle(.soft, for: .top)
+        }
+        .environment(\.usesNativeDetailSectionHeaders, true)
+    }
+
+    private func pinnedHeader(_ section: SectionConfiguration?) -> some View {
+        ZStack {
+            if let section {
+                HStack {
+                    section.header
+                }
+                .frame(maxWidth: infoContentMaxWidth)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+                .id(section.id)
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 4)))
+            }
+        }
+        // Animate header handoffs, without animating the scrolling content.
+        .animation(.easeInOut(duration: reduceMotion ? 0.1 : 0.2), value: section?.id)
     }
 }
 
@@ -358,7 +470,13 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
     @Environment(\.colorScheme) private var colorScheme
     @Namespace private var navigationAnimationNamespace
     @State private var filter: SekaiFilter
-    @State private var sorter = SekaiSorter(keyword: Element.applicableSortingTypes.contains(.releaseDate(in: .jp)) ? .releaseDate(in: .jp) : .id, direction: .descending)
+    @State private var sorter: SekaiSorter = {
+        let displayOrder = SekaiSorter.Keyword.displayOrder(in: .primaryLocale)
+        if Element.applicableSortingTypes.contains(displayOrder) {
+            return SekaiSorter(keyword: displayOrder, direction: .ascending)
+        }
+        return SekaiSorter(keyword: Element.applicableSortingTypes.contains(.releaseDate(in: .jp)) ? .releaseDate(in: .jp) : .id, direction: .descending)
+    }()
     @State private var elements: [Element]?
     @State private var searchedElements: [Element]?
     @State private var infoIsAvailable = true

@@ -141,7 +141,7 @@ private struct GachaCardGrid: View {
 
     var body: some View {
         VStack(alignment: .trailing) {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 72, maximum: 90))], spacing: 10) {
+            EagerVGrid(minimumWidth: 72, maximumWidth: 90, spacing: 10) {
                 ForEach(expanded ? ids : Array(ids.prefix(20)), id: \.self) { id in
                     NavigationLink { CardDetailView(id: id) } label: {
                         if let card = cardsByID[id] {

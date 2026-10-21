@@ -119,7 +119,7 @@ struct DetailArtsSection: View {
         Section {
             Group {
                 if let tab, let tabContent = information.first(where: {$0.id == tab}), !tabContent.content.isEmpty, tabContent.content.contains(where: { !hiddenItems.contains($0.id) }) {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: itemMinimumWidth, maximum: itemMaximumWidth))]) {
+                    EagerVGrid(minimumWidth: itemMinimumWidth, maximumWidth: itemMaximumWidth) {
                         ForEach(tabContent.content, id: \.id) { item in
                             if !hiddenItems.contains(item.id) {
                                 Button(action: {

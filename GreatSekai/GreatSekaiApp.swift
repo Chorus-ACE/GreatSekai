@@ -40,6 +40,7 @@ struct GreatSekaiApp: App {
                             .frame(minWidth: 400)
                     }
             }
+            .softNavigationBarEdge()
         }
         .commands {
             CommandGroup(replacing: .appSettings) {
@@ -55,6 +56,7 @@ struct GreatSekaiApp: App {
         #if os(macOS)
         Window("Settings", id: "Settei") {
             SettingsView()
+                .softNavigationBarEdge()
         }
         #endif
         

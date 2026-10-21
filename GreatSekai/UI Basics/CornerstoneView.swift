@@ -600,6 +600,51 @@ struct FilterAndSorterPicker: View {
 // }
 //```
 
+/// An adaptive grid that measures and retains every cell, including offscreen cells.
+struct EagerVGrid: Layout {
+    var minimumWidth: CGFloat
+    var maximumWidth: CGFloat
+    var columns: Int? = nil
+    var alignment: HorizontalAlignment = .center
+    var spacing: CGFloat = 8
+
+    private func metrics(width: CGFloat?, subviews: Subviews) -> (width: CGFloat, columns: Int, cellWidth: CGFloat, heights: [CGFloat]) {
+        let proposedWidth = width ?? maximumWidth
+        let width = max(0, proposedWidth.isFinite ? proposedWidth : maximumWidth)
+        let count = max(1, columns ?? Int((width + spacing) / (minimumWidth + spacing)))
+        let cellWidth = min(maximumWidth, max(0, (width - CGFloat(count - 1) * spacing) / CGFloat(count)))
+        var heights = [CGFloat]()
+        for index in subviews.indices {
+            let row = index / count
+            if row == heights.count { heights.append(0) }
+            heights[row] = max(heights[row], subviews[index].sizeThatFits(.init(width: cellWidth, height: nil)).height)
+        }
+        return (width, count, cellWidth, heights)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let grid = metrics(width: proposal.width, subviews: subviews)
+        return CGSize(width: grid.width, height: grid.heights.reduce(0, +) + CGFloat(max(0, grid.heights.count - 1)) * spacing)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let grid = metrics(width: bounds.width, subviews: subviews)
+        let gridWidth = CGFloat(grid.columns) * grid.cellWidth + CGFloat(grid.columns - 1) * spacing
+        let leadingSpace = alignment == .trailing ? bounds.width - gridWidth : alignment == .leading ? 0 : (bounds.width - gridWidth) / 2
+        var y = bounds.minY
+        for index in subviews.indices {
+            let row = index / grid.columns
+            let column = index % grid.columns
+            if column == 0 && row > 0 { y += grid.heights[row - 1] + spacing }
+            subviews[index].place(
+                at: CGPoint(x: bounds.minX + leadingSpace + CGFloat(column) * (grid.cellWidth + spacing), y: y),
+                anchor: .topLeading,
+                proposal: .init(width: grid.cellWidth, height: grid.heights[row])
+            )
+        }
+    }
+}
+
 // MARK: FlowHStack
 struct WrappingHStack: Layout {
     enum RowAlignment {
@@ -1501,7 +1546,7 @@ struct ListItemWithWrappingView<Content1: View, Content2: View, Content3: View, 
                         }
                     }
                 } else {
-                    LazyVGrid(columns: columnNumbers == nil ? [.init(.adaptive(minimum: elementWidth, maximum: elementWidth))] : Array(repeating: .init(.fixed(elementWidth)), count: columnNumbers!), alignment: .trailing) {
+                    EagerVGrid(minimumWidth: elementWidth, maximumWidth: elementWidth, columns: columnNumbers, alignment: .trailing) {
                         ForEach(0..<contentArray.count, id: \.self) { index in
                             if contentArray[index] != nil {
                                 element(contentArray[index])

@@ -66,11 +66,11 @@ struct SongDetailVocalsView: View {
                                     }
                                 })
                                 
-                                if vocal.publishDate.corrected() != nil {
+                                if let publishDate = vocal.publishDate?.corrected() {
                                     ListItem(title: {
                                         Text("Song.vocal.release-date")
                                     }, value: {
-                                        Text(dateFormatter.string(from: vocal.publishDate))
+                                        Text(dateFormatter.string(from: publishDate))
                                     })
                                 }
                                 
