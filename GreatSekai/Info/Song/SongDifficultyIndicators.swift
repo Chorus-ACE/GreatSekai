@@ -82,10 +82,11 @@ struct SongDifficultyIndicator: View {
                 .frame(width: Self.diameter, height: Self.diameter)
             Text("\(level)")
                 .foregroundStyle(.white)
-                .fontWeight(.semibold)
-                .scaleEffect(platform == .macOS ? 1 : 0.8)
+                .fontWeight(platform == .macOS ? .semibold : .bold)
+                .scaleEffect(platform == .macOS ? 1 : 0.9)
         }
             .frame(width: Self.diameter, height: Self.diameter)
+            .accessibilityLabel(String("\(difficulty?.name ?? "") \(level)"))
     }
 }
 

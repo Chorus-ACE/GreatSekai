@@ -76,7 +76,14 @@ struct CharacterDetailOverviewView: View {
             
             DetailInfoItem(information.unit == .virtualSinger ? "Character.anniversary" : "Character.birthday", content: {
                 if let birthday = information.birthday, let date = calendar().date(from: birthday) {
-                    Text(dateFormatter.string(from: date))
+                    VStack(alignment: .trailing) {
+                        Text(dateFormatter.string(from: date))
+                        
+                        if let caption = birthdayCaptionLabel() {
+                            Text(caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 } else {
                     LocalizableText(information.literalBirthday)
                 }
@@ -125,6 +132,71 @@ struct CharacterDetailOverviewView: View {
         .sheet(isPresented: $colorDetailsIsDisplaying, content: {
             CharacterDetailColorInfo(colorInfo: information.colorInfo.first)
         })
+        .wrapIf(information.isBirthdayAtToday(timeZone: BirthdayManager.BirthdayTimeZone.current.timeZone), in: { context in
+            if #available(iOS 26.0, macOS 26.0, *) {
+                context.navigationSubtitle(information.unit == .virtualSinger ? "Character.happy-anniversary" : "Character.happy-birthday")
+            } else {
+                context
+            }
+        })
+    }
+
+    func birthdayCaptionLabel() -> LocalizedStringResource? {
+        var calendar = Calendar.current
+        calendar.timeZone = BirthdayManager.BirthdayTimeZone.current.timeZone
+        guard let components = information.birthday else { return nil }
+        let today = calendar.startOfDay(for: .now)
+
+        guard let month = components.month,
+              let day = components.day else {
+            return nil
+        }
+
+        let year = calendar.component(.year, from: today)
+
+        let birthday = DateComponents(month: month, day: day)
+
+        guard let date = calendar.nextDate(
+            after: today.addingTimeInterval(-1),
+            matching: birthday,
+            matchingPolicy: .strict,
+            direction: .forward
+        ) else {
+            return nil
+        }
+
+        if calendar.isDate(date, inSameDayAs: today) {
+            return "Character.birthday.today"
+        }
+
+        // 明天
+        if calendar.isDateInTomorrow(date) {
+            return "Character.birthday.tomorrow"
+        }
+
+        // 未来 7 天以内
+        guard let limit = calendar.date(
+            byAdding: .day,
+            value: 7,
+            to: today
+        ), date < limit else {
+            return nil
+        }
+
+        let weekday = date.formatted(
+            .dateTime.weekday(.abbreviated)
+                .locale(.current)
+        )
+
+        if calendar.isDate(
+            date,
+            equalTo: today,
+            toGranularity: .weekOfYear
+        ) {
+            return "Character.birthday.this-week.\(weekday)"
+        } else {
+            return "Character.birthday.next-week.\(weekday)"
+        }
     }
 }
 
@@ -214,7 +286,6 @@ struct UnitLabel: View {
         }
     }
 }
-
 
 struct CharacterWrappingHStack: View {
     var characters: [Int]

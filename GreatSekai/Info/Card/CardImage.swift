@@ -32,8 +32,9 @@ struct CardImage: View {
     @State var showCardDetailView: Bool = false
     @State var isNormalImageUnavailable: Bool = false
     
-    @State var normalCardIsOnHover = false
-    @State var trainedCardIsOnHover = false
+//    @State var normalCardIsOnHover = false
+//    @State var trainedCardIsOnHover = false
+    @State var focusIndex: Int = 0
     
     init(_ card: Card, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both) {
         self.card = card
@@ -43,7 +44,7 @@ struct CardImage: View {
     }
     var body: some View {
         ZStack {
-            CardCoverImageBorder(card, isNormalImageUnavailable: $isNormalImageUnavailable, showNavigationHints: showNavigationHints, displayType: displayType, normalCardIsOnHover: $normalCardIsOnHover, trainedCardIsOnHover: $trainedCardIsOnHover)
+            CardCoverImageBorder(card, isNormalImageUnavailable: $isNormalImageUnavailable, showNavigationHints: showNavigationHints, displayType: displayType, focusIndex: $focusIndex)
             
             // The Image may not be in expected ratio. Gosh.
             // Why the heck will the image has a different ratio with the border???
@@ -96,9 +97,9 @@ struct CardImage: View {
             let beforeTraining = isNormalImageUnavailable ? nil : ImageInfo(url: card.beforeTrainingArtURL, description: "Image.card.normal")
             let afterTraining = card.canTrain ? ImageInfo(url: card.afterTrainingArtURL!, description: "Image.card.trained") : nil
             
-            if normalCardIsOnHover {
+            if focusIndex < 0 {
                 result.append(beforeTraining)
-            } else if trainedCardIsOnHover {
+            } else if focusIndex > 0 {
                 result.append(afterTraining)
             } else {
                 result = [beforeTraining, afterTraining]
@@ -109,10 +110,10 @@ struct CardImage: View {
             if showNavigationHints {
                 CardCoverNavigationHints(showCardDetailView: $showCardDetailView, card: card)
                 
-                if normalCardIsOnHover {
+                if focusIndex < 0 {
                     Text("Image.image.untrained")
 //                    Label("Image.image.untrained", systemImage: "star")
-                } else if trainedCardIsOnHover {
+                } else if focusIndex > 0 {
                     Text("Image.image.trained")
 //                    Label("Image.image.trained", systemImage: "star.fill")
                 }
@@ -134,19 +135,22 @@ struct CardCoverImageBorder: View {
     var showNavigationHints: Bool
     
     @Binding var isNormalImageUnavailable: Bool
-    @Binding var normalCardIsOnHover: Bool
-    @Binding var trainedCardIsOnHover: Bool
+    @Binding var focusIndex: Int
+    
+    @State var normalCardIsOnHover: Bool = false
+    @State var trainedCardIsOnHover: Bool = false
     
     @State var showCardDetailView: Bool = false
     
-    init(_ card: Card, isNormalImageUnavailable: Binding<Bool>, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both, normalCardIsOnHover: Binding<Bool>, trainedCardIsOnHover: Binding<Bool>) {
+    let cardWidthFactor: [Int: CGFloat] = [-2: 0, -1: 0.25, 0: 0.5, 1: 0.75, 2: 1]
+    
+    init(_ card: Card, isNormalImageUnavailable: Binding<Bool>, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both, focusIndex: Binding<Int>) {
         self.card = card
         self._isNormalImageUnavailable = isNormalImageUnavailable
         self.showNavigationHints = showNavigationHints
         self.displayType = displayType
         
-        self._normalCardIsOnHover = normalCardIsOnHover
-        self._trainedCardIsOnHover = trainedCardIsOnHover
+        self._focusIndex = focusIndex
     }
     
     @Namespace var hoverGroup
@@ -183,28 +187,23 @@ struct CardCoverImageBorder: View {
                                 .interpolation(.high)
                                 .antialiased(true)
                                 .scaledToFill()
-                                .frame(width: proxy.size.width * CGFloat(normalCardIsOnHover ? 0.75 : (trainedCardIsOnHover ? 0.25 : 0.5)))
+                                .frame(width: proxy.size.width * (cardWidthFactor[-focusIndex] ?? 0.5))
                                 .clipped()
-                                #if !os(macOS)
                                 .onTapGesture {
                                     withAnimation(cardFocusSwitchingAnimation) {
-                                        if !normalCardIsOnHover {
-                                            normalCardIsOnHover = true
-                                            trainedCardIsOnHover = false
+                                        if [0, -1].contains(focusIndex) {
+                                            focusIndex -= 1
+                                        } else if focusIndex == -2 && normalCardIsOnHover {
+                                            focusIndex = -1
                                         } else {
-                                            normalCardIsOnHover = false
+                                            focusIndex = 0
                                         }
                                     }
                                 }
-                                #endif // !os(macOS)
                                 .onHover { isHovering in
                                     withAnimation(cardFocusSwitchingAnimation) {
-                                        if isHovering {
-                                            normalCardIsOnHover = true
-                                            trainedCardIsOnHover = false
-                                        } else {
-                                            normalCardIsOnHover = false
-                                        }
+                                        focusIndex = isHovering ? -1 : 0
+                                        normalCardIsOnHover = isHovering
                                     }
                                 }
                                 .contentShape(Rectangle())
@@ -219,32 +218,43 @@ struct CardCoverImageBorder: View {
                                 .interpolation(.high)
                                 .antialiased(true)
                                 .scaledToFill()
-                                .frame(width: proxy.size.width * CGFloat(trainedCardIsOnHover ? 0.75 : (normalCardIsOnHover ? 0.25 : 0.5)))
+                                .frame(width: proxy.size.width * (cardWidthFactor[focusIndex] ?? 0.5))
                                 .clipped()
-                                #if !os(macOS)
                                 .onTapGesture {
                                     withAnimation(cardFocusSwitchingAnimation) {
-                                        if !trainedCardIsOnHover {
-                                            normalCardIsOnHover = false
-                                            trainedCardIsOnHover = true
+                                        if [0, 1].contains(focusIndex) {
+                                            focusIndex += 1
+                                        } else if focusIndex == 2 && trainedCardIsOnHover {
+                                            focusIndex = 1
                                         } else {
-                                            trainedCardIsOnHover = false
+                                            focusIndex = 0
                                         }
                                     }
                                 }
-                                #endif // !os(macOS)
                                 .onHover { isHovering in
                                     withAnimation(cardFocusSwitchingAnimation) {
-                                        if isHovering {
-                                            normalCardIsOnHover = false
-                                            trainedCardIsOnHover = true
-                                        } else {
-                                            trainedCardIsOnHover = false
-                                        }
+                                        focusIndex = isHovering ? 1 : 0
+                                        trainedCardIsOnHover = isHovering
                                     }
                                 }
                                 .contentShape(Rectangle())
                             }
+                            .gesture(DragGesture(minimumDistance: 30)
+                                .onEnded { value in
+                                    let dx = value.translation.width
+                                    let dy = value.translation.height
+                                    
+                                    guard abs(dx) > abs(dy) else { return }
+                                    
+                                    withAnimation(cardFocusSwitchingAnimation) {
+                                        if dx > 0 {
+                                            focusIndex -= 1
+                                        } else {
+                                            focusIndex += 1
+                                        }
+                                    }
+                                }
+                            )
                             .allowsHitTesting(true)
                         } else {
                             WebImage(url: afterTrainingArtURL) { image in

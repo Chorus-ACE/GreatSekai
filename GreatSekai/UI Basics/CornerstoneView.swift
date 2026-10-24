@@ -559,30 +559,15 @@ struct FilterAndSorterPicker: View {
         Button(action: {
             showFilterSheet.toggle()
         }, label: {
-            if #available(iOS 26.0, * /* Keep macOS */) {
-                (isFiltering ? Color.white : .primary)
-                    .scaleEffect(2) // a larger value has no side effects because we're using `mask`
-                    .mask {
-                        // We use `mask` to prgacha unexpected blink
-                        // while changing `foregroundStyle`.
-                        Image(systemName: "line.3.horizontal.decrease")
+            Image(systemName: "line.3.horizontal.decrease")
+                .foregroundStyle(isFiltering ? Color.white : Color.primary)
+                .background {
+                    if isFiltering {
+                        Circle()
+                            .fill(Color.accentColor)
+                            .scaleEffect(platform == .macOS ? 1.1 : 2.2)
                     }
-                    .background {
-                        if isFiltering {
-                            Capsule().foregroundStyle(Color.accentColor).scaledToFill().scaleEffect(platform == .macOS ? 1.1 : 1.65)
-                        }
-                    }
-            } else {
-                Image(systemName: "line.3.horizontal.decrease")
-                    .foregroundStyle(isFiltering ? Color.white : .blue)
-                    .background {
-                        if isFiltering {
-                            Circle()
-                                .foregroundStyle(Color.accentColor)
-                                .scaleEffect(1.65)
-                        }
-                    }
-            }
+                }
         })
         .animation(.easeInOut(duration: 0.2), value: isFiltering)
         .accessibilityLabel("Filter")
@@ -944,6 +929,7 @@ struct MultilingualText: View {
     @State var isHovering = false
     @State var lastCopiedLocale: SekaiLocale?
     @State var copyMessageIsDisplaying = false
+    @State var expandSheetIsDisplaying = false
     
     init(text: LocalizedData<String>, showSecondaryText: Bool = true, showLocaleKey: Bool = false) {
         self.text = text
@@ -979,11 +965,19 @@ struct MultilingualText: View {
                         Text(reducedStrings[locale] ?? "")
                             .lineLimit(nil)
                             .multilineTextAlignment(.trailing)
-                            .textSelection(.enabled)
                             .typesettingLanguage(.explicit(locale.nsLocale.language))
                     })
                     .accessibilityHint("Message.copiable")
                 }
+                
+                Section {
+                    Button(action: {
+                        expandSheetIsDisplaying = true
+                    }, label: {
+                        Label("Message.read-more", systemImage: "book.pages")
+                    })
+                }
+                
             }, label: {
                 ZStack(alignment: .trailing, content: {
                     Label(lastCopiedLocale == nil ? "Message.copy.success" : "Message.copy.success.locale.\(lastCopiedLocale!.rawValue.uppercased())", systemImage: "doc.on.doc")
@@ -1007,6 +1001,20 @@ struct MultilingualText: View {
             .foregroundStyle(.primary)
 #else
             LabelView(text: text, showSecondaryText: showSecondaryText, showLocaleKey: showLocaleKey)
+                .contextMenu {
+                    Button(action: {
+                        if let content = text.forPreferredLocale() {
+                            copyStringToClipboard(content)
+                        }
+                    }, label: {
+                        Label("Message.copy", systemImage: "document.on.document")
+                    })
+                    Button(action: {
+                        expandSheetIsDisplaying = true
+                    }, label: {
+                        Label("Message.read-more", systemImage: "book.pages")
+                    })
+                }
                 .onHover { hoverStatus in
                     isHovering = hoverStatus && !envDisablesPopover
                 }
@@ -1030,6 +1038,37 @@ struct MultilingualText: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(text.forPreferredLocale() ?? "")
         .accessibilityHint("Message.multilingual")
+        .sheet(isPresented: $expandSheetIsDisplaying, content: {
+            NavigationStack {
+                Form {
+                    ForEach(text.allAvailableLocales, id: \.self) { locale in
+                        VStack(alignment: .leading) {
+                            Text(locale.rawValue.uppercased())
+                                .bold()
+                            Text(text[locale] ?? String("Info.unknown"))
+                                .multilineTextAlignment(.leading)
+                                .textSelection(.enabled)
+                                .typesettingLanguage(.explicit(locale.nsLocale.language))
+                        }
+                    }
+                }
+                .formStyle(.grouped)
+                .frame(minHeight: 200)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction, content: {
+                        Button(role: .cancel, action: {
+                            expandSheetIsDisplaying = false
+                        }, label: {
+                            Label("Message.read-more.close", systemImage: "xmark")
+                                .wrapIf(platform == .macOS, in: { content in
+                                    content
+                                        .labelStyle(.titleOnly)
+                                })
+                        })
+                    })
+                }
+            }
+        })
     }
     
     struct LabelView: View {
@@ -1054,16 +1093,17 @@ struct MultilingualText: View {
                 if let primaryLocale {
                     Text("\(text[primaryLocale] ?? "")\(showLocaleKey ? " (\(primaryLocale.rawValue.uppercased()))" : "")")
                         .typesettingLanguage(.explicit((primaryLocale.nsLocale.language)))
+                        .lineLimit(showSecondaryText ? 3 : nil)
                     
-                    if let secondaryLocale, text[secondaryLocale] != text[primaryLocale] {
+                    if let secondaryLocale, text[secondaryLocale] != text[primaryLocale], showSecondaryText {
                         Text("\(text[secondaryLocale] ?? "")\(showLocaleKey ? " (\(secondaryLocale.rawValue.uppercased()))" : "")")
                             .typesettingLanguage(.explicit((secondaryLocale.nsLocale.language)))
                             .foregroundStyle(.secondary)
+                            .lineLimit(3)
                     }
                 }
             }
             .multilineTextAlignment(.trailing)
-            .textSelection(.enabled)
             .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -1279,140 +1319,6 @@ struct CountdownText: View {
     }
 }
 
-//// MARK: MultilingualTextForCountdownAlt
-//struct MultilingualTextForCountdownAlt: View {
-//    let date: LocalizedData<Date>
-//    
-//    @State var isHovering = false
-//    @State var allAvailableLocales: [SekaiLocale] = []
-//    @State var primaryDisplayLocale: SekaiLocale?
-//    @State var showCopyMessage = false
-//    
-//    var body: some View {
-//        Group {
-//#if !os(macOS)
-//            Menu(content: {
-//                VStack(alignment: .trailing) {
-//                    ForEach(allAvailableLocales, id: \.self) { localeValue in
-//                        Button(action: {
-//                            //                            copyStringToClipboard(getCountdownLocalizedString(source, forLocale: localeValue) ?? LocalizedStringResource(""))
-//                            showCopyMessage = true
-//                        }, label: {
-//                            MultilingualTextForCountdownAltInternalNumbersView(date: date, locale: localeValue)
-//                        })
-//                    }
-//                }
-//            }, label: {
-//                ZStack(alignment: .trailing, content: {
-//                    Label("Message.copy.unavailable.for.countdown", systemImage: "exclamationmark.circle")
-//                        .offset(y: 2)
-//                        .opacity(showCopyMessage ? 1 : 0)
-//                    MultilingualTextForCountdownAltInternalLabel(date: date, allAvailableLocales: allAvailableLocales)
-//                        .opacity(showCopyMessage ? 0 : 1)
-//                })
-//                .animation(.easeIn(duration: 0.2), value: showCopyMessage)
-//                .onChange(of: showCopyMessage, {
-//                    if showCopyMessage {
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-//                            showCopyMessage = false
-//                        }
-//                    }
-//                })
-//            })
-//            .menuStyle(.button)
-//            .buttonStyle(.borderless)
-//            .menuIndicator(.hidden)
-//            .foregroundStyle(.primary)
-//#else
-//            MultilingualTextForCountdownAltInternalLabel(date: date, allAvailableLocales: allAvailableLocales)
-//                .onHover { isHovering in
-//                    self.isHovering = isHovering
-//                }
-//                .popover(isPresented: $isHovering, arrowEdge: .bottom) {
-//                    VStack(alignment: .trailing) {
-//                        ForEach(allAvailableLocales, id: \.self) { localeValue in
-//                            MultilingualTextForCountdownAltInternalNumbersView(date: date, locale: localeValue)
-//                        }
-//                    }
-//                    .padding()
-//                }
-//#endif
-//        }
-//        .onAppear {
-//            allAvailableLocales = []
-//            for lang in SekaiLocale.allCases {
-//                if date.availableInLocale(lang) {
-//                    allAvailableLocales.append(lang)
-//                }
-//            }
-//        }
-//    }
-//    struct MultilingualTextForCountdownAltInternalLabel: View {
-//        let date: LocalizedData<Date>
-//        let allAvailableLocales: [SekaiLocale]
-//        let allowTextSelection: Bool = true
-//        @State var primaryDisplayingLocale: SekaiLocale? = nil
-//        var body: some View {
-//            VStack(alignment: .trailing) {
-//                if allAvailableLocales.contains(SekaiLocale.primaryLocale) {
-//                    MultilingualTextForCountdownAltInternalNumbersView(date: date, locale: SekaiLocale.primaryLocale)
-//                        .onAppear {
-//                            primaryDisplayingLocale = SekaiLocale.primaryLocale
-//                        }
-//                } else if allAvailableLocales.contains(SekaiLocale.secondaryLocale) {
-//                    MultilingualTextForCountdownAltInternalNumbersView(date: date, locale: SekaiLocale.secondaryLocale)
-//                        .onAppear {
-//                            primaryDisplayingLocale = SekaiLocale.secondaryLocale
-//                        }
-//                } else if allAvailableLocales.contains(.jp) {
-//                    MultilingualTextForCountdownAltInternalNumbersView(date: date, locale: .jp)
-//                        .onAppear {
-//                            primaryDisplayingLocale = .jp
-//                        }
-//                } else if !allAvailableLocales.isEmpty {
-//                    MultilingualTextForCountdownAltInternalNumbersView(date: date, locale: allAvailableLocales.first!)
-//                        .onAppear {
-//                            print(allAvailableLocales)
-//                            primaryDisplayingLocale = allAvailableLocales.first!
-//                        }
-//                }
-//                
-//                if allAvailableLocales.contains(SekaiLocale.secondaryLocale), SekaiLocale.secondaryLocale != primaryDisplayingLocale {
-//                    MultilingualTextForCountdownAltInternalNumbersView(date: date, locale: SekaiLocale.secondaryLocale)
-//                        .foregroundStyle(.secondary)
-//                } else if allAvailableLocales.contains(.jp), .jp != primaryDisplayingLocale {
-//                    MultilingualTextForCountdownAltInternalNumbersView(date: date, locale: .jp)
-//                        .foregroundStyle(.secondary)
-//                }
-//            }
-//            .wrapIf(allowTextSelection, in: { content in
-//                content
-//                    .textSelection(.enabled)
-//            }, else: { content in
-//                content
-//                    .textSelection(.disabled)
-//            })
-//            .onAppear {
-//                //                print(allAvailableLocales)
-//            }
-//        }
-//    }
-//    struct MultilingualTextForCountdownAltInternalNumbersView: View {
-//        //        let event: DoriFrontend.Event.Event
-//        let date: LocalizedData<Date>
-//        let locale: SekaiLocale
-//        var body: some View {
-//            if let localizedDate = date.forLocale(locale) {
-//                if localizedDate > .now {
-//                    Text("Countdown.release-in.\(Text(localizedDate, style: .relative)).\(locale.rawValue.uppercased())")
-//                } else {
-//                    Text("Countdown.released.\(locale.rawValue.uppercased())")
-//                }
-//            }
-//        }
-//    }
-//}
-
 // MARK: ListItem
 struct ListItem<Content1: View, Content2: View>: View {
     let title: Content1
@@ -1446,10 +1352,16 @@ struct ListItem<Content1: View, Content2: View>: View {
                     Spacer()
                     value
                         .foregroundStyle(textStyle == .native ? .secondary: .primary)
-                        .wrapIf(allowTextSelection, in: { content in
-                            content.textSelection(.enabled)
-                        }, else: { content in
-                            content.textSelection(.disabled)
+                        .wrapIf(true, in: { context in
+                            if let allowTextSelection {
+                                if allowTextSelection {
+                                    context.textSelection(.enabled)
+                                } else {
+                                    context.textSelection(.disabled)
+                                }
+                            } else {
+                                context
+                            }
                         })
                         .onFrameChange(perform: { geometry in
                             valueAvailableWidth = geometry.size.width
@@ -1471,10 +1383,16 @@ struct ListItem<Content1: View, Content2: View>: View {
                         }
                         value
                             .foregroundStyle(textStyle == .native ? .secondary: .primary)
-                            .wrapIf(allowTextSelection, in: { content in
-                                content.textSelection(.enabled)
-                            }, else: { content in
-                                content.textSelection(.disabled)
+                            .wrapIf(true, in: { context in
+                                if let allowTextSelection {
+                                    if allowTextSelection {
+                                        context.textSelection(.enabled)
+                                    } else {
+                                        context.textSelection(.disabled)
+                                    }
+                                } else {
+                                    context
+                                }
                             })
                             .onFrameChange(perform: { geometry in
                                 valueAvailableWidth = geometry.size.width
@@ -1490,7 +1408,7 @@ struct ListItem<Content1: View, Content2: View>: View {
         .onFrameChange(perform: { geometry in
             totalAvailableWidth = geometry.size.width
         })
-        .frame(minHeight: platform == .macOS ? defaultMinListRowHeight : nil)
+        .frame(minHeight: defaultMinListRowHeight)
         .accessibilityElement(children: .contain)
         .accessibilityElement(children: .combine)
         
@@ -1610,7 +1528,7 @@ extension View {
         environment(\.listItemValueIsLeading, alignment == .leading)
     }
     
-    func listItemTextSelection(_ isEnabled: Bool) -> some View {
+    func listItemTextSelection(_ isEnabled: Bool?) -> some View {
         environment(\.listItemTextSelectionIsEnabled, isEnabled)
     }
 }
@@ -1619,7 +1537,7 @@ extension EnvironmentValues {
     @Entry var listItemLayout: ListItemLayout = .automatic
     @Entry var listItemTextStyle: ListItemTextStyle = .bold
     @Entry var listItemValueIsLeading: Bool = false
-    @Entry var listItemTextSelectionIsEnabled: Bool = true
+    @Entry var listItemTextSelectionIsEnabled: Bool? = nil
 }
 
 enum ListItemLayout: Hashable, Equatable {

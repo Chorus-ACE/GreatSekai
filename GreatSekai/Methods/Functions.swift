@@ -135,22 +135,6 @@ func getAttributedString(_ source: String, fontSize: Font.TextStyle = .body, fon
     return attrString
 }
 
-// MARK: getBirthdayTimeZone
-func getBirthdayTimeZone(from input: BirthdayTimeZone? = nil) -> TimeZone {
-    switch (input != nil ? input! : BirthdayTimeZone(rawValue: UserDefaults.standard.string(forKey: "BirthdayTimeZone") ?? "JST"))! {
-    case .adaptive:
-        return TimeZone.autoupdatingCurrent
-    case .JST:
-        return TimeZone(identifier: "Asia/Tokyo")!
-    case .UTC:
-        return TimeZone.gmt
-    case .CST:
-        return TimeZone(identifier: "Asia/Shanghai")!
-    case .PT:
-        return TimeZone(identifier: "America/Los_Angeles")!
-    }
-}
-
 // MARK: getImageSubject
 func getImageSubject(_ data: Data) async -> Data? {
     if #available(iOS 18.0, macOS 15.0, *) {
@@ -306,37 +290,6 @@ final class NetworkMonitor: Sendable {
     }
 }
 
-
-func timeZoneDifference(to targetTimeZone: TimeZone) -> String {
-    let now = Date()
-    let systemTimeZone = TimeZone.current
-    
-    // 获取两个时区的偏移（秒）
-    let systemOffset = systemTimeZone.secondsFromGMT(for: now)
-    let targetOffset = targetTimeZone.secondsFromGMT(for: now)
-    
-    // 小时差（可能是负数）
-    let hoursDiff = (targetOffset - systemOffset) / 3600
-    
-    if hoursDiff == 0 {
-        return String(localized: "Time-zone.same-time")
-    }
-    
-    // 比较日期差异
-    let systemDate = Calendar.current.dateComponents(in: systemTimeZone, from: now).day
-    let targetDate = Calendar.current.dateComponents(in: targetTimeZone, from: now).day
-    
-    var dayDescription = String(localized: "Time-zone.today")
-    if let sysDay = systemDate, let tgtDay = targetDate {
-        if tgtDay == sysDay - 1 {
-            dayDescription = String(localized: "Time-zone.yesterday")
-        } else if tgtDay == sysDay + 1 {
-            dayDescription = String(localized: "Time-zone.tomorrow")
-        }
-    }
-    
-    return String(localized: "Time-zone.\(dayDescription).\(hoursDiff >= 0 ? "+" : "-").\(abs(hoursDiff))")
-}
 
 func timeZoneUTCOffsetDescription(for timeZone: TimeZone) -> String {
     let seconds = timeZone.secondsFromGMT(for: Date())

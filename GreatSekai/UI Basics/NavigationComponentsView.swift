@@ -182,7 +182,7 @@ struct InfoView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVGrid(columns: Array(repeating: GridItem(), count: 2)) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 350))]) {
                     ForEach(0..<allInfoDestinationItems.count, id: \.self) { itemIndex in
                         NavigationLink(destination: {
                             allInfoDestinationItems[itemIndex].destination()

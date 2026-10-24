@@ -12,7 +12,7 @@ struct StickerSearchView: View {
                 }
                 .frame(maxWidth: infoContentMaxWidth)
             } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: gridLayoutItemWidth, maximum: gridLayoutItemWidth))]) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: gridLayoutItemWidth))]) {
                     content
                 }
             }

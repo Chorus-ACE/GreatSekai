@@ -62,17 +62,17 @@ struct CharacterDetailView: View {
             
             ExternalLinksSection(links: [
                 ExternalLink(.sekaiViewer,
-                    url: URL(string: "https://sekai.best/chara/\(information.id)")!
-                ),
+                             url: URL(string: "https://sekai.best/chara/\(information.id)")!
+                            ),
                 ExternalLink(.sekaipedia,
-                    url: URL(string: "https://www.sekaipedia.org/wiki/\((information.fullName.localizedData?.forLocale(.en) ?? "").replacingOccurrences(of: " ", with: "_"))")!
-                ),
+                             url: URL(string: "https://www.sekaipedia.org/wiki/\((information.fullName.localizedData?.forLocale(.en) ?? "").replacingOccurrences(of: " ", with: "_"))")!
+                            ),
                 ExternalLink(.cleista,
-                    url: URL(string: "https://pjsk.cleista.cc/#/characters/\(information.givenNameEnglish.lowercased())")!
-                ),
+                             url: URL(string: "https://pjsk.cleista.cc/#/characters/\(information.givenNameEnglish.lowercased())")!
+                            ),
                 ExternalLink(.moeSekai,
-                    url: URL(string: "https://pjsk.moe/character/\(information.id)/")!
-                )
+                             url: URL(string: "https://pjsk.moe/character/\(information.id)/")!
+                            )
             ])
         } switcherDestination: {
             CharacterSearchView()

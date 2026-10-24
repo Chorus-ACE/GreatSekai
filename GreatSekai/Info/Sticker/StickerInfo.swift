@@ -20,7 +20,7 @@ struct StickerInfo: View {
 
     var body: some View {
         SummaryViewBase(layout, source: information) {
-            ExtendedConstraints {
+            ExtendedConstraints(isActive: layout != .horizontal) {
                 StickerImage(sticker: information)
                     .frame(maxWidth: sideLength, maxHeight: sideLength)
             }
@@ -28,7 +28,7 @@ struct StickerInfo: View {
             HighlightableText(information.type.majorValue?.localizedName ?? String(localized: "Info.unknown"))
                 .font(platform == .macOS ? .body : .caption)
         }
-        .fixedSize(horizontal: false, vertical: true)
+        .fixedSize(horizontal: false, vertical: false)
     }
 }
 

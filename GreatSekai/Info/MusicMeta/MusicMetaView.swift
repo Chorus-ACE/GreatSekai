@@ -27,7 +27,7 @@ struct MusicMetaView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .width(50)
-                        TableColumn("MusicMeta.song") { row in
+                        TableColumn("Music-meta.song") { row in
                             NavigationLink(destination: {
                                 SongDetailView(id: row.song.id)
                             }, label: {
@@ -36,15 +36,15 @@ struct MusicMetaView: View {
                             })
                             .foregroundStyle(.primary)
                         }
-                        TableColumn("MusicMeta.difficulty", value: \.difficultyRank) { row in
+                        TableColumn("Music-meta.difficulty", value: \.difficultyRank) { row in
                             SongDifficultyIndicator(difficulty: row.meta.difficulty, level: row.level)
                                 .accessibilityLabel(String("\(row.meta.difficulty.name) \(row.level)"))
                         }.width(SongDifficultyIndicator.diameter + 30)
-                        TableColumn("MusicMeta.duration", value: \.duration) { Text($0.meta.duration, format: .number.precision(.fractionLength(1))) }
-                        TableColumn("MusicMeta.notes", value: \.notes) { Text($0.notes.formatted()) }
-                        TableColumn("MusicMeta.base", value: \.baseScore) { Text($0.meta.baseScore, format: .number.precision(.fractionLength(3))) }
-                        TableColumn("MusicMeta.fever", value: \.feverScore) { Text($0.meta.feverScore, format: .number.precision(.fractionLength(3))) }
-                        TableColumn("MusicMeta.event", value: \.eventRate) { Text($0.meta.eventRate, format: .number.precision(.fractionLength(2))) }
+                        TableColumn("Music-meta.duration", value: \.duration) { Text($0.meta.duration, format: .number.precision(.fractionLength(1))) }
+                        TableColumn("Music-meta.notes", value: \.notes) { Text($0.notes.formatted()) }
+                        TableColumn("Music-meta.base", value: \.baseScore) { Text($0.meta.baseScore, format: .number.precision(.fractionLength(3))) }
+                        TableColumn("Music-meta.fever", value: \.feverScore) { Text($0.meta.feverScore, format: .number.precision(.fractionLength(3))) }
+                        TableColumn("Music-meta.event", value: \.eventRate) { Text($0.meta.eventRate, format: .number.precision(.fractionLength(2))) }
                     }
                     // Replacing the table avoids AppKit diffing thousands of row moves
                     // and repeatedly measuring automatic row heights after a sort.
@@ -56,28 +56,61 @@ struct MusicMetaView: View {
                             ForEach(displayedRows) { row in
                                 NavigationLink { SongDetailView(id: row.song.id) } label: {
                                     CustomGroupBox {
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            HighlightableText(row.title).font(.headline)
-                                            SongDifficultyIndicator(difficulty: row.meta.difficulty, level: row.level)
-                                                .accessibilityLabel(String("\(row.meta.difficulty.name) \(row.level)"))
-                                            Grid(alignment: .leading) {
-                                                metric("MusicMeta.duration", row.meta.duration.formatted(.number.precision(.fractionLength(1))))
-                                                metric("MusicMeta.notes", row.notes.formatted())
-                                                metric("MusicMeta.base", row.meta.baseScore.formatted(.number.precision(.fractionLength(3))))
-                                                metric("MusicMeta.fever", row.meta.feverScore.formatted(.number.precision(.fractionLength(3))))
-                                                metric("MusicMeta.event", row.meta.eventRate.formatted())
-                                            }.font(.caption).foregroundStyle(.secondary)
-                                        }.frame(maxWidth: .infinity, alignment: .leading)
+                                        VStack(alignment: .leading) {
+                                            HStack {
+                                                HighlightableText(row.title)
+                                                    .font(.headline)
+                                                Spacer()
+                                                SongDifficultyIndicator(difficulty: row.meta.difficulty, level: row.level)
+                                            }
+                                            
+                                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 50, maximum: 200))], alignment: .leading) {
+                                                metric(
+                                                    title: "Music-meta.duration",
+                                                    symbol: "timer",
+                                                    value: row.meta.duration.formatted(.number.precision(.fractionLength(1))) + "s"
+                                                )
+                                                metric(
+                                                    title: "Music-meta.notes",
+                                                    symbol: "music.quarternote.3",
+                                                    value: row.notes.formatted()
+                                                )
+                                                metric(
+                                                    title: "Music-meta.base",
+                                                    symbol: "number.sign",
+                                                    value: row.meta.baseScore.formatted(.number.precision(.fractionLength(3)))
+                                                )
+                                                metric(
+                                                    title: "Music-meta.fever",
+                                                    symbol: "flame",
+                                                    value: row.meta.feverScore.formatted(.number.precision(.fractionLength(3)))
+                                                )
+                                                metric(
+                                                    title: "Music-meta.event",
+                                                    symbol: "percent",
+                                                    value: (row.meta.eventRate/100).formatted(.percent)
+                                                )
+                                            }
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     }
-                                }.buttonStyle(.plain)
+                                }
+                                .buttonStyle(.plain)
                             }
-                        }.padding()
+                        }
+                        .padding()
                     }
                 }
             } else if failed {
                 ContentUnavailableView {
-                    Label("MusicMeta.unavailable", systemImage: "music.note.list")
-                } actions: { Button("General.retry") { Task { await load() } } }
+                    Label("Music-meta.unavailable", systemImage: "music.note.list")
+                } actions: {
+                    Button("General.retry") {
+                        Task {
+                            await load()
+                        }
+                    }
+                }
             } else { ProgressView().controlSize(.large) }
         }
         .navigationTitle("App.tools.music-meta")
@@ -86,28 +119,109 @@ struct MusicMetaView: View {
         .toolbar {
             if sizeClass != .regular && platform != .macOS {
                 ToolbarItem {
-                    Menu("MusicMeta.sort", systemImage: "arrow.up.arrow.down") {
-                        Button("MusicMeta.duration") { sortOrder = [.init(\.duration)] }
-                        Button("MusicMeta.notes") { sortOrder = [.init(\.notes, order: .reverse)] }
-                        Button("MusicMeta.difficulty") { sortOrder = [.init(\.difficultyRank, order: .reverse)] }
-                        Button("MusicMeta.base") { sortOrder = [.init(\.baseScore, order: .reverse)] }
-                        Button("MusicMeta.fever") { sortOrder = [.init(\.feverScore, order: .reverse)] }
-                        Button("MusicMeta.event") { sortOrder = [.init(\.eventRate, order: .reverse)] }
-                        Button("ID") { sortOrder = [.init(\.musicID)] }
-                        Divider()
-                        Button("MusicMeta.reverse") {
-                            sortOrder = sortOrder.map { value in
-                                var value = value; value.order = value.order == .forward ? .reverse : .forward; return value
+                    Menu(content: {
+                        Picker(selection: Binding(get: {
+                            selectedSortOption
+                        }, set: { option in
+                            if option == selectedSortOption {
+                                sortOrder = sortOrder.map { comparator in
+                                    var comparator = comparator
+                                    comparator.order = comparator.order == .forward ? .reverse : .forward
+                                    return comparator
+                                }
+                            } else {
+                                sortOrder = [option.comparator]
                             }
-                        }
-                    }
+                        }), content: {
+                            ForEach(SortOption.allCases, id: \.self) { option in
+                                // Match SorterPickerView's menu subtitle workaround.
+                                Button(action: {}, label: {
+                                    Text(option.localizedName)
+                                        .tag(option)
+                                    if selectedSortOption == option {
+                                        Text(sortDirectionName)
+                                    }
+                                })
+                                .wrapIf(selectedSortOption == option) {
+                                    $0
+                                        .accessibilityLabel(String("\(option.localizedName), \(sortDirectionName)"))
+                                        .accessibilityHint("Sorter.reverse-direction")
+                                }
+                            }
+                        }, label: {
+                            EmptyView()
+                        })
+                        .pickerStyle(.inline)
+                        .labelsHidden()
+                    }, label: {
+                        Label("Sort", systemImage: "arrow.up.arrow.down")
+                    })
+                    .buttonBorderShape(.circle)
+                    .accessibilityValue(String("\(selectedSortOption.localizedName), \(sortDirectionName)"))
                 }
             }
         }
-        .task { if rows == nil { await load() } }
+        .task {
+            if rows == nil {
+                await load()
+            }
+        }
     }
-    private func metric(_ title: LocalizedStringKey, _ value: String) -> some View {
-        GridRow { Text(title); Text(value).monospacedDigit() }
+    
+    private var selectedSortOption: SortOption {
+        SortOption.allCases.first { $0.comparator.keyPath == sortOrder.first?.keyPath } ?? .id
+    }
+
+    private var sortDirectionName: String {
+        sortOrder.first?.order == .reverse
+            ? String(localized: "Sorter.order.descending")
+            : String(localized: "Sorter.order.ascending")
+    }
+
+    private enum SortOption: CaseIterable {
+        case difficulty
+        case duration
+        case notes
+        case baseScore
+        case feverScore
+        case eventRate
+        case id
+
+        var localizedName: String {
+            switch self {
+            case .duration: String(localized: "Music-meta.duration")
+            case .notes: String(localized: "Music-meta.notes")
+            case .difficulty: String(localized: "Music-meta.difficulty")
+            case .baseScore: String(localized: "Music-meta.base")
+            case .feverScore: String(localized: "Music-meta.fever")
+            case .eventRate: String(localized: "Music-meta.event")
+            case .id: String(localized: "ID")
+            }
+        }
+
+        var comparator: KeyPathComparator<Row> {
+            switch self {
+            case .duration: .init(\.duration)
+            case .notes: .init(\.notes, order: .reverse)
+            case .difficulty: .init(\.difficultyRank, order: .reverse)
+            case .baseScore: .init(\.baseScore, order: .reverse)
+            case .feverScore: .init(\.feverScore, order: .reverse)
+            case .eventRate: .init(\.eventRate, order: .reverse)
+            case .id: .init(\.musicID)
+            }
+        }
+    }
+
+    private func metric(title: LocalizedStringKey, symbol: String, value: String) -> some View {
+        HStack(spacing: 3) {
+            Label(title, systemImage: symbol)
+                .labelStyle(.iconOnly)
+            Text(value)
+        }
+//        Label(value, systemImage: symbol)
+//            .accessibilityLabel(title)
+            .font(.caption)
+            .foregroundStyle(.secondary)
     }
     private func load() async {
         failed = false

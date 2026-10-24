@@ -466,7 +466,7 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
     }
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.horizontalSizeClass) private var hSizeClass
     @Environment(\.colorScheme) private var colorScheme
     @Namespace private var navigationAnimationNamespace
     @State private var filter: SekaiFilter
@@ -648,11 +648,9 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
             ToolbarItem {
                 makeLayoutPicker($currentLayout)
             }
-            #if !os(visionOS)
             if #available(iOS 26.0, macOS 26.0, *) {
                 ToolbarSpacer()
             }
-            #endif
             ToolbarItemGroup {
                 FilterAndSorterPicker(showFilterSheet: $showFilterSheet, sorter: $sorter, isFiltering: filter.isFiltering(referencing: Element.filterKeys), sorterKeywords: Element.applicableSortingTypes, hasEndingDate: Element.hasEndingDate)
             }
@@ -662,7 +660,7 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
         }
         .withSystemBackground()
         #if !os(visionOS)
-        .wrapIf(sizeClass == .regular) { content in
+        .wrapIf(hSizeClass == .regular) { content in
             content
                 .inspector(isPresented: $showFilterSheet) {
                     FilterView(filter: $filter, keys: Element.filterKeys, songLevelRange: songLevelRange)
@@ -691,7 +689,7 @@ struct SearchViewBase<Element: Identifiable & Sendable & Hashable & SekaiCachabl
             .rotation3DEffect(.degrees(-30), axis: .y)
         }
         #endif
-        .searchable(text: $searchedText, prompt: searchPlaceholder)
+        .searchable(text: $searchedText, placement: .toolbar, prompt: searchPlaceholder)
         .scrollDismissesKeyboard(.interactively)
         .onSubmit {
             updateSearchResults()

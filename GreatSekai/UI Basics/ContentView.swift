@@ -42,6 +42,14 @@ struct ContentView: View {
     @State var showCrashAlert = false
     @State var showWhatsNewSheet = false
     @State private var showCollectionsFromWidget = false
+    
+    var isUISizeExpanded: Bool {
+        #if os(macOS)
+        true
+        #else
+        sizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
+        #endif
+    }
 
     var body: some View {
         if mainAppShouldBeDisplayed {
@@ -53,7 +61,7 @@ struct ContentView: View {
                             HomeView()
                         }
 
-                        if sizeClass == .regular {
+                        if isUISizeExpanded {
                             TabSection(content: {
                                 ForEach(0..<allInfoDestinationItems.count, id: \.self) { itemIndex in
                                     Tab(value: AppSection.info(allInfoDestinationItems[itemIndex].tabValue), content: {
@@ -77,7 +85,7 @@ struct ContentView: View {
                             }
                         }
 
-                        if sizeClass == .regular {
+                        if isUISizeExpanded {
                             TabSection(content: {
                                 ForEach(0..<allToolsDestinationItems.count, id: \.self) { itemIndex in
                                     Tab(value: AppSection.tools(allToolsDestinationItems[itemIndex].tabValue), content: {
@@ -102,7 +110,7 @@ struct ContentView: View {
                             }
                         }
 #if os(iOS)
-                        if sizeClass == .regular {
+                        if isUISizeExpanded {
                             Tab("App.settings", systemImage: "gear", value: .settings) {
                                 SettingsView()
                             }
@@ -122,9 +130,7 @@ struct ContentView: View {
                             content
                         }
                     })
-                } else {
-                    // MARK: Fallback for Older Versions
-                    if platform == .macOS || sizeClass == .regular {
+                } else if isUISizeExpanded {
                         NavigationSplitView {
                             List(selection: $selection) {
                                 Label("App.home", systemImage: "house").tag(AppSection.home)
@@ -135,11 +141,11 @@ struct ContentView: View {
                                         Label(allInfoDestinationItems[itemIndex].title, systemImage: allInfoDestinationItems[itemIndex].symbol).tag(AppSection.info(allInfoDestinationItems[itemIndex].tabValue))
                                     }
                                 })
-//                                Section("App.tools", content: {
-//                                    ForEach(0..<allToolsDestinationItems.count, id: \.self) { itemIndex in
-//                                        Label(allToolsDestinationItems[itemIndex].title, systemImage: allToolsDestinationItems[itemIndex].symbol).tag(AppSection.tools(allToolsDestinationItems[itemIndex].tabValue))
-//                                    }
-//                                })
+                                Section("App.tools", content: {
+                                    ForEach(0..<allToolsDestinationItems.count, id: \.self) { itemIndex in
+                                        Label(allToolsDestinationItems[itemIndex].title, systemImage: allToolsDestinationItems[itemIndex].symbol).tag(AppSection.tools(allToolsDestinationItems[itemIndex].tabValue))
+                                    }
+                                })
 #if os(iOS)
                                 Label("App.settings", systemImage: "gear").tag(AppSection.settings)
 #endif
@@ -162,16 +168,15 @@ struct ContentView: View {
                                 .tabItem { Label("App.info", systemImage: "rectangle.stack") }
                                 .tag(AppSection.info(.home))
 
-//                            detailView(for: .tools(.home))
-//                                .tabItem { Label("App.tools", systemImage: "slider.horizontal.3") }
-//                                .tag(AppSection.tools(.home))
+                            detailView(for: .tools(.home))
+                                .tabItem { Label("App.tools", systemImage: "slider.horizontal.3") }
+                                .tag(AppSection.tools(.home))
                         }
                     }
-                }
             }
             .onOpenURL { url in
                 if url.scheme == "greatsekai", url.host == "collections" {
-                    if sizeClass == .regular || platform == .macOS {
+                    if isUISizeExpanded {
                         selection = .tools(.collections)
                     } else {
                         selection = .tools(.home)

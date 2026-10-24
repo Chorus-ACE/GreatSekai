@@ -75,48 +75,26 @@ struct SettingsLocaleView: View {
     }
     
     struct SettingsBirthdayTimeZonePicker: View {
-        @State var birthdayTimeZone: BirthdayTimeZone = .JST
         var body: some View {
-            Picker(selection: $birthdayTimeZone, content: {
-                VStack(alignment: .leading) {
-                    Text("Settings.birthday-time-zone.selection.adaptive")
-                    Text(verbatim: "\(TimeZone.current.localizedName(for: .generic, locale: Locale.current) ?? "") (\(timeZoneUTCOffsetDescription(for: TimeZone.current)))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            Picker(selection: .init(
+                get: { BirthdayManager.BirthdayTimeZone.current },
+                set: { BirthdayManager.BirthdayTimeZone.current = $0 }
+            ), content: {
+                    ForEach(BirthdayManager.BirthdayTimeZone.allCases, id: \.self) { item in
+                    VStack(alignment: .leading) {
+                        Text(item.selectionLabel)
+                        Group {
+                            if item == .adaptive {
+                                Text(verbatim: "\(TimeZone.current.localizedName(for: .generic, locale: Locale.current) ?? "") (\(timeZoneUTCOffsetDescription(for: TimeZone.current)))")
+                            } else {
+                                Text(item.offsetLabel)
+                            }
+                        }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .tag(item)
                 }
-                .tag(BirthdayTimeZone.adaptive)
-                
-                VStack(alignment: .leading) {
-                    Text("Settings.birthday-time-zone.selection.JST")
-                    Text(timeZoneDifference(to: getBirthdayTimeZone(from: .JST)))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .tag(BirthdayTimeZone.JST)
-                
-                VStack(alignment: .leading) {
-                    Text("Settings.birthday-time-zone.selection.UTC")
-                    Text(timeZoneDifference(to: getBirthdayTimeZone(from: .UTC)))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .tag(BirthdayTimeZone.UTC)
-                
-                VStack(alignment: .leading) {
-                    Text("Settings.birthday-time-zone.selection.CST")
-                    Text(timeZoneDifference(to: getBirthdayTimeZone(from: .CST)))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .tag(BirthdayTimeZone.CST)
-                
-                VStack(alignment: .leading) {
-                    Text(getBirthdayTimeZone(from: .PT).isDaylightSavingTime() ? "Settings.birthday-time-zone.selection.PT.PDT" : "Settings.birthday-time-zone.selection.PT.PST")
-                    Text(timeZoneDifference(to: getBirthdayTimeZone(from: .PT)))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .tag(BirthdayTimeZone.PT)
             }, label: {
                 VStack(alignment: .leading) {
                     Text("Settings.birthday-time-zone")
@@ -125,18 +103,7 @@ struct SettingsLocaleView: View {
                         .foregroundStyle(.secondary)
                 }
             }, optionalCurrentValueLabel: {
-                switch birthdayTimeZone {
-                case .adaptive:
-                    Text("Settings.birthday-time-zone.selection.adaptive.abbr")
-                case .JST:
-                    Text("Settings.birthday-time-zone.selection.JST.abbr")
-                case .UTC:
-                    Text("Settings.birthday-time-zone.selection.UTC.abbr")
-                case .CST:
-                    Text("Settings.birthday-time-zone.selection.CST.abbr")
-                case .PT:
-                    Text("Settings.birthday-time-zone.selection.PT.abbr")
-                }
+                Text(BirthdayManager.BirthdayTimeZone.current.abbreviation)
             })
             .wrapIf(true, in: { content in
 #if os(iOS)
@@ -146,22 +113,6 @@ struct SettingsLocaleView: View {
                 content
 #endif
             })
-            .onAppear {
-                birthdayTimeZone = BirthdayTimeZone(rawValue: UserDefaults.standard.string(forKey: "BirthdayTimeZone") ?? "JST") ?? .JST
-            }
-            .onChange(of: birthdayTimeZone) {
-                UserDefaults.standard.setValue(birthdayTimeZone.rawValue, forKey: "BirthdayTimeZone")
-            }
         }
     }
-}
-
-
-
-enum BirthdayTimeZone: String, CaseIterable {
-    case adaptive
-    case JST
-    case UTC
-    case CST
-    case PT
 }

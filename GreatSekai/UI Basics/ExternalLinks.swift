@@ -174,6 +174,6 @@ private struct ExternalLinkRow: View {
         }
         .buttonStyle(.plain)
         .disabled(opening)
-        .frame(minHeight: platform == .macOS ? rowHeight : nil)
+        .frame(minHeight: rowHeight)
     }
 }

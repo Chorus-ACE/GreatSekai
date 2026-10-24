@@ -101,6 +101,7 @@ private struct SongLevelFilterView: View {
                         Text(Int(level.wrappedValue).formatted())
                             .monospacedDigit()
                             .contentTransition(.numericText())
+                            .lineLimit(1)
                         Stepper(key.title, value: level, in: range, step: 1)
                             .labelsHidden()
                     }

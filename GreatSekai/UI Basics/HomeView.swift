@@ -35,36 +35,49 @@ struct HomeView: View {
     @State var useCompactVariant = true
     @State var showSettingsSheet = false
     @State var currentNavigationPage: NavigationPage?
+    
+    var isUISizeExpanded: Bool {
+        #if os(macOS)
+        true
+        #else
+        sizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
+        #endif
+    }
     var body: some View {
         NavigationStack {
             ScrollView {
-                ZStack {
-                    VStack {
-                        HomeBannersView()
-                        HStack {
-                            VStack {
-                                CustomGroupBox { HomeBirthdayView() }
-                                HomeEventsView(locale: homeEventSecondaryLocale())
-                                Spacer()
-                            }
-                            VStack {
-                                HomeEventsView(locale: .jp)
-                                Spacer()
-                            }
+                Group {
+                    if !useCompactVariant {
+                        VStack {
+                            HomeBannersView()
+                            
+                            DivisionAwareHStack(leading: {
+                                VStack {
+                                    CustomGroupBox { HomeBirthdayView() }
+                                    HomeEventsView(locale: homeEventSecondaryLocale())
+                                    Spacer()
+                                }
+                            }, trailing: {
+                                VStack {
+                                    HomeEventsView(locale: .jp)
+                                    Spacer()
+                                }
+                            })
                         }
+                        .padding(.horizontal)
+                        //                    .opacity(useCompactVariant ? 0 : 1)
+                        //                    .frame(width: useCompactVariant ? 0 : nil, height: useCompactVariant ? 0 : nil)
+                    } else {
+                        VStack {
+                            HomeBannersView()
+                            CustomGroupBox { HomeBirthdayView() }
+                            HomeEventsView(locale: .jp)
+                            HomeEventsView(locale: homeEventSecondaryLocale())
+                        }
+                        .padding(.horizontal)
+//                        .opacity(!useCompactVariant ? 0 : 1)
+//                        .frame(width: !useCompactVariant ? 0 : nil, height: !useCompactVariant ? 0 : nil)
                     }
-                    .padding(.horizontal)
-                    .opacity(useCompactVariant ? 0 : 1)
-                    .frame(width: useCompactVariant ? 0 : nil, height: useCompactVariant ? 0 : nil)
-                    VStack {
-                        HomeBannersView()
-                        CustomGroupBox { HomeBirthdayView() }
-                        HomeEventsView(locale: .jp)
-                        HomeEventsView(locale: homeEventSecondaryLocale())
-                    }
-                    .padding(.horizontal)
-                    .opacity(!useCompactVariant ? 0 : 1)
-                    .frame(width: !useCompactVariant ? 0 : nil, height: !useCompactVariant ? 0 : nil)
                 }
                 .padding(.vertical, useCompactVariant ? 0 : nil)
             }
@@ -79,7 +92,7 @@ struct HomeView: View {
                 }
             }
             .toolbar {
-                if platform != .macOS && (sizeClass == .compact || platform == .visionOS) {
+                if !isUISizeExpanded {
                     ToolbarItem {
                         Button(action: {
                             showSettingsSheet = true
@@ -118,28 +131,25 @@ struct HomeView: View {
 struct HomeBirthdayView: View {
     @AppStorage("BirthdayTimeZone") private var birthdayTimeZone = "JST"
     @AppStorage("showBirthdayDate") var showBirthdayDate = showBirthdayDateDefaultValue
-    @State private var birthdays: [HomeBirthdayCharacter]?
-    @State private var systemBirthdays: [HomeBirthdayCharacter]?
+    @State private var birthdays: [BirthdayManager.HomeBirthdayCharacter]?
+    @State private var systemBirthdays: [BirthdayManager.HomeBirthdayCharacter]?
     var formatter = DateFormatter()
-    var todaysDateFormatter = DateFormatter()
     var calendar = Calendar(identifier: .gregorian)
-    var todaysDateCalendar = Calendar(identifier: .gregorian)
+    
+    let birthdayManager = BirthdayManager()
     init() {
         calendar.timeZone = TimeZone(identifier: "Asia/Tokyo")!
         formatter.locale = Locale.current
         formatter.setLocalizedDateFormatFromTemplate("MMMd")
         formatter.timeZone = .init(identifier: "Asia/Tokyo")
-        
-        todaysDateCalendar.timeZone = getBirthdayTimeZone()
-        todaysDateFormatter.locale = Locale.current
-        todaysDateFormatter.setLocalizedDateFormatFromTemplate("MMMd")
-        todaysDateFormatter.timeZone = getBirthdayTimeZone()
     }
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
+                
+                // Title Section
                 HStack {
-                    if let character = birthdays?.first, todaysTheirBirthday(character.birthday) {
+                    if let character = birthdays?.first, character.isBirthdayToday {
                         Text(character.isVirtualSinger ? "Home.birthday.happy-anniversary" : "Home.birthday.happy-birthday")
                             .font(.title2)
                             .bold()
@@ -155,35 +165,28 @@ struct HomeBirthdayView: View {
                             .redacted(reason: .placeholder)
                     }
                     Spacer()
-                    Group {
-                        if showBirthdayDate == 3 {
-                            Text(todaysDateFormatter.string(from: .now))
-                        } else if showBirthdayDate == 2 {
-                            // If today's someone's birthday
-                            if (birthdays?.first.map { todaysTheirBirthday($0.birthday) } == true) {
-                                Text(todaysDateFormatter.string(from: .now))
+                    if shouldShowTodaysDate() {
+                        Text(birthdayManager.birthdayDateLabel(for: .now))
+                            .foregroundStyle(.secondary)
+                            .fontWeight(.light)
+                            .font(.title3)
+                            .wrapIf(birthdays == nil) { content in
+                                content
+                                    .redacted(reason: .placeholder)
                             }
-                        } else if showBirthdayDate == 1 {
-                            if systemBirthdays != nil && birthdays != nil && (systemBirthdays != birthdays) {
-                                Text(todaysDateFormatter.string(from: .now))
-                            }
-                        }
                     }
-                    .foregroundStyle(.secondary)
-                    .fontWeight(.light)
-                    .font(.title3)
-                    .wrapIf(birthdays == nil) { content in
-                        content
-                            .redacted(reason: .placeholder)
-                    }
+                    
                 }
+                
+
+                // Birthday Section
                 if let birthdays {
                     HStack {
                         ForEach(0..<birthdays.count, id: \.self) { i in
                             if (i != birthdays.count - 1)
                                 && (birthdays[i].birthday == birthdays[i + 1].birthday)
-                                && (!todaysTheirBirthday(birthdays[i].birthday)) {
-                                // If she is not the last person & the person next have the same birthday & today's not her birthday.
+                                && (!birthdays[i].isBirthdayToday) {
+                                // If they are not the last person & the person next have the same birthday & today's not her birthday.
                                 // (Cond. 3 is because labels should be expanded to show their full name during their birthday.)
                                 Menu(content: {
                                     Button(action: {
@@ -199,6 +202,7 @@ struct HomeBirthdayView: View {
                                             Text(birthdays[i].characterName.majorValue ?? "")
                                         }
                                     })
+                                    
                                     Button(action: {
                                         homeNavigate(to: .characterDetail(birthdays[i + 1].id))
                                     }, label: {
@@ -231,8 +235,8 @@ struct HomeBirthdayView: View {
                                     .frame(width: 2, height: 2)
                             } else if (i != 0)
                                         && (birthdays[i].birthday == birthdays[i - 1].birthday)
-                                        && (!todaysTheirBirthday(birthdays[i].birthday)) {
-                                // If she is not the first person & the person in front have the same birthday & today's not her birthday.
+                                        && (!birthdays[i].isBirthdayToday) {
+                                // If they are not the first person & the person in front have the same birthday & today's not her birthday.
                                 EmptyView()
                             } else {
                                 Button(action: {
@@ -242,7 +246,7 @@ struct HomeBirthdayView: View {
                                         .resizable()
                                         .clipShape(Circle())
                                         .frame(width: imageButtonSize, height: imageButtonSize)
-                                    if todaysTheirBirthday(birthdays[i].birthday) {
+                                    if birthdays[i].isBirthdayToday {
                                         Text(birthdays[i].characterName.majorValue ?? "")
                                     } else {
                                         Text(formatter.string(from: birthdays[i].birthday))
@@ -278,7 +282,6 @@ struct HomeBirthdayView: View {
         .buttonStyle(.plain)
         .foregroundStyle(.primary)
         .task(id: birthdayTimeZone) {
-            todaysDateFormatter.timeZone = getBirthdayTimeZone()
             await updateBirthday()
         }
         .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
@@ -290,68 +293,30 @@ struct HomeBirthdayView: View {
             }
         }
     }
-    func todaysTheirBirthday(_ birthday: Date) -> Bool {
-        let today = Date.now
-        var calendar = Calendar(identifier: .gregorian)
-        var jstCalendar = calendar
-        calendar.timeZone = getBirthdayTimeZone()
-        jstCalendar.timeZone = TimeZone(identifier: "Asia/Tokyo")!
-        
-        let birthdaysMonth: Int = jstCalendar.component(.month, from: birthday)
-        let birthdaysDay: Int = jstCalendar.component(.day, from: birthday)
-        
-        let todaysMonth: Int = calendar.component(.month, from: today)
-        let todaysDay: Int = calendar.component(.day, from: today)
-        
-        return (birthdaysMonth == todaysMonth && birthdaysDay == todaysDay)
-    }
-    func birthdayTimeIsInSameDayWithSystemTime() -> Bool {
-        var birthdayCalendar = Calendar(identifier: .gregorian)
-        birthdayCalendar.timeZone = getBirthdayTimeZone()
-        let systemCalendar = Calendar(identifier: .gregorian)
-        
-        let birthdayMonth: Int = birthdayCalendar.component(.month, from: Date.now)
-        let birthdayDay: Int = birthdayCalendar.component(.day, from: Date.now)
-        
-        let systemMonth: Int = systemCalendar.component(.month, from: Date.now)
-        let systemDay: Int = systemCalendar.component(.day, from: Date.now)
-        
-        return (birthdayMonth == systemMonth && birthdayDay == systemDay)
-    }
     
     func updateBirthday() async {
-        let timeZone = getBirthdayTimeZone()
+        let timeZone = BirthdayManager.BirthdayTimeZone.current.timeZone
         let characters = await Character.recentBirthdayCharacters(timeZone: timeZone)
         guard !Task.isCancelled else { return }
-        birthdays = characters?.compactMap(HomeBirthdayCharacter.init)
+        birthdays = characters?.compactMap(BirthdayManager.HomeBirthdayCharacter.init)
         if timeZone != TimeZone.autoupdatingCurrent {
-            let systemCharacters = await Character.recentBirthdayCharacters(timeZone: getBirthdayTimeZone(from: .adaptive))
+            let systemCharacters = await Character.recentBirthdayCharacters(timeZone: .autoupdatingCurrent)
             guard !Task.isCancelled else { return }
-            systemBirthdays = systemCharacters?.compactMap(HomeBirthdayCharacter.init)
+            systemBirthdays = systemCharacters?.compactMap(BirthdayManager.HomeBirthdayCharacter.init)
         } else {
             systemBirthdays = nil
         }
     }
-}
-
-private struct HomeBirthdayCharacter: Identifiable, Equatable {
-    let id: Int
-    let isVirtualSinger: Bool
-    let birthday: Date
-    let characterName: LocalizableData<String>
-    let iconImageURL: URL?
-
-    init?(_ character: Character) {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Asia/Tokyo")!
-        guard var components = character.birthday else { return nil }
-        components.year = 2000
-        guard let birthday = calendar.date(from: components) else { return nil }
-        id = character.id
-        isVirtualSinger = character.unit == .virtualSinger
-        self.birthday = birthday
-        characterName = character.fullName
-        iconImageURL = character.iconImageURL
+    
+    func shouldShowTodaysDate() -> Bool {
+        if showBirthdayDate == 3 {
+            return true
+        } else if showBirthdayDate == 2 {
+            return (birthdays?.first.map { $0.isBirthdayToday } == true)
+        } else if showBirthdayDate == 1 {
+            return systemBirthdays != nil && birthdays != nil && (systemBirthdays != birthdays)
+        }
+        return true
     }
 }
 

@@ -38,13 +38,17 @@
 		B7850001301CE604005B6B45 /* EventInfoForHome.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7850002301CE604005B6B45 /* EventInfoForHome.swift */; };
 		C0085B0BB1464490ACCFAB5C /* GreatSekaiWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C61F1100241C4822BB60D84A /* GachaDetailCardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC646889C0944306B6E14563 /* GachaDetailCardsView.swift */; };
+		D3D002AABBCC001122334455 /* Model3DViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D001AABBCC001122334455 /* Model3DViewerView.swift */; };
+		D3D004AABBCC001122334455 /* Model3DWeb.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D3D003AABBCC001122334455 /* Model3DWeb.bundle */; };
 		D4CC6966FE964764AC8C8CC0 /* MySekaiFixtureInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D9CCFD0EDBF40BFA9E5BB7B /* MySekaiFixtureInfo.swift */; };
 		E904D24C3026FBDA0012FDAD /* DetailsCardsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E904D24B3026FBDA0012FDAD /* DetailsCardsSection.swift */; };
 		E90629822F727BA900EDCDC6 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E90629812F727BA900EDCDC6 /* Localizable.xcstrings */; };
 		E90629842F727BD400EDCDC6 /* SettingsDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90629832F727BD200EDCDC6 /* SettingsDebugView.swift */; };
+		E908F68C308C9D9600999C2A /* DivisionHStackLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = E908F68B308C9D9600999C2A /* DivisionHStackLayout.swift */; };
+		E908F69A308C9F3300999C2A /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E908F699308C9F3300999C2A /* HomeView.swift */; };
+		E908F69C308CC04200999C2A /* BirthdayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E908F69B308CC04200999C2A /* BirthdayManager.swift */; };
 		E912B29A2F6FE2C200B7220C /* CharacterDetailOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E912B2992F6FE2BB00B7220C /* CharacterDetailOverviewView.swift */; };
 		E912E5EA2F6FAD8A00B7220C /* CharacterSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E912E5E92F6FAD8300B7220C /* CharacterSearchView.swift */; };
-		E931520D2F5401D1002D102D /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152022F5401D1002D102D /* HomeView.swift */; };
 		E931520E2F5401D1002D102D /* WhatsNewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152042F5401D1002D102D /* WhatsNewView.swift */; };
 		E931520F2F5401D1002D102D /* CompactAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E931520A2F5401D1002D102D /* CompactAudioPlayer.swift */; };
 		E93152102F5401D1002D102D /* InfoBases.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93152082F5401D1002D102D /* InfoBases.swift */; };
@@ -99,8 +103,6 @@
 		F175E196AE87424785FA95F5 /* ComicSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C2EAC179464F458A64E406 /* ComicSearchView.swift */; };
 		F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3246A9AE073042688B53578E /* MySekaiFixtureSearchView.swift */; };
 		F6EC2707B9FF4DCD87E86390 /* CardCollectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F96B168B856E4E35AE593DFD /* CardCollectionManager.swift */; };
-		D3D002AABBCC001122334455 /* Model3DViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D001AABBCC001122334455; };
-		D3D004AABBCC001122334455 /* Model3DWeb.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D3D003AABBCC001122334455; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -154,16 +156,20 @@
 		C06F3EFF5F5D42B58D6CEFCB /* GachaDetailPaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailPaymentView.swift; sourceTree = "<group>"; };
 		CAF1C572D42A410392AF68F8 /* Live2DViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Live2DViewerView.swift; path = GreatSekai/Tools/Live2DViewer/Live2DViewerView.swift; sourceTree = SOURCE_ROOT; };
 		CC646889C0944306B6E14563 /* GachaDetailCardsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailCardsView.swift; sourceTree = "<group>"; };
+		D3D001AABBCC001122334455 /* Model3DViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Model3DViewerView.swift; path = GreatSekai/Tools/Model3DViewer/Model3DViewerView.swift; sourceTree = SOURCE_ROOT; };
+		D3D003AABBCC001122334455 /* Model3DWeb.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.cfbundle; name = Model3DWeb.bundle; path = GreatSekai/Resources/Model3DWeb.bundle; sourceTree = SOURCE_ROOT; };
 		D862E983CCD94C5769C4A538 /* StickerSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerSearchView.swift; sourceTree = "<group>"; };
 		D99306BFB1CF4087B4A201AB /* StickerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerInfo.swift; sourceTree = "<group>"; };
 		E77F48E2AF1F48D48DD857F3 /* GachaDetailRatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailRatesView.swift; sourceTree = "<group>"; };
 		E904D24B3026FBDA0012FDAD /* DetailsCardsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsCardsSection.swift; sourceTree = "<group>"; };
 		E90629812F727BA900EDCDC6 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E90629832F727BD200EDCDC6 /* SettingsDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDebugView.swift; sourceTree = "<group>"; };
+		E908F68B308C9D9600999C2A /* DivisionHStackLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivisionHStackLayout.swift; sourceTree = "<group>"; };
+		E908F699308C9F3300999C2A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		E908F69B308CC04200999C2A /* BirthdayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayManager.swift; sourceTree = "<group>"; };
 		E912B2992F6FE2BB00B7220C /* CharacterDetailOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterDetailOverviewView.swift; sourceTree = "<group>"; };
 		E912E5E92F6FAD8300B7220C /* CharacterSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterSearchView.swift; sourceTree = "<group>"; };
 		E93152012F5401D1002D102D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		E93152022F5401D1002D102D /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		E93152032F5401D1002D102D /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		E93152042F5401D1002D102D /* WhatsNewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsNewView.swift; sourceTree = "<group>"; };
 		E93152052F5401D1002D102D /* CornerstoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerstoneView.swift; sourceTree = "<group>"; };
@@ -218,8 +224,6 @@
 		F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = GreatSekaiWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F87278AA85A547ED836C6684 /* MySekaiFixtureDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MySekaiFixtureDetailView.swift; path = GreatSekai/Info/MySekaiFixture/MySekaiFixtureDetailView.swift; sourceTree = SOURCE_ROOT; };
 		F96B168B856E4E35AE593DFD /* CardCollectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CardCollectionManager.swift; path = GreatSekai/Tools/Collections/CardCollectionManager.swift; sourceTree = SOURCE_ROOT; };
-		D3D001AABBCC001122334455 /* Model3DViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Model3DViewerView.swift; path = GreatSekai/Tools/Model3DViewer/Model3DViewerView.swift; sourceTree = SOURCE_ROOT; };
-		D3D003AABBCC001122334455 /* Model3DWeb.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.cfbundle; name = Model3DWeb.bundle; path = GreatSekai/Resources/Model3DWeb.bundle; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -392,8 +396,10 @@
 		E931520C2F5401D1002D102D /* UI Basics */ = {
 			isa = PBXGroup;
 			children = (
+				E908F68B308C9D9600999C2A /* DivisionHStackLayout.swift */,
 				E93152012F5401D1002D102D /* ContentView.swift */,
-				E93152022F5401D1002D102D /* HomeView.swift */,
+				E908F699308C9F3300999C2A /* HomeView.swift */,
+				E908F69B308CC04200999C2A /* BirthdayManager.swift */,
 				E93152032F5401D1002D102D /* WelcomeView.swift */,
 				E93152042F5401D1002D102D /* WhatsNewView.swift */,
 				E93152052F5401D1002D102D /* CornerstoneView.swift */,
@@ -700,6 +706,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E908F68C308C9D9600999C2A /* DivisionHStackLayout.swift in Sources */,
 				528AF1B6CDCC4F2C97F67EB7 /* NativeLive2DPlayer.swift in Sources */,
 				0DBA180AF275468A97DFFBFD /* Live2DViewerView.swift in Sources */,
 				358F9609CF414A3C972CBAA9 /* AppShared/CardCollectionStore.swift in Sources */,
@@ -708,6 +715,7 @@
 				185D4CBF57584F30B5809401 /* StoryViewerView.swift in Sources */,
 				D3D002AABBCC001122334455 /* Model3DViewerView.swift in Sources */,
 				2E20B427B462497EA76F0A42 /* MusicMetaView.swift in Sources */,
+				E908F69C308CC04200999C2A /* BirthdayManager.swift in Sources */,
 				A498D037E5834DDF8B700919 /* MySekaiFixtureDetailView.swift in Sources */,
 				D4CC6966FE964764AC8C8CC0 /* MySekaiFixtureInfo.swift in Sources */,
 				F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */,
@@ -737,7 +745,6 @@
 				E938722630301975006F22C1 /* DetailsSongsSection.swift in Sources */,
 				E9C55FD22F53F3C100DCFD2D /* StableHasher.swift in Sources */,
 				B705231F3022A4EC004D6CDF /* CardDetailView.swift in Sources */,
-				E931520D2F5401D1002D102D /* HomeView.swift in Sources */,
 				E931520E2F5401D1002D102D /* WhatsNewView.swift in Sources */,
 				E912B29A2F6FE2C200B7220C /* CharacterDetailOverviewView.swift in Sources */,
 				B7105918302E9C5000039F00 /* SongSearchView.swift in Sources */,
@@ -753,6 +760,7 @@
 				E9D6676C3014DD2800F6A422 /* FilterSorterView.swift in Sources */,
 				E93152112F5401D1002D102D /* CornerstoneView.swift in Sources */,
 				B70523213022A626004D6CDF /* CardDetailOverviewView.swift in Sources */,
+				E908F69A308C9F3300999C2A /* HomeView.swift in Sources */,
 				E93152122F5401D1002D102D /* FallbackableWebImage.swift in Sources */,
 				E93152132F5401D1002D102D /* NavigationComponentsView.swift in Sources */,
 				E93152AF2F540621002D102D /* SettingsAdvanced.swift in Sources */,
