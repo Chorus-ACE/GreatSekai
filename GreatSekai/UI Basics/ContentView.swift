@@ -304,6 +304,7 @@ enum InfoTab: Hashable {
 }
 
 enum ToolTab: Hashable {
+    case model3DViewer
     // case live2dViewer
     case home, musicMeta, eventTracker, chartSimulator, storyViewer, assetExplorer, station, zeileEditor, eventCalculator, collections
 }
