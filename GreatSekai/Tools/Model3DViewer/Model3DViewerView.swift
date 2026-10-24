@@ -3,7 +3,7 @@ import SekaiKit
 import WebKit
 
 struct Model3DViewerView: View {
-    @State private var locale = SekaiLocale.primaryLocale
+    @State private var wardrobe: Model3DWardrobe?
     @State private var catalog: Model3DCatalog?
     @State private var roleID = ""
     @State private var bodyID = 0
@@ -13,7 +13,7 @@ struct Model3DViewerView: View {
     @State private var error: String?
     @State private var loading = true
     @State private var retry = 0
-    private var role: Model3DCatalog.Role? { catalog?.roles.first { $0.id == roleID } }
+    private var role: Model3DWardrobe.Role? { wardrobe?.roles.first { $0.id == roleID } }
     private var selection: String {
         let object: [String: Any] = ["roleId": roleID, "bodyCostume3dId": bodyID, "hairCostume3dId": hairID, "headCostume3dId": headID, "headOptionalCostume3dId": accessoryID == 0 ? NSNull() : accessoryID]
         return String(data: try! JSONSerialization.data(withJSONObject: object, options: [.sortedKeys]), encoding: .utf8)!
@@ -21,12 +21,11 @@ struct Model3DViewerView: View {
     var body: some View {
         VStack(spacing: 0) {
             Form {
-                Picker("Model3D.region", selection: $locale) {
-                    ForEach(SekaiLocale.allCases, id: \.self) { Text($0.rawValue.uppercased()).tag($0) }
-                }
-                if let catalog, !catalog.roles.isEmpty {
+                if let wardrobe, !wardrobe.roles.isEmpty {
                     Picker("Model3D.character", selection: $roleID) {
-                        ForEach(catalog.roles) { role in Text(verbatim: (role.name ?? String(role.characterID)) + (role.characterID == 21 ? " · \(role.unit)" : "")).tag(role.id) }
+                        ForEach(wardrobe.roles) { role in
+                            Text(verbatim: preferred(role.name, fallback: String(role.characterID)) + (role.characterID == 21 ? " · \(role.unit)" : "")).tag(role.id)
+                        }
                     }
                     if let role {
                         partPicker("Model3D.body", type: "body", selection: $bodyID, role: role)
@@ -34,12 +33,15 @@ struct Model3DViewerView: View {
                         partPicker("Model3D.head", type: "head", selection: $headID, role: role, includesNone: true)
                         partPicker("Model3D.accessory", type: "head_optional", selection: $accessoryID, role: role, includesNone: true)
                     }
+                    if let catalog {
+                        LabeledContent("Model3D.region") { Text(verbatim: catalog.region.rawValue.uppercased()) }
+                    }
                 }
             }.formStyle(.grouped).frame(maxHeight: 260)
             ZStack {
                 if let catalog, role != nil, bodyID != 0 {
                     Model3DWebView(catalog: catalog, selection: selection, loading: $loading, error: $error)
-                        .id("\(locale.rawValue)-\(catalog.revision)-\(retry)")
+                        .id("\(catalog.region.rawValue)-\(catalog.revision)-\(retry)")
                 } else if !loading, error == nil {
                     ContentUnavailableView("Model3D.empty", systemImage: "cube.transparent")
                 }
@@ -53,26 +55,52 @@ struct Model3DViewerView: View {
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationTitle("App.tools.model3d-viewer")
-        .task(id: "\(locale.rawValue)-\(retry)") {
-            loading = true; error = nil; catalog = nil
+        .task(id: retry) {
+            loading = true; error = nil; catalog = nil; wardrobe = nil
             do {
-                let result = try await Model3DClient.shared.catalog(for: locale)
+                let result = try await Model3DClient.shared.wardrobe()
                 try Task.checkCancellation()
-                catalog = result; roleID = result.roles.first?.id ?? ""; resetSelection()
+                wardrobe = result; roleID = result.roles.first?.id ?? ""; resetSelection()
                 if result.roles.isEmpty { loading = false }
             } catch is CancellationError { } catch { self.error = error.localizedDescription; loading = false }
         }
         .onChange(of: roleID) { resetSelection() }
+        .onChange(of: bodyID) { reconcile(changedType: "body") }
+        .onChange(of: hairID) { reconcile(changedType: "hair") }
+        .onChange(of: headID) { reconcile(changedType: "head") }
+        .onChange(of: accessoryID) { reconcile(changedType: "head_optional") }
+    }
+    private func preferred(_ value: LocalizedData<String>, fallback: String = "") -> String {
+        value.availableLocale().flatMap { value[$0] } ?? fallback
     }
     private func resetSelection() {
-        guard let role else { return }
-        bodyID = role.bodyCostumeID; hairID = role.hairCostumeID; headID = role.headCostumeID; accessoryID = 0
+        guard let wardrobe, let role, let locale = wardrobe.preferredLocale(for: roleID), let defaults = role.defaults[locale] else { return }
+        bodyID = defaults.bodyCostumeID; hairID = defaults.hairCostumeID; headID = defaults.headCostumeID; accessoryID = 0
+        reconcile(changedType: "body")
     }
-    private func partPicker(_ title: LocalizedStringKey, type: String, selection: Binding<Int>, role: Model3DCatalog.Role, includesNone: Bool = false) -> some View {
+    private func reconcile(changedType: String) {
+        guard let wardrobe, let role else { return }
+        let values = ["body": bodyID, "hair": hairID, "head": headID, "head_optional": accessoryID]
+        let selected = role.parts.filter { values[$0.type] == $0.costumeID }
+        let changed = selected.filter { $0.type == changedType }
+        // Keep a coherent source. If a newly chosen regional exclusive is incompatible,
+        // use that source's defaults for the other pieces instead of mixing rig versions.
+        guard let locale = wardrobe.preferredLocale(for: roleID, requiring: selected.map(\.id))
+                ?? wardrobe.preferredLocale(for: roleID, requiring: changed.map(\.id)),
+              let defaults = role.defaults[locale] else { return }
+        if !selected.contains(where: { $0.type == "body" && $0.locales.contains(locale) }) { bodyID = defaults.bodyCostumeID }
+        if !selected.contains(where: { $0.type == "hair" && $0.locales.contains(locale) }) { hairID = defaults.hairCostumeID }
+        if !selected.contains(where: { $0.type == "head" && $0.locales.contains(locale) }) { headID = defaults.headCostumeID }
+        if !selected.contains(where: { $0.type == "head_optional" && $0.locales.contains(locale) }) { accessoryID = 0 }
+        do { catalog = try wardrobe.catalog(for: locale) }
+        catch { self.error = error.localizedDescription; loading = false }
+    }
+    private func partPicker(_ title: LocalizedStringKey, type: String, selection: Binding<Int>, role: Model3DWardrobe.Role, includesNone: Bool = false) -> some View {
         Picker(title, selection: selection) {
-            if includesNone { Text("Model3D.none").tag(type == "head" ? role.headCostumeID : 0) }
-            ForEach(role.parts.filter { $0.type == type && (!includesNone || $0.costumeID != role.headCostumeID) }) { part in
-                Text(verbatim: "\(part.name) · \(part.colorName)").tag(part.costumeID)
+            if includesNone { Text("Model3D.none").tag(type == "head" ? (catalog?.roles.first { $0.id == role.id }?.headCostumeID ?? 0) : 0) }
+            ForEach(role.parts.filter { $0.type == type && (!includesNone || $0.costumeID != catalog?.roles.first { $0.id == role.id }?.headCostumeID) }) { part in
+                let locales = part.locales.count < (wardrobe?.regions.allAvailableLocales.count ?? 5) ? " · " + part.locales.map { $0.rawValue.uppercased() }.joined(separator: "/") : ""
+                Text(verbatim: preferred(part.name) + " · " + preferred(part.colorName) + locales).tag(part.costumeID)
             }
         }
     }
