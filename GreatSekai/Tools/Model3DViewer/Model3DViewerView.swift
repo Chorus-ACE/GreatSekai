@@ -150,7 +150,15 @@ struct Model3DViewerView: View {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: String] else { return }
         switch body["type"] {
-        case "ready": ready = true; if let webView = message.webView { load(webView) }
+        case "ready":
+            ready = true
+            if let webView = message.webView {
+                let locale = Bundle.main.preferredLocalizations.first ?? "en"
+                if let data = try? JSONSerialization.data(withJSONObject: [locale]), let json = String(data: data, encoding: .utf8) {
+                    webView.evaluateJavaScript("window.setViewerLocale(\(json)[0]); null")
+                }
+                load(webView)
+            }
         case "loading": owner.loading = true; owner.error = nil
         case "loaded": owner.loading = false
         case "error": owner.loading = false; owner.error = body["message"]
@@ -198,6 +206,12 @@ struct Model3DWebView: UIViewRepresentable {
     config.userContentController.add(coordinator, name: "model3D")
     let view = WKWebView(frame: .zero, configuration: config)
     view.navigationDelegate = coordinator
+    #if !os(macOS)
+    // The canvas handles pan/pinch itself; prevent the web page from scrolling or zooming.
+    view.scrollView.isScrollEnabled = false
+    view.scrollView.bounces = false
+    view.scrollView.pinchGestureRecognizer?.isEnabled = false
+    #endif
     view.load(URLRequest(url: URL(string: "sekai3d://viewer/index.html")!))
     return view
 }

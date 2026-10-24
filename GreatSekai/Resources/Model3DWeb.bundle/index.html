@@ -1,2 +1,19 @@
-<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><style>html,body,canvas{width:100%;height:100%;margin:0;display:block;overflow:hidden}body{background:#eee}</style>  <script type="module" crossorigin src="./assets/index-DSJ0DTL6.js"></script>
-</head><body><canvas id="viewer"></canvas></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{width:100%;height:100%;margin:0;font-family:system-ui,sans-serif;overflow:hidden}body{background:#eee}canvas{touch-action:none;-webkit-user-select:none;user-select:none;outline:none;width:100%;height:100%;display:block}canvas:focus-visible{outline-offset:-3px;outline:2px solid #4387dc}#interaction-hint{text-align:center;color:#344054;pointer-events:none;text-shadow:0 1px 2px #fff;margin:0;font-size:12px;line-height:1.5;position:absolute;top:12px;left:16px;right:16px}#controls{bottom:max(12px,env(safe-area-inset-bottom));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);background:#ffffffe6;border-radius:14px;align-items:center;gap:4px;padding:4px;display:flex;position:absolute;left:50%;transform:translate(-50%);box-shadow:0 2px 12px #0002}button{color:#243550;cursor:pointer;touch-action:manipulation;background:0 0;border:0;border-radius:10px;min-width:44px;min-height:44px;font:24px system-ui,sans-serif}button:hover:enabled,button:active:enabled{background:#e5ebf4}button:disabled{opacity:.35;cursor:default}#zoom-level{text-align:center;font-variant-numeric:tabular-nums;min-width:44px;font-size:13px}</style>
+  <script type="module" crossorigin src="./assets/index-19wWLvlr.js"></script>
+</head>
+<body>
+<canvas id="viewer" tabindex="0" data-label="viewer.canvas" aria-describedby="interaction-hint"></canvas>
+<p id="interaction-hint"></p>
+<div id="controls" role="toolbar" data-label="viewer.controls">
+<button id="zoom-out" type="button" data-label="viewer.zoom-out" disabled>−</button>
+<output id="zoom-level" data-label="viewer.zoom-level">100%</output>
+<button id="zoom-in" type="button" data-label="viewer.zoom-in" disabled>+</button>
+<button id="reset-view" type="button" data-label="viewer.reset-view" disabled>↺</button>
+</div>
+</body>
+</html>
