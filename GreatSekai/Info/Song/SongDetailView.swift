@@ -33,7 +33,7 @@ struct SongDetailView: View {
             
             SongDetailDifficultiesView(information: information)
 //            SongDetailGameplayView(information: information)
-//            SongDetailMusicMovieView(musicVideos: information.song.musicVideos)
+            SongDetailMusicVideoView(song: information.song).id(information.id)
 //            DetailsEventsSection(events: information.events, applyLocaleFilter: true)
 //            SongDetailMatchView(song: information.song, songMatches: $songMatches)
 //            if #available(iOS 26.0, macOS 26.0, visionOS 26.0, *), let lyrics {
@@ -49,7 +49,7 @@ struct SongDetailView: View {
                 }
             }
             
-            ExternalLinksSection(links: [
+            SongExternalLinksSection(song: information.song, links: [
                 ExternalLink(.sekaiViewer,
                     url: URL(string: "https://sekai.best/music/\(information.id)")!
                 ),
@@ -71,10 +71,30 @@ struct SongDetailView: View {
                 ExternalLink(.pjsekaiMoe,
                     url: URL(string: "https://pjsekai.moe/#/music/\(information.id)")!
                 )
-            ])
+            ]).id(information.id)
         } switcherDestination: {
             SongSearchView()
         }
 //        .id(lyrics?.hashValue ?? id)
+    }
+}
+
+private struct SongExternalLinksSection: View {
+    let song: Song
+    let links: [ExternalLink?]
+    @State private var videoLinks: [ExternalLink] = []
+
+    var body: some View {
+        ExternalLinksSection(links: links + videoLinks.map(Optional.some))
+            .task(id: song.id) {
+                let content = await song.videoContent()
+                guard !Task.isCancelled else { return }
+                // Preserve region-specific uploads while displaying each destination once.
+                var seen = Set<URL>()
+                let locales = [SekaiLocale.primaryLocale, .secondaryLocale] + SekaiLocale.allCases
+                videoLinks = locales.flatMap { content?[$0]?.externalURLs ?? [] }
+                    .filter { seen.insert($0).inserted }
+                    .map { ExternalLink.musicVideo(url: $0) }
+            }
     }
 }

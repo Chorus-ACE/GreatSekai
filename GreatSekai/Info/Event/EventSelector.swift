@@ -1,0 +1,72 @@
+//===---*- Greatdori! -*---------------------------------------------------===//
+//
+// EventSelector.swift
+//
+// This source file is part of the Greatdori! open source project
+//
+// Copyright (c) 2025 the Greatdori! project authors
+// Licensed under Apache License v2.0
+//
+// See https://greatdori.com/LICENSE.txt for license information
+// See https://greatdori.com/CONTRIBUTORS.txt for the list of Greatdori! project authors
+//
+//===----------------------------------------------------------------------===//
+
+import SekaiKit
+import SwiftUI
+
+struct MultiEventSelector: View {
+    @Binding var selection: [Event]
+    var locale: SekaiLocale = .primaryLocale
+    var availableEventIDs: Set<Int>?
+    var updateList: @Sendable () async -> [Event]? = { await Event.allWithCache() }
+    var body: some View {
+        ItemSelectorView(selection: $selection, initialLayout: true, initialSorter: SekaiSorter(keyword: .releaseDate(in: locale), direction: .descending), updateList: {
+            await updateList()?.filter { event in
+                (availableEventIDs?.contains(event.id) ?? true)
+                    && (event.title.localizedData?.availableInLocale(locale) ?? true)
+            }
+        }, layoutOptions: [("Filter.view.banner-and-details", "text.below.rectangle", true)]) { showDetails, elements, content, eachContent in
+            ViewThatFits {
+                LazyVStack(spacing: showDetails ? nil : 15) {
+                    let events = elements.chunked(into: 2)
+                    ForEach(events, id: \.self) { eventGroup in
+                        HStack(spacing: showDetails ? nil : 0) {
+                            ForEach(eventGroup) { event in
+                                eachContent(event)
+                                if eventGroup.count == 1 && events[0].count != 1 {
+                                    Rectangle()
+                                        .frame(maxWidth: 420, maxHeight: 140)
+                                        .opacity(0)
+                                }
+                            }
+                        }
+                    }
+                }
+                .frame(width: bannerWidth * 2 + bannerSpacing)
+                LazyVStack(spacing: showDetails ? nil : bannerSpacing) {
+                    content
+                }
+                .frame(maxWidth: bannerWidth)
+            }
+            .animation(.spring(duration: 0.3, bounce: 0.1, blendDuration: 0), value: showDetails)
+        } eachContent: { showDetails, element in
+            EventInfo(element, showDetails: showDetails, locale: locale)
+        }
+        .listCacheScope("\(locale.rawValue)_\(availableEventIDs.map { $0.sorted().map(String.init).joined(separator: ",") } ?? "all")")
+        .resultCountDescription { count in
+            "Event.count.\(count)"
+        }
+    }
+}
+
+struct EventSelector: View {
+    @Binding var selection: Event?
+    var locale: SekaiLocale = .primaryLocale
+    var availableEventIDs: Set<Int>?
+    var updateList: @Sendable () async -> [Event]? = { await Event.allWithCache() }
+    var body: some View {
+        MultiEventSelector(selection: .init { [selection].compactMap { $0 } } set: { selection = $0.first }, locale: locale, availableEventIDs: availableEventIDs, updateList: { [updateList] in await updateList() })
+            .selectorDisablesMultipleSelection()
+    }
+}

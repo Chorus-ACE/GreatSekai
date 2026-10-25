@@ -12,6 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
+
 struct AcknowledgementItem: Equatable, Hashable {
     var title: String
     var subtitle: String
@@ -48,6 +50,24 @@ let codeSnippetAcknowledgements = _codeSnippetAcknowledgements()
 
 @AcknowledgementBuilder
 private func _packageAcknowledgements() -> [AcknowledgementItem] {
+    if let bundle = Bundle.main.url(forResource: "Model3DWeb", withExtension: "bundle"),
+       let notices = try? String(contentsOf: bundle.appendingPathComponent("ThirdPartyNotices.txt"), encoding: .utf8) {
+        AcknowledgementItem(
+            "Haruki-3D / Three.js",
+            licenseName: "MIT / ISC / Apache License 2.0",
+            content: notices
+        )
+    }
+
+    if let bundle = Bundle.main.url(forResource: "StoryPlayerWeb", withExtension: "bundle"),
+       let notices = try? String(contentsOf: bundle.appendingPathComponent("THIRD_PARTY_NOTICES.txt"), encoding: .utf8) {
+        AcknowledgementItem(
+            "PJSK Scenario Player / PixiJS / Haruki-Toolbox",
+            licenseName: "MIT / ISC / BSD / Live2D licenses",
+            content: notices
+        )
+    }
+
     AcknowledgementItem(
         "Alamofire",
         licenseName: "MIT License",
@@ -59,7 +79,7 @@ private func _packageAcknowledgements() -> [AcknowledgementItem] {
     
     AcknowledgementItem(
         "cmark-gfm",
-        licenseName: "BSD2 License",
+        licenseName: "BSD / MIT and third-party notices",
         content: cmarkGfmLicense
     )
     
@@ -180,12 +200,15 @@ private func _packageAcknowledgements() -> [AcknowledgementItem] {
 //    )
     
     AcknowledgementItem(
+        "SekaiKit",
+        licenseName: "Apache License 2.0",
+        content: "SekaiKit\nhttps://github.com/Chorus-ACE/SekaiKit\n\n" + Apache_License_2_0
+    )
+
+    AcknowledgementItem(
         "swift-gyb",
-        licenseName: "MIT License",
-        content: MIT_License(
-            year: "2018",
-            name: "Read Evaluate Press, LLC"
-        )
+        licenseName: "Apache License 2.0 with Runtime Library Exception",
+        content: "Copyright (c) 2023 Xudong Xu <showxdxu@gmail.com> and the swift-library project authors\n\n" + Apache_License_2_0 + swiftSuffix
     )
     
 //    AcknowledgementItem(
@@ -204,9 +227,15 @@ private func _packageAcknowledgements() -> [AcknowledgementItem] {
     )
     
     AcknowledgementItem(
+        "SwiftProtobuf",
+        licenseName: "Apache License 2.0 with Runtime Library Exception",
+        content: "Copyright (c) 2014 - 2016 Apple Inc. and the project authors\nhttps://github.com/apple/swift-protobuf\n\n" + Apache_License_2_0 + swiftSuffix
+    )
+
+    AcknowledgementItem(
         "swift-syntax",
-        licenseName: "Apache License 2.0",
-        content: Apache_License_2_0 + swiftSuffix
+        licenseName: "Apache License 2.0 with Runtime Library Exception",
+        content: "Copyright (c) 2014 - 2023 Apple Inc. and the Swift project authors\n\n" + Apache_License_2_0 + swiftSuffix
     )
     
 //    AcknowledgementItem(
@@ -261,15 +290,21 @@ private func _packageAcknowledgements() -> [AcknowledgementItem] {
 @AcknowledgementBuilder
 private func _codeSnippetAcknowledgements() -> [AcknowledgementItem] {
     AcknowledgementItem(
-        "gyb.py",
+        "Greatdori!",
         licenseName: "Apache License 2.0",
+        content: "Copyright (c) 2025 the Greatdori! project authors\nhttps://greatdori.com/CONTRIBUTORS.txt\n\n" + Apache_License_2_0
+    )
+
+    AcknowledgementItem(
+        "gyb.py",
+        licenseName: "Apache License 2.0 with Runtime Library Exception",
         content: Apache_License_2_0 + swiftSuffix
     )
     
     AcknowledgementItem(
-        "live2d.min.js",
+        "Live2D Cubism Core",
         licenseName: "Live2D Proprietary Software 使用許諾契約書",
-        content: Live2D_Proprietary_Software_License
+        content: "Copyright(c) Live2D Inc. All rights reserved.\nhttps://www.live2d.com/eula/live2d-proprietary-software-license-agreement_jp.html\n\n" + Live2D_Proprietary_Software_License
     )
     
 //    AcknowledgementItem(

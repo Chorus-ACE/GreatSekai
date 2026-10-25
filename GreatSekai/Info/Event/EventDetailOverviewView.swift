@@ -101,13 +101,6 @@ struct EventDetailOverviewView: View {
                 }
             }
             
-            if showAdvancedDetails {
-                DetailInfoItem("Info.asset-bundle-name", content: {
-                    Text(information.event.assetBundleName)
-                        .fontDesign(.monospaced)
-                })
-            }
-            
             if !information.event.outline.isEmpty {
                 DetailInfoItem("Event.outline") {
                     LocalizableText(information.event.outline, showSecondaryText: false)
@@ -117,6 +110,13 @@ struct EventDetailOverviewView: View {
             }
 
             DetailInfoItem("ID", text: "\(String(information.id))")
+            
+            if showAdvancedDetails {
+                DetailInfoItem("Info.asset-bundle-name", content: {
+                    Text(information.event.assetBundleName)
+                        .fontDesign(.monospaced)
+                })
+            }
         } head: {
             VStack {
                 // MARK: Title Image

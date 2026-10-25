@@ -85,6 +85,14 @@ struct StoryDetailView: View {
         .searchable(text: $query)
         .toolbar {
             ToolbarItem {
+                NavigationLink {
+                    StoryPlayerView(episode: currentEpisode ?? episode)
+                } label: {
+                    Label("Story.player.open", systemImage: "play.rectangle")
+                }
+                .disabled(currentEpisode == nil)
+            }
+            ToolbarItem {
                 Menu {
                     LocalePicker($locale) { Text("Story.region") }
                         .pickerStyle(.inline)

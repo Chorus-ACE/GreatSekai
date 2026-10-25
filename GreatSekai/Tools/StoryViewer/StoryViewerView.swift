@@ -11,9 +11,8 @@ struct StoryViewerView: View {
     @State private var episodes: [Episode]?
     @State private var selectedParent: Int?
     @State private var events: [SekaiKit.Event] = []
+    @State private var cards: [Card] = []
     @State private var parentNames: [Int: String] = [:]
-    @State private var choosingChapter = false
-    @State private var chapterQuery = ""
     @State private var failed = false
     @State private var query = ""
     @State private var retryID = 0
@@ -40,15 +39,24 @@ struct StoryViewerView: View {
                         ListItem {
                             Text(kind == .event ? "Story.event" : kind == .card ? "Story.card" : "Story.chapter").bold()
                         } value: {
-                            Button {
-                                chapterQuery = ""; choosingChapter = true
-                            } label: {
-                                HStack {
-                                    Text(selectedParent.map(groupTitle) ?? String(localized: "Story.all-chapters"))
-                                        .multilineTextAlignment(.trailing)
-                                    Image(systemName: "chevron.up.chevron.down").font(.footnote)
+                            Group {
+                                if kind == .event {
+                                    ItemSelectorButton(selection: selectedEvent, closeWindowOnSelectionChange: true, locale: locale, availableIDs: Set(groups))
+                                } else if kind == .card {
+                                    ItemSelectorButton(selection: selectedCard, closeWindowOnSelectionChange: true, locale: locale, availableIDs: Set(groups))
+                                } else {
+                                    Picker("Story.chapter", selection: $selectedParent) {
+                                        if groups.isEmpty {
+                                            Text("Story.select-chapter").tag(selectedParent)
+                                        }
+                                        ForEach(groups, id: \.self) { id in
+                                            Text(groupTitle(id)).tag(Optional(id))
+                                        }
+                                    }
+                                    .labelsHidden()
+                                    .pickerStyle(.menu)
                                 }
-                            }.buttonStyle(.plain).foregroundStyle(.tint)
+                            }
                             .disabled(episodes == nil)
                         }
                         Divider()
@@ -76,51 +84,38 @@ struct StoryViewerView: View {
         }
         .navigationTitle("App.tools.story-viewer")
         .searchable(text: $query)
-        .selectionWindow(isPresented: $choosingChapter, title: "Story.select-chapter") {
-            NavigationStack {
-                if kind == .event {
-                    EventPicker(
-                        selection: Binding {
-                            events.first { $0.id == selectedParent }
-                        } set: { event in
-                            selectedParent = event?.id
-                            if let event {
-                                events.removeAll { $0.id == event.id }
-                                events.append(event)
-                                parentNames[event.id] = event.title.localizedData?[locale] ?? event.title.majorValue ?? ""
-                            }
-                        },
-                        locale: locale,
-                        availableEventIDs: Set(groups),
-                        emptySelectionTitle: "Story.all-chapters"
-                    )
-                } else {
-                    List {
-                        Button("Story.all-chapters") { selectedParent = nil; choosingChapter = false }
-                        ForEach(groups.filter { chapterQuery.isEmpty || groupTitle($0).localizedCaseInsensitiveContains(chapterQuery) }, id: \.self) { id in
-                            Button {
-                                selectedParent = id; choosingChapter = false
-                            } label: {
-                                HStack {
-                                    Text(groupTitle(id)).foregroundStyle(.primary)
-                                    Spacer()
-                                    if id == selectedParent { Image(systemName: "checkmark").foregroundStyle(.tint) }
-                                }.padding(.vertical, 4)
-                            }
-                        }
-                    }
-                    .searchable(text: $chapterQuery)
-                    .navigationTitle("Story.chapter")
-                    .toolbar { ToolbarItem { Button("General.done") { choosingChapter = false } } }
-                }
-            }.frame(minWidth: platform == .macOS ? 500 : nil, minHeight: 400)
-        }
         .withSystemBackground()
         .task(id: requestID) {
             guard loadedRequestID != requestID else { return }
             await load()
         }
     }
+    private var selectedEvent: Binding<Event?> {
+        Binding {
+            events.first { $0.id == selectedParent }
+        } set: { event in
+            selectedParent = event?.id
+            if let event {
+                events.removeAll { $0.id == event.id }
+                events.append(event)
+                parentNames[event.id] = event.title.localizedData?[locale] ?? event.title.majorValue ?? ""
+            }
+        }
+    }
+
+    private var selectedCard: Binding<Card?> {
+        Binding {
+            cards.first { $0.id == selectedParent }
+        } set: { card in
+            selectedParent = card?.id
+            if let card {
+                cards.removeAll { $0.id == card.id }
+                cards.append(card)
+                parentNames[card.id] = card.name.localizedData?[locale] ?? card.name.majorValue ?? ""
+            }
+        }
+    }
+
     private func groupTitle(_ id: Int) -> String {
         let title = episodes?.first { $0.parentID == id }?.chapterTitle ?? ""
         return kind == .unit ? title : "#\(id) · \(parentNames[id] ?? "")"
@@ -129,6 +124,7 @@ struct StoryViewerView: View {
         episodes = nil
         failed = false
         events = []
+        cards = []
         parentNames = [:]
         let currentRequestID = requestID
         let selectedKind = kind
@@ -147,9 +143,10 @@ struct StoryViewerView: View {
                 parentNames = Dictionary(regionalEvents.map { ($0.id, $0.title.majorValue ?? "") }, uniquingKeysWith: { first, _ in first })
             }
         case .card:
-            if let cards = await Card.allWithCache() {
+            if let regionalCards = await Card.allWithCache() {
                 guard !Task.isCancelled else { return }
-                parentNames = Dictionary(cards.map { ($0.id, $0.name.localizedData?[selectedLocale] ?? $0.name.majorValue ?? "") }, uniquingKeysWith: { first, _ in first })
+                cards = regionalCards
+                parentNames = Dictionary(regionalCards.map { ($0.id, $0.name.localizedData?[selectedLocale] ?? $0.name.majorValue ?? "") }, uniquingKeysWith: { first, _ in first })
             }
         case .unit: break
         }
@@ -173,12 +170,12 @@ struct EpisodeRow: View {
             CustomGroupBox(cornerRadius: 20) {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 5) {
-                        if episode.kind == .card {
+//                        if episode.kind == .card {
                             Text("Story.episode.\(episode.number)")
                             Text(episode.title).font(.title3).bold()
-                        } else {
-                            (Text("Story.episode.\(episode.number)") + Text(" · " + episode.title)).font(.headline)
-                        }
+//                        } else {
+//                            (Text("Story.episode.\(episode.number)") + Text(" · " + episode.title)).font(.headline)
+//                        }
                     }
                     Spacer()
                     if let image = episode.imageURL {

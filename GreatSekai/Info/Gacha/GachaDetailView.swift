@@ -40,19 +40,19 @@ private struct GachaDetailContent: View {
                 DetailInfoItem("Gacha.wish-count", localizableText: information.configuration.map { ($0?.wishSelectCount ?? 0) > 0 ? $0.map { String($0.wishSelectCount) } : nil }, showLocaleKey: true)
             }
             
-            if showAdvancedDetails {
-                DetailInfoItem("Info.asset-bundle-name", content: {
-                    Text(information.assetBundleName)
-                        .fontDesign(.monospaced)
-                })
-            }
-            
             if !information.configuration.map({ $0?.pickupCardIDs }).isCollectionEmpty {
                 DetailInfoItem("Gacha.pickup-cards") {
                     GachaPickupCardsView(information: information)
                 }
             }
             DetailInfoItem("ID", text: String(information.id))
+            
+            if showAdvancedDetails {
+                DetailInfoItem("Info.asset-bundle-name", content: {
+                    Text(information.assetBundleName)
+                        .fontDesign(.monospaced)
+                })
+            }
         } head: {
             FallbackableWebImage(throughURLs: information.previewImageURLs()) { image in
                 image.resizable().scaledToFit()

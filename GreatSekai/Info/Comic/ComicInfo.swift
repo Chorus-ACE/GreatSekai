@@ -5,14 +5,17 @@ import SwiftUI
 struct ComicInfo: View {
     let information: Comic
     var layout: SummaryLayout
+    
     init(_ information: Comic, layout: SummaryLayout = .horizontal) {
         self.information = information
         self.layout = layout
     }
     var body: some View {
         SummaryViewBase(layout, source: information) {
-            ComicThumbnail(comic: information)
-                .frame(width: layout == .horizontal ? 140 : 200)
+            ExtendedConstraints(isActive: layout != .horizontal) {
+                ComicThumbnail(comic: information)
+                    .frame(maxWidth: layout == .horizontal ? 140 : 200)
+            }
         } detail: {
             if let title = information.title.localizedData?.forLocale(.secondaryLocale) {
                 HighlightableText(title)

@@ -75,12 +75,11 @@ struct SettingsLocaleView: View {
     }
     
     struct SettingsBirthdayTimeZonePicker: View {
+        @AppStorage("BirthdayTimeZone") private var birthdayTimeZone: BirthdayManager.BirthdayTimeZone = .JST
+
         var body: some View {
-            Picker(selection: .init(
-                get: { BirthdayManager.BirthdayTimeZone.current },
-                set: { BirthdayManager.BirthdayTimeZone.current = $0 }
-            ), content: {
-                    ForEach(BirthdayManager.BirthdayTimeZone.allCases, id: \.self) { item in
+            Picker(selection: $birthdayTimeZone, content: {
+                ForEach(BirthdayManager.BirthdayTimeZone.allCases, id: \.self) { item in
                     VStack(alignment: .leading) {
                         Text(item.selectionLabel)
                         Group {
@@ -103,7 +102,7 @@ struct SettingsLocaleView: View {
                         .foregroundStyle(.secondary)
                 }
             }, optionalCurrentValueLabel: {
-                Text(BirthdayManager.BirthdayTimeZone.current.abbreviation)
+                Text(birthdayTimeZone.abbreviation)
             })
             .wrapIf(true, in: { content in
 #if os(iOS)

@@ -1,118 +1,330 @@
-import SwiftUI
 import SekaiKit
+import Observation
+import SwiftUI
 import WebKit
 
 struct Model3DViewerView: View {
-    @State private var wardrobe: Model3DWardrobe?
-    @State private var catalog: Model3DCatalog?
-    @State private var roleID = ""
-    @State private var bodyID = 0
-    @State private var hairID = 0
-    @State private var headID = 0
-    @State private var accessoryID = 0
+    @State private var locale: SekaiLocale = .primaryLocale
+    @State private var library: Model3DLibrary?
+    @State private var configuration: Model3DRenderConfiguration?
+    @State private var characterID = ""
+    @State private var selection: Model3DSelection?
     @State private var error: String?
     @State private var loading = true
     @State private var retry = 0
-    private var role: Model3DWardrobe.Role? { wardrobe?.roles.first { $0.id == roleID } }
-    private var selection: String {
-        let object: [String: Any] = ["roleId": roleID, "bodyCostume3dId": bodyID, "hairCostume3dId": hairID, "headCostume3dId": headID, "headOptionalCostume3dId": accessoryID == 0 ? NSNull() : accessoryID]
-        return String(data: try! JSONSerialization.data(withJSONObject: object, options: [.sortedKeys]), encoding: .utf8)!
+    @State private var viewControls = Model3DViewControls()
+    
+    @State var inspectorIsDisplaying = true
+    @State var inspectorTab: ModelInspectorTab? = .character
+    
+    @Environment(\.horizontalSizeClass) var sizeClass
+
+    private var character: Model3DCharacter? {
+        library?.characters.first { $0.id == characterID }
     }
+
     var body: some View {
-        VStack(spacing: 0) {
-            Form {
-                if let wardrobe, !wardrobe.roles.isEmpty {
-                    Picker("Model3D.character", selection: $roleID) {
-                        ForEach(wardrobe.roles) { role in
-                            Text(verbatim: preferred(role.name, fallback: String(role.characterID)) + (role.characterID == 21 ? " · \(role.unit)" : "")).tag(role.id)
+        ZStack {
+            if let configuration {
+                Model3DWebView(configuration: configuration, viewControls: viewControls, loading: $loading, error: $error)
+                    .id("\(configuration.locale.rawValue)-\(configuration.revision)-\(retry)")
+            } else if !loading, error == nil {
+                ContentUnavailableView("Model-3d.empty", systemImage: "cube.transparent")
+            }
+            
+            if loading || error != nil {
+                Rectangle()
+                    .foregroundStyle(.black)
+                    .opacity(0.3)
+            }
+            
+            if loading {
+                ProgressView()
+            }
+            
+            if let error {
+                VStack {
+                    ContentUnavailableView("Model-3d.error", systemImage: "exclamationmark.circle", description: Text(error))
+                    Button("Model-3d.retry") {
+                        retry += 1
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding()
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                if sizeClass == .regular {
+                    Picker(selection: Binding.init(get: {
+                        inspectorTab
+                    }, set: {
+                        if $0 == inspectorTab {
+                            inspectorTab = nil
+                            inspectorIsDisplaying = false
+                        } else {
+                            inspectorTab = $0
+                            inspectorIsDisplaying = true
                         }
-                    }
-                    if let role {
-                        partPicker("Model3D.body", type: "body", selection: $bodyID, role: role)
-                        partPicker("Model3D.hair", type: "hair", selection: $hairID, role: role)
-                        partPicker("Model3D.head", type: "head", selection: $headID, role: role, includesNone: true)
-                        partPicker("Model3D.accessory", type: "head_optional", selection: $accessoryID, role: role, includesNone: true)
-                    }
-                    if let catalog {
-                        LabeledContent("Model3D.region") { Text(verbatim: catalog.region.rawValue.uppercased()) }
-                    }
+                    }), content: {
+                        ForEach(ModelInspectorTab.allCases, id: \.self) { item in
+                            Label(item.localizedLabel, systemImage: item.symbol)
+                                .tag(item)
+                        }
+                    }, label: {
+                        Label("Model-3d.inspector", systemImage: "sidebar.trailing")
+                    })
+                    .pickerStyle(.inline)
+                } else {
+                    Button(action: {
+                        inspectorIsDisplaying.toggle()
+                    }, label: {
+                        Label("Model-3d.inspector", systemImage: "sidebar.trailing")
+                    })
                 }
-            }.formStyle(.grouped).frame(maxHeight: 260)
-            ZStack {
-                if let catalog, role != nil, bodyID != 0 {
-                    Model3DWebView(catalog: catalog, selection: selection, loading: $loading, error: $error)
-                        .id("\(catalog.region.rawValue)-\(catalog.revision)-\(retry)")
-                } else if !loading, error == nil {
-                    ContentUnavailableView("Model3D.empty", systemImage: "cube.transparent")
-                }
-                if loading { ProgressView().padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12)) }
-                if let error {
-                    VStack {
-                        ContentUnavailableView("Model3D.error", systemImage: "exclamationmark.triangle", description: Text(error))
-                        Button("Model3D.retry") { retry += 1 }
-                    }.background(.regularMaterial)
-                }
-            }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .wrapIf(sizeClass == .regular) { content in
+            content.inspector(isPresented: $inspectorIsDisplaying) { panel() }
+        } else: { content in
+            content.sheet(isPresented: $inspectorIsDisplaying) { panel() }
         }
         .navigationTitle("App.tools.model3d-viewer")
-        .task(id: retry) {
-            loading = true; error = nil; catalog = nil; wardrobe = nil
+        .task(id: "\(locale.rawValue)-\(retry)") {
+            loading = true; error = nil; configuration = nil; library = nil; selection = nil
             do {
-                let result = try await Model3DClient.shared.wardrobe()
+                let result = try await Model3DClient.shared.library(for: locale)
                 try Task.checkCancellation()
-                wardrobe = result; roleID = result.roles.first?.id ?? ""; resetSelection()
-                if result.roles.isEmpty { loading = false }
+                library = result
+                characterID = result.characters.first?.id ?? ""
+                resetSelection()
+                if configuration == nil { loading = false }
             } catch is CancellationError { } catch { self.error = error.localizedDescription; loading = false }
         }
-        .onChange(of: roleID) { resetSelection() }
-        .onChange(of: bodyID) { reconcile(changedType: "body") }
-        .onChange(of: hairID) { reconcile(changedType: "hair") }
-        .onChange(of: headID) { reconcile(changedType: "head") }
-        .onChange(of: accessoryID) { reconcile(changedType: "head_optional") }
+        .onChange(of: characterID) { resetSelection() }
+        .onChange(of: selection) { resolve() }
     }
-    private func preferred(_ value: LocalizedData<String>, fallback: String = "") -> String {
-        value.availableLocale().flatMap { value[$0] } ?? fallback
-    }
-    private func resetSelection() {
-        guard let wardrobe, let role, let locale = wardrobe.preferredLocale(for: roleID), let defaults = role.defaults[locale] else { return }
-        bodyID = defaults.bodyCostumeID; hairID = defaults.hairCostumeID; headID = defaults.headCostumeID; accessoryID = 0
-        reconcile(changedType: "body")
-    }
-    private func reconcile(changedType: String) {
-        guard let wardrobe, let role else { return }
-        let values = ["body": bodyID, "hair": hairID, "head": headID, "head_optional": accessoryID]
-        let selected = role.parts.filter { values[$0.type] == $0.costumeID }
-        let changed = selected.filter { $0.type == changedType }
-        // Keep a coherent source. If a newly chosen regional exclusive is incompatible,
-        // use that source's defaults for the other pieces instead of mixing rig versions.
-        guard let locale = wardrobe.preferredLocale(for: roleID, requiring: selected.map(\.id))
-                ?? wardrobe.preferredLocale(for: roleID, requiring: changed.map(\.id)),
-              let defaults = role.defaults[locale] else { return }
-        if !selected.contains(where: { $0.type == "body" && $0.locales.contains(locale) }) { bodyID = defaults.bodyCostumeID }
-        if !selected.contains(where: { $0.type == "hair" && $0.locales.contains(locale) }) { hairID = defaults.hairCostumeID }
-        if !selected.contains(where: { $0.type == "head" && $0.locales.contains(locale) }) { headID = defaults.headCostumeID }
-        if !selected.contains(where: { $0.type == "head_optional" && $0.locales.contains(locale) }) { accessoryID = 0 }
-        do { catalog = try wardrobe.catalog(for: locale) }
-        catch { self.error = error.localizedDescription; loading = false }
-    }
-    private func partPicker(_ title: LocalizedStringKey, type: String, selection: Binding<Int>, role: Model3DWardrobe.Role, includesNone: Bool = false) -> some View {
-        Picker(title, selection: selection) {
-            if includesNone { Text("Model3D.none").tag(type == "head" ? (catalog?.roles.first { $0.id == role.id }?.headCostumeID ?? 0) : 0) }
-            ForEach(role.parts.filter { $0.type == type && (!includesNone || $0.costumeID != catalog?.roles.first { $0.id == role.id }?.headCostumeID) }) { part in
-                let locales = part.locales.count < (wardrobe?.regions.allAvailableLocales.count ?? 5) ? " · " + part.locales.map { $0.rawValue.uppercased() }.joined(separator: "/") : ""
-                Text(verbatim: preferred(part.name) + " · " + preferred(part.colorName) + locales).tag(part.costumeID)
+
+    private func panel() -> some View {
+        VStack(spacing: 0) {
+            if sizeClass == .compact {
+                Picker(selection: $inspectorTab) {
+                    ForEach(ModelInspectorTab.allCases, id: \.self) { item in
+                        Text(item.localizedLabel).tag(Optional(item))
+                    }
+                } label: {
+                    Label("Model-3d.inspector", systemImage: "sidebar.trailing")
+                }
+                .pickerStyle(.palette)
+                .labelsHidden()
+                .padding()
             }
+            switch inspectorTab {
+            case .character:
+                Form {
+                    LocalePicker($locale) { Text("Model-3d.region") }
+//                    if let library {
+                        Picker("Model-3d.character", selection: $characterID) {
+                            ForEach(Unit.allCases, id: \.self) { unit in
+                                Section(unit.localizedName) {
+                                    ForEach(unit.members, id: \.self) { item in
+                                        Text(SekaiCache.preCache.character(id: item)?.fullName.forLocale(locale) ?? String(localized: "Info.unknown"))
+                                            .typesettingLanguage(.explicit(locale.nsLocale.language))
+                                            .tag(item)
+                                    }
+                                }
+                            }
+//                            ForEach(library.characters) { character in
+//                                Text(SekaiCache.preCache.character(id: character.characterID)?.fullName.forLocale(locale) ?? character.name ?? String(character.characterID))
+//                                    .typesettingLanguage(.explicit(locale.nsLocale.language))
+//                                    .tag(character.id)
+//                            }
+                        }
+                    
+//                    }
+                    Section("Model-3d.view") {
+                        LabeledContent("Model-3d.view.zoom") {
+                            HStack {
+                                Text(viewControls.zoom, format: .percent.precision(.fractionLength(0)))
+                                    .monospacedDigit()
+                                    .foregroundStyle(.primary)
+                                Stepper("Model-3d.view.zoom", value: $viewControls.zoom, in: 0.5...3, step: 0.1)
+                                    .labelsHidden()
+                            }
+                        }
+                        Button(action: viewControls.reset) {
+                            Label("Model-3d.view.reset", systemImage: "arrow.counterclockwise")
+                        }
+                    }
+                    .disabled(loading || error != nil || !viewControls.isEnabled)
+                }
+                .formStyle(.grouped)
+            case .costume, .hairstyle, .accessory:
+                if let character, let inspectorTab {
+                    partBrowser(for: inspectorTab, character: character)
+                        .id("\(locale.rawValue)-\(characterID)-\(inspectorTab)")
+                } else if loading {
+                    ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ContentUnavailableView("Model-3d.empty", systemImage: "hanger")
+                }
+            case nil:
+                EmptyView()
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .presentationBackgroundInteraction(.enabled)
+    }
+
+    @ViewBuilder private func partBrowser(for tab: ModelInspectorTab, character: Model3DCharacter) -> some View {
+        switch tab {
+        case .costume:
+            Model3DPartBrowser(groups: character.costumes.map { .init(id: $0.id, name: $0.name, variants: $0.variants) },
+                               selection: binding(\.costumeID), locale: locale, tab: tab)
+        case .hairstyle:
+            Model3DPartBrowser(groups: character.hairstyles.map { .init(id: $0.id, name: $0.name, variants: $0.variants) },
+                               selection: binding(\.hairstyleID), locale: locale, tab: tab,
+                               isLocked: configuration?.hairstyleIsLocked == true)
+        case .accessory:
+            Model3DPartBrowser(groups: character.accessories.map { .init(id: $0.id, name: $0.name, variants: $0.variants) },
+                               selection: accessoryBinding, locale: locale, tab: tab, allowsNone: true)
+        case .character:
+            EmptyView()
+        }
+    }
+
+    private func resetSelection() {
+        selection = character?.defaultSelection()
+        resolve()
+    }
+
+    private func resolve() {
+        guard let library, let selection else { configuration = nil; return }
+        do {
+            let resolved = try library.resolve(selection)
+            self.selection = resolved.selection
+            configuration = resolved
+            error = nil
+        } catch { self.error = error.localizedDescription; loading = false }
+    }
+
+    private func binding(_ keyPath: WritableKeyPath<Model3DSelection, String>) -> Binding<String?> {
+        Binding(get: { selection?[keyPath: keyPath] }, set: { value in
+            guard let value else { return }
+            selection?[keyPath: keyPath] = value
+        })
+    }
+
+    private var accessoryBinding: Binding<String?> {
+        Binding(get: { selection?.accessoryID }, set: { selection?.accessoryID = $0 })
+    }
+}
+
+enum ModelInspectorTab: CaseIterable {
+    case character
+    case costume
+    case hairstyle
+    case accessory
+    
+    var symbol: String {
+        switch self {
+        case .character: "person.2"
+        case .costume: "hanger"
+        case .hairstyle: "scissors"
+        case .accessory: "crown"
+        }
+    }
+    
+    var localizedLabel: LocalizedStringResource {
+        switch self {
+        case .character: "Model-3d.inspector.character"
+        case .costume: "Model-3d.inspector.costume"
+        case .hairstyle: "Model-3d.inspector.hairstyle"
+        case .accessory: "Model-3d.inspector.accessory"
+        }
+    }
+    
+//    func countLabel(_ count: Int) -> LocalizedStringResource? {
+//        switch self {
+//        case .costume: "Model-3d.inspector.costume.\(count)"
+//        case .hairstyle: "Model-3d.inspector.hairstyle.\(count)"
+//        case .accessory: "Model-3d.inspector.accessory.\(count)"
+//        default: nil
+//        }
+//    }
+}
+
+/// Native inspector actions and the camera state reported by the active web viewer.
+@MainActor @Observable final class Model3DViewControls {
+    private var zoomValue = 1.0
+    /// Writable for Stepper/Slider bindings. Web feedback updates the backing value directly.
+    var zoom: Double {
+        get { zoomValue }
+        set {
+            guard isEnabled, newValue.isFinite else { return }
+            let value = min(3, max(0.5, newValue))
+            guard value != zoomValue else { return }
+            zoomValue = value
+            send("window.setModelViewZoom(\(value)); null")
+        }
+    }
+    
+    private(set) var isEnabled = false
+    @ObservationIgnored private weak var webView: WKWebView?
+
+    var canZoomIn: Bool { isEnabled && zoom < 3 }
+    var canZoomOut: Bool { isEnabled && zoom > 0.5 }
+
+    func attach(_ view: WKWebView) {
+        webView = view
+        zoomValue = 1
+        isEnabled = false
+    }
+
+    func isAttached(to view: WKWebView?) -> Bool {
+        guard let view else { return false }
+        return webView === view
+    }
+
+    func detach(_ view: WKWebView) {
+        guard isAttached(to: view) else { return }
+        webView = nil
+        isEnabled = false
+    }
+
+    func update(zoom: Double, enabled: Bool, from view: WKWebView) {
+        guard isAttached(to: view), zoom.isFinite, (0.5...3).contains(zoom) else { return }
+        zoomValue = zoom
+        isEnabled = enabled
+    }
+
+    func setUnavailable() { isEnabled = false }
+    func zoomIn() { if canZoomIn { send("window.zoomModelViewBy(1.2); null") } }
+    func zoomOut() { if canZoomOut { send("window.zoomModelViewBy(1 / 1.2); null") } }
+    func reset() { if isEnabled { send("window.resetModelView(); null") } }
+
+    private func send(_ script: String) {
+        guard let webView else { return }
+        webView.evaluateJavaScript(script) { [weak self, weak webView] _, error in
+            guard let self, self.isAttached(to: webView), error != nil else { return }
+            self.setUnavailable()
         }
     }
 }
 
 @MainActor final class Model3DWebCoordinator: NSObject, WKURLSchemeHandler, WKScriptMessageHandler, WKNavigationDelegate {
-    let catalog: Model3DCatalog
+    let configuration: Model3DRenderConfiguration
     var owner: Model3DWebView
     var ready = false
     var sentSelection = ""
+    private var sentColorScheme: ColorScheme?
     private var tasks: [ObjectIdentifier: Task<Void, Never>] = [:]
-    init(_ owner: Model3DWebView) { self.owner = owner; catalog = owner.catalog }
+    init(_ owner: Model3DWebView) {
+        self.owner = owner; configuration = owner.configuration
+    }
+
     func webView(_ webView: WKWebView, start urlSchemeTask: any WKURLSchemeTask) {
         let id = ObjectIdentifier(urlSchemeTask)
         tasks[id] = Task { @MainActor in
@@ -121,8 +333,9 @@ struct Model3DViewerView: View {
                 guard let url = urlSchemeTask.request.url else { throw URLError(.badURL) }
                 let data: Data
                 let path = String(url.path.dropFirst())
-                if url.host == "runtime" { data = try await Model3DClient.shared.resource(at: path, in: catalog) }
-                else {
+                if url.host == "runtime" {
+                    data = try await Model3DClient.shared.resource(at: path, in: configuration)
+                } else {
                     guard url.host == "viewer", !path.contains(".."), !path.contains("\\"),
                           let bundle = Bundle.main.url(forResource: "Model3DWeb", withExtension: "bundle") else { throw URLError(.fileDoesNotExist) }
                     data = try Data(contentsOf: bundle.appendingPathComponent(path))
@@ -140,63 +353,117 @@ struct Model3DViewerView: View {
                 let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: ["Content-Type": mime, "Access-Control-Allow-Origin": "*"])!
                 urlSchemeTask.didReceive(response); urlSchemeTask.didReceive(data); urlSchemeTask.didFinish()
             } catch {
-                if !Task.isCancelled { urlSchemeTask.didFailWithError(error) }
+                if !Task.isCancelled {
+                    urlSchemeTask.didFailWithError(error)
+                }
             }
         }
     }
+
     func webView(_ webView: WKWebView, stop urlSchemeTask: any WKURLSchemeTask) {
         tasks.removeValue(forKey: ObjectIdentifier(urlSchemeTask))?.cancel()
     }
+
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let body = message.body as? [String: String] else { return }
-        switch body["type"] {
+        guard owner.viewControls.isAttached(to: message.webView),
+              let body = message.body as? [String: Any], let type = body["type"] as? String else { return }
+        switch type {
+        case "view-state":
+            if let webView = message.webView, let zoom = body["zoom"] as? Double, let enabled = body["enabled"] as? Bool {
+                owner.viewControls.update(zoom: zoom, enabled: enabled, from: webView)
+            }
         case "ready":
             ready = true
             if let webView = message.webView {
+                updateAppearance(webView)
                 let locale = Bundle.main.preferredLocalizations.first ?? "en"
                 if let data = try? JSONSerialization.data(withJSONObject: [locale]), let json = String(data: data, encoding: .utf8) {
                     webView.evaluateJavaScript("window.setViewerLocale(\(json)[0]); null")
                 }
                 load(webView)
             }
-        case "loading": owner.loading = true; owner.error = nil
+        case "loading": owner.viewControls.setUnavailable(); owner.loading = true; owner.error = nil
         case "loaded": owner.loading = false
-        case "error": owner.loading = false; owner.error = body["message"]
+        case "error": owner.viewControls.setUnavailable(); owner.loading = false; owner.error = body["message"] as? String
         default: break
         }
     }
+
     func load(_ webView: WKWebView) {
-        guard ready, sentSelection != owner.selection else { return }
-        sentSelection = owner.selection
-        webView.evaluateJavaScript("window.loadModel(\(owner.selection)); null") { [weak self] _, error in
-            if let error { self?.owner.error = error.localizedDescription; self?.owner.loading = false }
+        updateAppearance(webView)
+        guard ready, sentSelection != owner.configuration.recipeJSON else { return }
+        sentSelection = owner.configuration.recipeJSON
+        webView.evaluateJavaScript("window.loadModel(\(owner.configuration.recipeJSON)); null") { [weak self] _, error in
+            if let error {
+                self?.owner.error = error.localizedDescription; self?.owner.loading = false
+            }
         }
     }
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { owner.error = error.localizedDescription; owner.loading = false }
-    func stop() { tasks.values.forEach { $0.cancel() }; tasks.removeAll() }
+
+    private func updateAppearance(_ webView: WKWebView) {
+        guard ready, sentColorScheme != owner.colorScheme else { return }
+        sentColorScheme = owner.colorScheme
+        let theme = owner.colorScheme == .dark ? "dark" : "light"
+        webView.evaluateJavaScript("window.setViewerColorScheme('\(theme)'); null")
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        owner.viewControls.setUnavailable()
+        owner.error = error.localizedDescription; owner.loading = false
+    }
+
+    func stop() {
+        tasks.values.forEach { $0.cancel() }; tasks.removeAll()
+    }
 }
 
 #if os(macOS)
 struct Model3DWebView: NSViewRepresentable {
-    let catalog: Model3DCatalog
-    let selection: String
+    @Environment(\.colorScheme) var colorScheme
+    let configuration: Model3DRenderConfiguration
+    let viewControls: Model3DViewControls
     @Binding var loading: Bool
     @Binding var error: String?
-    func makeCoordinator() -> Model3DWebCoordinator { Model3DWebCoordinator(self) }
-    func makeNSView(context: Context) -> WKWebView { makeWebView(context.coordinator) }
-    func updateNSView(_ view: WKWebView, context: Context) { context.coordinator.owner = self; context.coordinator.load(view) }
-    static func dismantleNSView(_ view: WKWebView, coordinator: Model3DWebCoordinator) { view.stopLoading(); coordinator.stop(); view.configuration.userContentController.removeScriptMessageHandler(forName: "model3D") }
+    func makeCoordinator() -> Model3DWebCoordinator {
+        Model3DWebCoordinator(self)
+    }
+
+    func makeNSView(context: Context) -> WKWebView {
+        makeWebView(context.coordinator)
+    }
+
+    func updateNSView(_ view: WKWebView, context: Context) {
+        context.coordinator.owner = self; context.coordinator.load(view)
+    }
+
+    static func dismantleNSView(_ view: WKWebView, coordinator: Model3DWebCoordinator) {
+        coordinator.owner.viewControls.detach(view)
+        view.stopLoading(); coordinator.stop(); view.configuration.userContentController.removeScriptMessageHandler(forName: "model3D")
+    }
 }
 #else
 struct Model3DWebView: UIViewRepresentable {
-    let catalog: Model3DCatalog
-    let selection: String
+    @Environment(\.colorScheme) var colorScheme
+    let configuration: Model3DRenderConfiguration
+    let viewControls: Model3DViewControls
     @Binding var loading: Bool
     @Binding var error: String?
-    func makeCoordinator() -> Model3DWebCoordinator { Model3DWebCoordinator(self) }
-    func makeUIView(context: Context) -> WKWebView { makeWebView(context.coordinator) }
-    func updateUIView(_ view: WKWebView, context: Context) { context.coordinator.owner = self; context.coordinator.load(view) }
-    static func dismantleUIView(_ view: WKWebView, coordinator: Model3DWebCoordinator) { view.stopLoading(); coordinator.stop(); view.configuration.userContentController.removeScriptMessageHandler(forName: "model3D") }
+    func makeCoordinator() -> Model3DWebCoordinator {
+        Model3DWebCoordinator(self)
+    }
+
+    func makeUIView(context: Context) -> WKWebView {
+        makeWebView(context.coordinator)
+    }
+
+    func updateUIView(_ view: WKWebView, context: Context) {
+        context.coordinator.owner = self; context.coordinator.load(view)
+    }
+
+    static func dismantleUIView(_ view: WKWebView, coordinator: Model3DWebCoordinator) {
+        coordinator.owner.viewControls.detach(view)
+        view.stopLoading(); coordinator.stop(); view.configuration.userContentController.removeScriptMessageHandler(forName: "model3D")
+    }
 }
 #endif
 
@@ -204,8 +471,23 @@ struct Model3DWebView: UIViewRepresentable {
     let config = WKWebViewConfiguration()
     config.setURLSchemeHandler(coordinator, forURLScheme: "sekai3d")
     config.userContentController.add(coordinator, name: "model3D")
+    let theme = coordinator.owner.colorScheme == .dark ? "dark" : "light"
+    config.userContentController.addUserScript(WKUserScript(
+        source: "window.viewerColorScheme = '\(theme)';",
+        injectionTime: .atDocumentStart,
+        forMainFrameOnly: true
+    ))
+    config.userContentController.addUserScript(WKUserScript(
+        source: "document.addEventListener('dblclick', event => event.preventDefault(), {capture: true});",
+        injectionTime: .atDocumentStart,
+        forMainFrameOnly: true
+    ))
     let view = WKWebView(frame: .zero, configuration: config)
+    coordinator.owner.viewControls.attach(view)
     view.navigationDelegate = coordinator
+    #if os(macOS)
+    view.allowsMagnification = false
+    #endif
     #if !os(macOS)
     // The canvas handles pan/pinch itself; prevent the web page from scrolling or zooming.
     view.scrollView.isScrollEnabled = false
@@ -215,3 +497,4 @@ struct Model3DWebView: UIViewRepresentable {
     view.load(URLRequest(url: URL(string: "sekai3d://viewer/index.html")!))
     return view
 }
+

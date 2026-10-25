@@ -95,6 +95,18 @@ struct ExternalLink: Hashable, Identifiable {
         self.note = note
     }
     
+    /// Use a preset only for the site's own domains, including its short-link host.
+    static func musicVideo(url: URL) -> ExternalLink {
+        let host = url.host()?.lowercased() ?? ""
+        if ["youtube.com", "youtu.be", "youtube-nocookie.com"].contains(where: { host == $0 || host.hasSuffix("." + $0) }) {
+            return ExternalLink(.youtube, url: url)
+        }
+        if ["nicovideo.jp", "nico.ms"].contains(where: { host == $0 || host.hasSuffix("." + $0) }) {
+            return ExternalLink(.niconico, url: url)
+        }
+        return ExternalLink(name: .init(stringLiteral: host.isEmpty ? url.absoluteString : host), url: url)
+    }
+
     static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 
@@ -106,6 +118,8 @@ struct ExternalLink: Hashable, Identifiable {
         case moeSekai
         case haruki
         case pjsekaiMoe
+        case youtube
+        case niconico
         
         var localizedName: LocalizedStringResource {
             switch self {
@@ -116,6 +130,8 @@ struct ExternalLink: Hashable, Identifiable {
             case .moeSekai: "External-link.moesekai"
             case .haruki: "External-link.haruki"
             case .pjsekaiMoe: "External-link.pjsekai-moe"
+            case .youtube: "External-link.youtube"
+            case .niconico: "External-link.niconico"
             }
         }
         
@@ -128,6 +144,8 @@ struct ExternalLink: Hashable, Identifiable {
             case .moeSekai: "ExternalMoeSekai"
             case .haruki: "ExternalHaruki"
             case .pjsekaiMoe: "ExternalPjsekaiMoe"
+            case .youtube: "ExternalYouTube"
+            case .niconico: "ExternalNiconico"
             }
         }
     }
@@ -174,6 +192,6 @@ private struct ExternalLinkRow: View {
         }
         .buttonStyle(.plain)
         .disabled(opening)
-        .frame(minHeight: rowHeight)
+        .frame(minHeight: rowHeight * (platform == .iOS ? 0.75 : 1))
     }
 }

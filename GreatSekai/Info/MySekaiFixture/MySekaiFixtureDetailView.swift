@@ -25,6 +25,7 @@ struct MySekaiFixtureDetailView: View {
                 }.frame(width: 240, height: 240)
             }
             FixtureMaterialsSection(fixture: fixture).id(fixture.id)
+            FixtureDialoguesSection(fixture: fixture).id(fixture.id)
             DetailArtsSection {
                 ArtsTab("Fixture.image") {
                     for locale in fixture.availableLocales {
@@ -78,6 +79,65 @@ private struct FixtureMaterialsSection: View {
         }
         .onAppear {
             if !fixture.availableLocales.contains(locale), let first = fixture.availableLocales.first { locale = first }
+        }
+    }
+}
+
+private struct FixtureDialoguesSection: View {
+    let fixture: MySekaiFixture
+    @State private var locale = SekaiLocale.primaryLocale
+    @State private var dialogues: [MySekaiFixture.Dialogue]?
+    @State private var failed = false
+    @State private var retry = 0
+
+    private func characterName(_ dialogue: MySekaiFixture.Dialogue) -> String {
+        let name = dialogue.characterID.flatMap { SekaiCache.preCache.character(id: $0) }.map {
+            $0.fullName[locale] ?? $0.fullName.forPreferredLocale() ?? "#\(dialogue.characterUnitID)"
+        } ?? "#\(dialogue.characterUnitID)"
+        if dialogue.characterID == 21, let unit = dialogue.unit { return name + " · " + unit.localizedName }
+        return name
+    }
+
+    var body: some View {
+        Section {
+            VStack(spacing: 12) {
+                if let dialogues {
+                    if dialogues.isEmpty {
+                        CustomGroupBox { Text("Fixture.dialogues.empty").foregroundStyle(.secondary) }
+                    }
+                    ForEach(dialogues) { dialogue in
+                        CustomGroupBox {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(characterName(dialogue)).font(.headline)
+                                Text(dialogue.text).frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                    }
+                } else if failed {
+                    ContentUnavailableView {
+                        Label("Story.unavailable", systemImage: "text.bubble")
+                    } actions: {
+                        Button("General.retry") { retry += 1 }
+                    }
+                } else { ProgressView() }
+            }.frame(maxWidth: infoContentMaxWidth)
+        } header: {
+            HStack {
+                Text("Fixture.dialogues").font(.title2).bold()
+                if fixture.availableLocales.count > 1 {
+                    DetailSectionOptionPicker(selection: $locale, options: fixture.availableLocales)
+                }
+                Spacer()
+            }.frame(maxWidth: infoContentMaxWidth).detailSectionHeader()
+        }
+        .task(id: "\(fixture.id)-\(locale.rawValue)-\(retry)") {
+            if !fixture.availableLocales.contains(locale), let first = fixture.availableLocales.first { locale = first; return }
+            dialogues = nil
+            failed = false
+            let result = await fixture.dialogues(in: locale)
+            guard !Task.isCancelled else { return }
+            dialogues = result
+            failed = result == nil
         }
     }
 }

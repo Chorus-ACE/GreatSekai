@@ -36,6 +36,7 @@
 		B716232D3025566C00228E92 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B716232C3025566900228E92 /* EventDetailView.swift */; };
 		B716232F3025583300228E92 /* EventDetailOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B716232E3025583300228E92 /* EventDetailOverviewView.swift */; };
 		B7850001301CE604005B6B45 /* EventInfoForHome.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7850002301CE604005B6B45 /* EventInfoForHome.swift */; };
+		B78F480CE5944D598B3C8870 /* StoryPlayerWeb.bundle in Resources */ = {isa = PBXBuildFile; fileRef = B78F480CE5944D598B3C8871 /* StoryPlayerWeb.bundle */; };
 		C0085B0BB1464490ACCFAB5C /* GreatSekaiWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C61F1100241C4822BB60D84A /* GachaDetailCardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC646889C0944306B6E14563 /* GachaDetailCardsView.swift */; };
 		D3D002AABBCC001122334455 /* Model3DViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D001AABBCC001122334455 /* Model3DViewerView.swift */; };
@@ -71,13 +72,16 @@
 		E93153472F540A45002D102D /* DetailSectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93153422F540A45002D102D /* DetailSectionsView.swift */; };
 		E938587E30304509006F22C1 /* SongDetailDifficultiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E938587D30304502006F22C1 /* SongDetailDifficultiesView.swift */; };
 		E938722630301975006F22C1 /* DetailsSongsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E938722530301975006F22C1 /* DetailsSongsSection.swift */; };
+		E95BD674308DC68D00472057 /* StoryPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95BD673308DC68D00472057 /* StoryPlayerView.swift */; };
+		E95BF01A308D379A00472057 /* CardPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95BF019308D379A00472057 /* CardPicker.swift */; };
+		E95BF01C308D386300472057 /* SongDetailMusicVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95BF01B308D386300472057 /* SongDetailMusicVideoView.swift */; };
 		E960BAD5301DF12000B86B8A /* EventSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E960BAD4301DF12000B86B8A /* EventSearchView.swift */; };
 		E98C84B5301CE604005B6B45 /* CardInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98C84B4301CE5FD005B6B45 /* CardInfoView.swift */; };
 		E98C84CF301D9413005B6B45 /* CardThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98C84CE301D9413005B6B45 /* CardThumbnail.swift */; };
 		E99FB7B4301F030E00020F06 /* CardImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99FB7B3301F030E00020F06 /* CardImage.swift */; };
 		E99FB7B6301F227700020F06 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E99FB7B5301F227700020F06 /* AppIcon.icon */; };
 		E9A92ACD3084ABD10037CFA6 /* DetailsEventsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92ACC3084ABD10037CFA6 /* DetailsEventsSection.swift */; };
-		E9A92AE73084E26D0037CFA6 /* EventPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92AE63084E26D0037CFA6 /* EventPicker.swift */; };
+		E9A92AE73084E26D0037CFA6 /* EventSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92AE63084E26D0037CFA6 /* EventSelector.swift */; };
 		E9A92AE93084E2C30037CFA6 /* StoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92AE83084E2C30037CFA6 /* StoryDetailView.swift */; };
 		E9A92B1B30852D360037CFA6 /* SelectionWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92B1A30852D360037CFA6 /* SelectionWindow.swift */; };
 		E9A92B1D30852DEF0037CFA6 /* ImageInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92B1C30852DEF0037CFA6 /* ImageInfo.swift */; };
@@ -100,6 +104,7 @@
 		E9D6676E3014EDF100F6A422 /* CardSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */; };
 		E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D667703014EE1800F6A422 /* EventInfoView.swift */; };
 		E9F40685308627B6001CEAD5 /* Sekaipedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F40684308627B6001CEAD5 /* Sekaipedia.swift */; };
+		E9F7F93B308E342200C7200A /* Model3DPartBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F7F93A308E342200C7200A /* Model3DPartBrowser.swift */; };
 		F175E196AE87424785FA95F5 /* ComicSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C2EAC179464F458A64E406 /* ComicSearchView.swift */; };
 		F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3246A9AE073042688B53578E /* MySekaiFixtureSearchView.swift */; };
 		F6EC2707B9FF4DCD87E86390 /* CardCollectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F96B168B856E4E35AE593DFD /* CardCollectionManager.swift */; };
@@ -153,11 +158,12 @@
 		B716232C3025566900228E92 /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
 		B716232E3025583300228E92 /* EventDetailOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailOverviewView.swift; sourceTree = "<group>"; };
 		B7850002301CE604005B6B45 /* EventInfoForHome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInfoForHome.swift; sourceTree = "<group>"; };
+		B78F480CE5944D598B3C8871 /* StoryPlayerWeb.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.cfbundle; name = StoryPlayerWeb.bundle; path = GreatSekai/Resources/StoryPlayerWeb.bundle; sourceTree = SOURCE_ROOT; };
 		C06F3EFF5F5D42B58D6CEFCB /* GachaDetailPaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailPaymentView.swift; sourceTree = "<group>"; };
 		CAF1C572D42A410392AF68F8 /* Live2DViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Live2DViewerView.swift; path = GreatSekai/Tools/Live2DViewer/Live2DViewerView.swift; sourceTree = SOURCE_ROOT; };
 		CC646889C0944306B6E14563 /* GachaDetailCardsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailCardsView.swift; sourceTree = "<group>"; };
 		D3D001AABBCC001122334455 /* Model3DViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Model3DViewerView.swift; path = GreatSekai/Tools/Model3DViewer/Model3DViewerView.swift; sourceTree = SOURCE_ROOT; };
-		D3D003AABBCC001122334455 /* Model3DWeb.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.cfbundle; name = Model3DWeb.bundle; path = GreatSekai/Resources/Model3DWeb.bundle; sourceTree = SOURCE_ROOT; };
+		D3D003AABBCC001122334455 /* Model3DWeb.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = Model3DWeb.bundle; path = GreatSekai/Resources/Model3DWeb.bundle; sourceTree = SOURCE_ROOT; };
 		D862E983CCD94C5769C4A538 /* StickerSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerSearchView.swift; sourceTree = "<group>"; };
 		D99306BFB1CF4087B4A201AB /* StickerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerInfo.swift; sourceTree = "<group>"; };
 		E77F48E2AF1F48D48DD857F3 /* GachaDetailRatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaDetailRatesView.swift; sourceTree = "<group>"; };
@@ -190,13 +196,16 @@
 		E93153432F540A45002D102D /* DetailArtsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailArtsView.swift; sourceTree = "<group>"; };
 		E938587D30304502006F22C1 /* SongDetailDifficultiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongDetailDifficultiesView.swift; sourceTree = "<group>"; };
 		E938722530301975006F22C1 /* DetailsSongsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsSongsSection.swift; sourceTree = "<group>"; };
+		E95BD673308DC68D00472057 /* StoryPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StoryPlayerView.swift; path = GreatSekai/Tools/StoryViewer/StoryPlayerView.swift; sourceTree = SOURCE_ROOT; };
+		E95BF019308D379A00472057 /* CardPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPicker.swift; sourceTree = "<group>"; };
+		E95BF01B308D386300472057 /* SongDetailMusicVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongDetailMusicVideoView.swift; sourceTree = "<group>"; };
 		E960BAD4301DF12000B86B8A /* EventSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSearchView.swift; sourceTree = "<group>"; };
 		E98C84B4301CE5FD005B6B45 /* CardInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardInfoView.swift; sourceTree = "<group>"; };
 		E98C84CE301D9413005B6B45 /* CardThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardThumbnail.swift; sourceTree = "<group>"; };
 		E99FB7B3301F030E00020F06 /* CardImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardImage.swift; sourceTree = "<group>"; };
 		E99FB7B5301F227700020F06 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		E9A92ACC3084ABD10037CFA6 /* DetailsEventsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsEventsSection.swift; sourceTree = "<group>"; };
-		E9A92AE63084E26D0037CFA6 /* EventPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventPicker.swift; sourceTree = "<group>"; };
+		E9A92AE63084E26D0037CFA6 /* EventSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSelector.swift; sourceTree = "<group>"; };
 		E9A92AE83084E2C30037CFA6 /* StoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StoryDetailView.swift; path = GreatSekai/Tools/StoryViewer/StoryDetailView.swift; sourceTree = SOURCE_ROOT; };
 		E9A92B1A30852D360037CFA6 /* SelectionWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionWindow.swift; sourceTree = "<group>"; };
 		E9A92B1C30852DEF0037CFA6 /* ImageInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageInfo.swift; sourceTree = "<group>"; };
@@ -219,6 +228,7 @@
 		E9D6676D3014EDEC00F6A422 /* CardSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardSearchView.swift; sourceTree = "<group>"; };
 		E9D667703014EE1800F6A422 /* EventInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInfoView.swift; sourceTree = "<group>"; };
 		E9F40684308627B6001CEAD5 /* Sekaipedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sekaipedia.swift; sourceTree = "<group>"; };
+		E9F7F93A308E342200C7200A /* Model3DPartBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Model3DPartBrowser.swift; path = GreatSekai/Tools/Model3DViewer/Model3DPartBrowser.swift; sourceTree = SOURCE_ROOT; };
 		ED49AC16127A4427C94DB2ED /* StickerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerDetailView.swift; sourceTree = "<group>"; };
 		EE87947E737C4350B7234D7B /* AppShared/CardCollectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShared/CardCollectionStore.swift; sourceTree = SOURCE_ROOT; };
 		F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = GreatSekaiWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -311,9 +321,9 @@
 			isa = PBXGroup;
 			children = (
 				2406D8CDA925482EAD99A31F /* StoryViewerView.swift */,
-				D3D003AABBCC001122334455 /* Model3DWeb.bundle */,
-				D3D001AABBCC001122334455 /* Model3DViewerView.swift */,
+				B78F480CE5944D598B3C8871 /* StoryPlayerWeb.bundle */,
 				E9A92AE83084E2C30037CFA6 /* StoryDetailView.swift */,
+				E95BD673308DC68D00472057 /* StoryPlayerView.swift */,
 			);
 			name = StoryViewer;
 			sourceTree = "<group>";
@@ -359,6 +369,7 @@
 				E938587D30304502006F22C1 /* SongDetailDifficultiesView.swift */,
 				B710591C302E9D3C00039F00 /* SongDifficultyIndicators.swift */,
 				E938722530301975006F22C1 /* DetailsSongsSection.swift */,
+				E95BF01B308D386300472057 /* SongDetailMusicVideoView.swift */,
 			);
 			path = Song;
 			sourceTree = "<group>";
@@ -379,6 +390,7 @@
 				1ADDCF3A1745468984519658 /* Live2DViewer */,
 				2E3091CBFB144A8082840C66 /* Collections */,
 				66C352CEE3E44A62A2D17DBA /* StoryViewer */,
+				E95BD681308DEAB400472057 /* 3DModelViewer */,
 			);
 			name = Tools;
 			sourceTree = "<group>";
@@ -464,6 +476,16 @@
 			path = Documents;
 			sourceTree = "<group>";
 		};
+		E95BD681308DEAB400472057 /* 3DModelViewer */ = {
+			isa = PBXGroup;
+			children = (
+				D3D003AABBCC001122334455 /* Model3DWeb.bundle */,
+				D3D001AABBCC001122334455 /* Model3DViewerView.swift */,
+				E9F7F93A308E342200C7200A /* Model3DPartBrowser.swift */,
+			);
+			path = 3DModelViewer;
+			sourceTree = "<group>";
+		};
 		E9BCABB73021F5130076FAA5 /* Localizable */ = {
 			isa = PBXGroup;
 			children = (
@@ -536,6 +558,7 @@
 				E99FB7B3301F030E00020F06 /* CardImage.swift */,
 				E98C84CE301D9413005B6B45 /* CardThumbnail.swift */,
 				E904D24B3026FBDA0012FDAD /* DetailsCardsSection.swift */,
+				E95BF019308D379A00472057 /* CardPicker.swift */,
 			);
 			path = Card;
 			sourceTree = "<group>";
@@ -549,7 +572,7 @@
 				B716232C3025566900228E92 /* EventDetailView.swift */,
 				B716232E3025583300228E92 /* EventDetailOverviewView.swift */,
 				E9A92ACC3084ABD10037CFA6 /* DetailsEventsSection.swift */,
-				E9A92AE63084E26D0037CFA6 /* EventPicker.swift */,
+				E9A92AE63084E26D0037CFA6 /* EventSelector.swift */,
 			);
 			path = Event;
 			sourceTree = "<group>";
@@ -661,6 +684,7 @@
 			files = (
 				E90629822F727BA900EDCDC6 /* Localizable.xcstrings in Resources */,
 				D3D004AABBCC001122334455 /* Model3DWeb.bundle in Resources */,
+				B78F480CE5944D598B3C8870 /* StoryPlayerWeb.bundle in Resources */,
 				E9BCABBA3021F5270076FAA5 /* InfoPlist.strings in Resources */,
 				E9C55FCC2F53F3C100DCFD2D /* Assets.xcassets in Resources */,
 				E99FB7B6301F227700020F06 /* AppIcon.icon in Resources */,
@@ -721,6 +745,7 @@
 				F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */,
 				10D7563A373B4F1B85D3D343 /* ComicInfo.swift in Sources */,
 				F175E196AE87424785FA95F5 /* ComicSearchView.swift in Sources */,
+				E95BD674308DC68D00472057 /* StoryPlayerView.swift in Sources */,
 				E9A92B1B30852D360037CFA6 /* SelectionWindow.swift in Sources */,
 				E9A92ACD3084ABD10037CFA6 /* DetailsEventsSection.swift in Sources */,
 				2131E269C7F241EBA1410EA7 /* ComicDetailView.swift in Sources */,
@@ -740,12 +765,13 @@
 				E99FB7B4301F030E00020F06 /* CardImage.swift in Sources */,
 				E9D667713014EE1A00F6A422 /* EventInfoView.swift in Sources */,
 				B7850001301CE604005B6B45 /* EventInfoForHome.swift in Sources */,
-				E9A92AE73084E26D0037CFA6 /* EventPicker.swift in Sources */,
+				E9A92AE73084E26D0037CFA6 /* EventSelector.swift in Sources */,
 				E9C55FD12F53F3C100DCFD2D /* QuickLook.swift in Sources */,
 				E938722630301975006F22C1 /* DetailsSongsSection.swift in Sources */,
 				E9C55FD22F53F3C100DCFD2D /* StableHasher.swift in Sources */,
 				B705231F3022A4EC004D6CDF /* CardDetailView.swift in Sources */,
 				E931520E2F5401D1002D102D /* WhatsNewView.swift in Sources */,
+				E95BF01C308D386300472057 /* SongDetailMusicVideoView.swift in Sources */,
 				E912B29A2F6FE2C200B7220C /* CharacterDetailOverviewView.swift in Sources */,
 				B7105918302E9C5000039F00 /* SongSearchView.swift in Sources */,
 				B7105919302E9C5000039F00 /* SongDetailOverviewView.swift in Sources */,
@@ -776,6 +802,7 @@
 				E93152BB2F540621002D102D /* Acknowledgements.swift in Sources */,
 				E93152BF2F540621002D102D /* SettingsAboutView.swift in Sources */,
 				E960BAD5301DF12000B86B8A /* EventSearchView.swift in Sources */,
+				E9F7F93B308E342200C7200A /* Model3DPartBrowser.swift in Sources */,
 				E93152C02F540621002D102D /* SettingsLocaleView.swift in Sources */,
 				E9D6676E3014EDF100F6A422 /* CardSearchView.swift in Sources */,
 				E93152142F5401D1002D102D /* ContentView.swift in Sources */,
@@ -785,6 +812,7 @@
 				B716232F3025583300228E92 /* EventDetailOverviewView.swift in Sources */,
 				E9CB981F2F5FC20B00F9BBEC /* CharacterDetailView.swift in Sources */,
 				E93152172F5401D1002D102D /* ExternalLinks.swift in Sources */,
+				E95BF01A308D379A00472057 /* CardPicker.swift in Sources */,
 				E904D24C3026FBDA0012FDAD /* DetailsCardsSection.swift in Sources */,
 				E9C55FD32F53F3C100DCFD2D /* TypeNames.swift in Sources */,
 				E9C55FD42F53F3C100DCFD2D /* ViewModifiers.swift in Sources */,

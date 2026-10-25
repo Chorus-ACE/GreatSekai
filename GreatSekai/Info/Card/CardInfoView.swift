@@ -19,21 +19,27 @@ struct CardInfo: View {
     
     private var card: Card
     private var displayType: CardImageDisplayType
+    private var locale: SekaiLocale?
     private var characterName: LocalizedData<String>?
     @State var isNormalCardAvailable = true
     
     @Environment(\.horizontalSizeClass) var sizeClass
     
-    init(_ card: Card, layoutType: Int = 1, displayType: CardImageDisplayType = .both) {
+    init(_ card: Card, layoutType: Int = 1, displayType: CardImageDisplayType = .both, locale: SekaiLocale? = nil) {
         self.card = card
         self.layoutType = layoutType
         self.displayType = displayType
+        self.locale = locale
         
         self.characterName = SekaiCache.preCache.character(id: card.characterID)?.fullName
     }
     
+    private var displayCharacterName: String {
+        locale.flatMap { characterName?[$0] } ?? characterName?.forPreferredLocale() ?? String(localized: "Info.unknown")
+    }
+
     var body: some View {
-        SummaryViewBase(layoutType == 1 ? .horizontal : .vertical(), source: card) {
+        SummaryViewBase(layoutType == 1 ? .horizontal : .vertical(), title: locale.map { .unlocalized(card.name.localizedData?[$0] ?? card.name.majorValue) } ?? card.name) {
             Group {
                 if layoutType != 3 {
                     HStack(spacing: 5) {
@@ -58,11 +64,11 @@ struct CardInfo: View {
             .accessibilityHidden(true)
         } detail: {
             Group {
-                Text(characterName?.forPreferredLocale() ?? String(localized: "Info.unknown")) + Text("Typography.bold-dot-seperater").bold() + Text(card.sourceType.localizedName)
+                Text(displayCharacterName) + Text("Typography.bold-dot-seperater").bold() + Text(card.sourceType.localizedName)
             }
             .foregroundStyle(.secondary)
             .font(platform == .macOS ? .body : .caption)
-            .accessibilityLabel(String("\(characterName?.forPreferredLocale() ?? String(localized: "Info.unknown")), \(card.sourceType.localizedName)"))
+            .accessibilityLabel(String("\(displayCharacterName), \(card.sourceType.localizedName)"))
         }
         .onChange(of: card.beforeTrainingThumbnailURL) {
             isNormalCardAvailable = true

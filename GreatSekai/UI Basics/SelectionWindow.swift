@@ -58,6 +58,10 @@ private struct SelectionWindowPresenter: NSViewRepresentable {
                 window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
                 window.isReleasedWhenClosed = false
                 window.isRestorable = false
+                window.standardWindowButton(.zoomButton)?.isEnabled = false
+                window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
+                window.collectionBehavior = [.fullScreenAuxiliary, .fullScreenNone]
+                window.level = .floating
                 window.title = title
                 window.setContentSize(NSSize(width: 850, height: 650))
                 window.minSize = NSSize(width: 420, height: 400)

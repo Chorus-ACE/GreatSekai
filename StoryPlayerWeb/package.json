@@ -1,0 +1,14 @@
+{
+  "name": "greatsekai-story-player",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "pjsk-scenario-player": "https://github.com/Team-Haruki/sekai-scenario-player/releases/download/v0.5.2/pjsk-scenario-player-0.5.2.tgz",
+    "pixi.js": "7.4.3"
+  },
+  "devDependencies": { "vite": "6.4.5" }
+}

@@ -99,10 +99,11 @@ import SwiftUI
 ]
 
 @MainActor let allToolsDestinationItems: [ToolDestinationItem] = [
+    ToolDestinationItem(title: "App.tools.story-viewer", symbol: "text.bubble", tabValue: .storyViewer, destination: { StoryViewerView() }),
     ToolDestinationItem(title: "App.tools.model3d-viewer", symbol: "cube.transparent", tabValue: .model3DViewer, destination: { Model3DViewerView() }),
     ToolDestinationItem(title: "App.tools.music-meta", symbol: "music.note.list", tabValue: .musicMeta, destination: { MusicMetaView() }),
 //    ToolDestinationItem(title: "App.tools.live2d-viewer", symbol: "person.and.viewfinder", tabValue: .live2dViewer, destination: { Live2DViewerView() }),
-    ToolDestinationItem(title: "App.tools.story-viewer", symbol: "text.bubble", tabValue: .storyViewer, destination: { StoryViewerView() }),
+    
     ToolDestinationItem(title: "Collections.title", symbol: "rectangle.stack", tabValue: .collections, destination: { CardCollectionsView() }),
 //    ToolDestinationItem(
 //        title: "App.tools.event-tracker",
