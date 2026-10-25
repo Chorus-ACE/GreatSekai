@@ -120,29 +120,29 @@ struct Model3DViewerView: View {
                 .labelsHidden()
                 .padding()
             }
+            
             switch inspectorTab {
             case .character:
                 Form {
                     LocalePicker($locale) { Text("Model-3d.region") }
-//                    if let library {
+
+                    if let library {
                         Picker("Model-3d.character", selection: $characterID) {
-                            ForEach(Unit.allCases, id: \.self) { unit in
-                                Section(unit.localizedName) {
-                                    ForEach(unit.members, id: \.self) { item in
-                                        Text(SekaiCache.preCache.character(id: item)?.fullName.forLocale(locale) ?? String(localized: "Info.unknown"))
-                                            .typesettingLanguage(.explicit(locale.nsLocale.language))
-                                            .tag(item)
+                            ForEach(Unit.allSupportableUnits + [.virtualSinger], id: \.self) { unit in
+                                let members = library.characters.filter({ unit.rawValue == $0.unitID })
+                                if !members.isEmpty {
+                                    Section(unit.localizedName) {
+                                        ForEach(members) { item in
+                                            Text(SekaiCache.preCache.character(id: item.characterID)?.fullName.forLocale(locale) ?? String(localized: "Info.unknown"))
+                                                .typesettingLanguage(.explicit(locale.nsLocale.language))
+                                                .tag(item.id)
+                                        }
                                     }
                                 }
                             }
-//                            ForEach(library.characters) { character in
-//                                Text(SekaiCache.preCache.character(id: character.characterID)?.fullName.forLocale(locale) ?? character.name ?? String(character.characterID))
-//                                    .typesettingLanguage(.explicit(locale.nsLocale.language))
-//                                    .tag(character.id)
-//                            }
                         }
+                    }
                     
-//                    }
                     Section("Model-3d.view") {
                         LabeledContent("Model-3d.view.zoom") {
                             HStack {
@@ -160,6 +160,7 @@ struct Model3DViewerView: View {
                     .disabled(loading || error != nil || !viewControls.isEnabled)
                 }
                 .formStyle(.grouped)
+                
             case .costume, .hairstyle, .accessory:
                 if let character, let inspectorTab {
                     partBrowser(for: inspectorTab, character: character)
@@ -169,7 +170,7 @@ struct Model3DViewerView: View {
                 } else {
                     ContentUnavailableView("Model-3d.empty", systemImage: "hanger")
                 }
-            case nil:
+            default:
                 EmptyView()
             }
         }
