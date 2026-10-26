@@ -108,6 +108,7 @@
 		F175E196AE87424785FA95F5 /* ComicSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C2EAC179464F458A64E406 /* ComicSearchView.swift */; };
 		F600C7FB7DCF49D5B85E03E3 /* MySekaiFixtureSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3246A9AE073042688B53578E /* MySekaiFixtureSearchView.swift */; };
 		F6EC2707B9FF4DCD87E86390 /* CardCollectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F96B168B856E4E35AE593DFD /* CardCollectionManager.swift */; };
+		E4D24C1FC7854F8FB25BF8DD /* Model3DDeviceExperimentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B5A4CAF0234B5F96A76469 /* Model3DDeviceExperimentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -234,6 +235,7 @@
 		F3E3A78D9B14492598D312A5 /* GreatSekaiWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = GreatSekaiWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F87278AA85A547ED836C6684 /* MySekaiFixtureDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MySekaiFixtureDetailView.swift; path = GreatSekai/Info/MySekaiFixture/MySekaiFixtureDetailView.swift; sourceTree = SOURCE_ROOT; };
 		F96B168B856E4E35AE593DFD /* CardCollectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CardCollectionManager.swift; path = GreatSekai/Tools/Collections/CardCollectionManager.swift; sourceTree = SOURCE_ROOT; };
+		D3B5A4CAF0234B5F96A76469 /* Model3DDeviceExperimentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Model3DDeviceExperimentView.swift; path = GreatSekai/Tools/Model3DViewer/Model3DDeviceExperimentView.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -482,6 +484,7 @@
 				D3D003AABBCC001122334455 /* Model3DWeb.bundle */,
 				D3D001AABBCC001122334455 /* Model3DViewerView.swift */,
 				E9F7F93A308E342200C7200A /* Model3DPartBrowser.swift */,
+				D3B5A4CAF0234B5F96A76469 /* Model3DDeviceExperimentView.swift */,
 			);
 			path = 3DModelViewer;
 			sourceTree = "<group>";
@@ -803,6 +806,7 @@
 				E93152BF2F540621002D102D /* SettingsAboutView.swift in Sources */,
 				E960BAD5301DF12000B86B8A /* EventSearchView.swift in Sources */,
 				E9F7F93B308E342200C7200A /* Model3DPartBrowser.swift in Sources */,
+				E4D24C1FC7854F8FB25BF8DD /* Model3DDeviceExperimentView.swift in Sources */,
 				E93152C02F540621002D102D /* SettingsLocaleView.swift in Sources */,
 				E9D6676E3014EDF100F6A422 /* CardSearchView.swift in Sources */,
 				E93152142F5401D1002D102D /* ContentView.swift in Sources */,

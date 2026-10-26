@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
+import SekaiKit
 
 struct AcknowledgementItem: Equatable, Hashable {
     var title: String
@@ -50,6 +51,8 @@ let codeSnippetAcknowledgements = _codeSnippetAcknowledgements()
 
 @AcknowledgementBuilder
 private func _packageAcknowledgements() -> [AcknowledgementItem] {
+    AcknowledgementItem("AssetStudio / Texture2DDecoder / FP16", licenseName: "MIT", content: Model3DDeviceClient.thirdPartyNotices)
+
     if let bundle = Bundle.main.url(forResource: "Model3DWeb", withExtension: "bundle"),
        let notices = try? String(contentsOf: bundle.appendingPathComponent("ThirdPartyNotices.txt"), encoding: .utf8) {
         AcknowledgementItem(
