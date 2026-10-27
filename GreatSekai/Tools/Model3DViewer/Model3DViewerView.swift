@@ -5,8 +5,9 @@ import WebKit
 
 struct Model3DViewerView: View {
     @State private var locale: SekaiLocale = .primaryLocale
-    @State private var library: Model3DLibrary?
-    @State private var configuration: Model3DRenderConfiguration?
+    @State private var library: Model3DLocalLibrary?
+    @State private var wardrobe: Model3DLocalWardrobe?
+    @State private var configuration: Model3DLocalRenderConfiguration?
     @State private var characterID = ""
     @State private var selection: Model3DSelection?
     @State private var error: String?
@@ -20,43 +21,49 @@ struct Model3DViewerView: View {
     @Environment(\.horizontalSizeClass) var sizeClass
 
     private var character: Model3DCharacter? {
-        library?.characters.first { $0.id == characterID }
+        wardrobe?.character
     }
 
     var body: some View {
-        ZStack {
-            if let configuration {
-                Model3DWebView(configuration: configuration, viewControls: viewControls, loading: $loading, error: $error)
-                    .id("\(configuration.locale.rawValue)-\(configuration.revision)-\(retry)")
-            } else if !loading, error == nil {
-                ContentUnavailableView("Model-3d.empty", systemImage: "cube.transparent")
-            }
-            
-            if loading || error != nil {
-                Rectangle()
-                    .foregroundStyle(.black)
-                    .opacity(0.3)
-            }
-            
-            if loading {
-                ProgressView()
-            }
-            
-            if let error {
-                VStack {
-                    ContentUnavailableView("Model-3d.error", systemImage: "exclamationmark.circle", description: Text(error))
-                    Button("Model-3d.retry") {
-                        retry += 1
-                    }
-                    .buttonStyle(.bordered)
+        GeometryReader { geometry in
+            ZStack {
+                if let configuration {
+                    Model3DWebView(configuration: configuration, viewControls: viewControls, viewportInsets: geometry.safeAreaInsets, loading: $loading, error: $error)
+                        .id("\(configuration.locale.rawValue)-\(configuration.revision)-\(retry)")
+                        .ignoresSafeArea()
+                } else if !loading, error == nil {
+                    ContentUnavailableView("Model-3d.empty", systemImage: "cube.transparent")
                 }
-                .padding()
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+
+                    Rectangle()
+                        .foregroundStyle(.black)
+                        .ignoresSafeArea()
+                        .opacity(loading || error != nil ? 0.3 : 0)
+                        .animation(.easeInOut(duration: 0.35), value: loading)
+                        .animation(.easeInOut(duration: 0.35), value: error)
+
+
+                if loading {
+                    ProgressView()
+                }
+
+                if let error {
+                    VStack {
+                        ContentUnavailableView("Model-3d.error", systemImage: "exclamationmark.circle", description: Text(error))
+                        Button("Model-3d.retry") {
+                            retry += 1
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    .padding()
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                if sizeClass == .regular {
+                #if os(macOS)
                     Picker(selection: Binding.init(get: {
                         inspectorTab
                     }, set: {
@@ -76,13 +83,13 @@ struct Model3DViewerView: View {
                         Label("Model-3d.inspector", systemImage: "sidebar.trailing")
                     })
                     .pickerStyle(.inline)
-                } else {
+                #else
                     Button(action: {
                         inspectorIsDisplaying.toggle()
                     }, label: {
-                        Label("Model-3d.inspector", systemImage: "sidebar.trailing")
+                        Label("Model-3d.inspector", systemImage: "hanger")
                     })
-                }
+                #endif
             }
         }
         .wrapIf(sizeClass == .regular) { content in
@@ -91,24 +98,43 @@ struct Model3DViewerView: View {
             content.sheet(isPresented: $inspectorIsDisplaying) { panel() }
         }
         .navigationTitle("App.tools.model3d-viewer")
+        #if os(iOS)
+        .toolbarBackground(.hidden, for: .navigationBar, .tabBar)
+        #endif
         .task(id: "\(locale.rawValue)-\(retry)") {
-            loading = true; error = nil; configuration = nil; library = nil; selection = nil
+            loading = true; error = nil; configuration = nil; library = nil; selection = nil; wardrobe = nil
             do {
-                let result = try await Model3DClient.shared.library(for: locale)
+                let result = try await Model3DLocalClient.shared.library(for: locale)
                 try Task.checkCancellation()
                 library = result
-                characterID = result.characters.first?.id ?? ""
-                resetSelection()
-                if configuration == nil { loading = false }
-            } catch is CancellationError { } catch { self.error = error.localizedDescription; loading = false }
+                characterID = result.roles.first?.id ?? ""
+            } catch is CancellationError { } catch { if !Task.isCancelled { self.error = error.localizedDescription; loading = false } }
         }
-        .onChange(of: characterID) { resetSelection() }
-        .onChange(of: selection) { resolve() }
+        .task(id: "\(locale.rawValue)-\(characterID)-\(library?.revision ?? "")") {
+            guard let library, !characterID.isEmpty else { return }
+            loading = true; error = nil; configuration = nil; selection = nil; wardrobe = nil
+            do {
+                let result = try await Model3DLocalClient.shared.wardrobe(for: characterID, in: library)
+                try Task.checkCancellation()
+                wardrobe = result
+                resetSelection()
+                if selection == nil { loading = false }
+            } catch is CancellationError { } catch { if !Task.isCancelled { self.error = error.localizedDescription; loading = false } }
+        }
+        .task(id: selection) {
+            guard let wardrobe, let selection else { return }
+            loading = true; error = nil; viewControls.setUnavailable()
+            do {
+                let result = try await Model3DLocalClient.shared.prepare(selection, in: wardrobe)
+                try Task.checkCancellation()
+                configuration = result
+            } catch is CancellationError { } catch { if !Task.isCancelled { self.error = error.localizedDescription; loading = false } }
+        }
     }
 
     private func panel() -> some View {
         VStack(spacing: 0) {
-            if sizeClass == .compact {
+            #if os(iOS)
                 Picker(selection: $inspectorTab) {
                     ForEach(ModelInspectorTab.allCases, id: \.self) { item in
                         Text(item.localizedLabel).tag(Optional(item))
@@ -119,7 +145,7 @@ struct Model3DViewerView: View {
                 .pickerStyle(.palette)
                 .labelsHidden()
                 .padding()
-            }
+            #endif
             
             switch inspectorTab {
             case .character:
@@ -129,7 +155,7 @@ struct Model3DViewerView: View {
                     if let library {
                         Picker("Model-3d.character", selection: $characterID) {
                             ForEach(Unit.allSupportableUnits + [.virtualSinger], id: \.self) { unit in
-                                let members = library.characters.filter({ unit.rawValue == $0.unitID })
+                                let members = library.roles.filter({ unit.rawValue == $0.unitID })
                                 if !members.isEmpty {
                                     Section(unit.localizedName) {
                                         ForEach(members) { item in
@@ -191,24 +217,13 @@ struct Model3DViewerView: View {
         case .accessory:
             Model3DPartBrowser(groups: character.accessories.map { .init(id: $0.id, name: $0.name, variants: $0.variants) },
                                selection: accessoryBinding, locale: locale, tab: tab, allowsNone: true)
-        case .character:
+        default:
             EmptyView()
         }
     }
 
     private func resetSelection() {
         selection = character?.defaultSelection()
-        resolve()
-    }
-
-    private func resolve() {
-        guard let library, let selection else { configuration = nil; return }
-        do {
-            let resolved = try library.resolve(selection)
-            self.selection = resolved.selection
-            configuration = resolved
-            error = nil
-        } catch { self.error = error.localizedDescription; loading = false }
     }
 
     private func binding(_ keyPath: WritableKeyPath<Model3DSelection, String>) -> Binding<String?> {
@@ -316,14 +331,15 @@ enum ModelInspectorTab: CaseIterable {
 }
 
 @MainActor final class Model3DWebCoordinator: NSObject, WKURLSchemeHandler, WKScriptMessageHandler, WKNavigationDelegate {
-    let configuration: Model3DRenderConfiguration
     var owner: Model3DWebView
     var ready = false
     var sentSelection = ""
     private var sentColorScheme: ColorScheme?
+    private var sentViewportInsets: EdgeInsets?
     private var tasks: [ObjectIdentifier: Task<Void, Never>] = [:]
+    private var recentConfigurations: [Model3DLocalRenderConfiguration] = []
     init(_ owner: Model3DWebView) {
-        self.owner = owner; configuration = owner.configuration
+        self.owner = owner
     }
 
     func webView(_ webView: WKWebView, start urlSchemeTask: any WKURLSchemeTask) {
@@ -335,7 +351,16 @@ enum ModelInspectorTab: CaseIterable {
                 let data: Data
                 let path = String(url.path.dropFirst())
                 if url.host == "runtime" {
-                    data = try await Model3DClient.shared.resource(at: path, in: configuration)
+                    // An in-flight texture may belong to the model being replaced.
+                    // Keep a few immutable plans until the JavaScript load queue drains.
+                    let plans = recentConfigurations.reversed()
+                    var resource: Data?
+                    for plan in plans {
+                        if let value = try? await Model3DLocalClient.shared.resource(at: path, in: plan) { resource = value; break }
+                        try Task.checkCancellation()
+                    }
+                    guard let resource else { throw URLError(.fileDoesNotExist) }
+                    data = resource
                 } else {
                     guard url.host == "viewer", !path.contains(".."), !path.contains("\\"),
                           let bundle = Bundle.main.url(forResource: "Model3DWeb", withExtension: "bundle") else { throw URLError(.fileDoesNotExist) }
@@ -392,8 +417,11 @@ enum ModelInspectorTab: CaseIterable {
 
     func load(_ webView: WKWebView) {
         updateAppearance(webView)
+        updateViewport(webView)
         guard ready, sentSelection != owner.configuration.recipeJSON else { return }
         sentSelection = owner.configuration.recipeJSON
+        recentConfigurations.append(owner.configuration)
+        if recentConfigurations.count > 8 { recentConfigurations.removeFirst(recentConfigurations.count - 8) }
         webView.evaluateJavaScript("window.loadModel(\(owner.configuration.recipeJSON)); null") { [weak self] _, error in
             if let error {
                 self?.owner.error = error.localizedDescription; self?.owner.loading = false
@@ -406,6 +434,12 @@ enum ModelInspectorTab: CaseIterable {
         sentColorScheme = owner.colorScheme
         let theme = owner.colorScheme == .dark ? "dark" : "light"
         webView.evaluateJavaScript("window.setViewerColorScheme('\(theme)'); null")
+    }
+
+    private func updateViewport(_ webView: WKWebView) {
+        guard ready, sentViewportInsets != owner.viewportInsets else { return }
+        sentViewportInsets = owner.viewportInsets
+        webView.evaluateJavaScript("window.setViewerViewportInsets(...\(owner.viewportInsetsJavaScript)); null")
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
@@ -421,8 +455,9 @@ enum ModelInspectorTab: CaseIterable {
 #if os(macOS)
 struct Model3DWebView: NSViewRepresentable {
     @Environment(\.colorScheme) var colorScheme
-    let configuration: Model3DRenderConfiguration
+    let configuration: Model3DLocalRenderConfiguration
     let viewControls: Model3DViewControls
+    var viewportInsets = EdgeInsets()
     @Binding var loading: Bool
     @Binding var error: String?
     func makeCoordinator() -> Model3DWebCoordinator {
@@ -439,14 +474,15 @@ struct Model3DWebView: NSViewRepresentable {
 
     static func dismantleNSView(_ view: WKWebView, coordinator: Model3DWebCoordinator) {
         coordinator.owner.viewControls.detach(view)
-        view.stopLoading(); coordinator.stop(); view.configuration.userContentController.removeScriptMessageHandler(forName: "model3D")
+        view.evaluateJavaScript("window.disposeModelViewer?.(); null"); view.stopLoading(); coordinator.stop(); view.configuration.userContentController.removeScriptMessageHandler(forName: "model3D")
     }
 }
 #else
 struct Model3DWebView: UIViewRepresentable {
     @Environment(\.colorScheme) var colorScheme
-    let configuration: Model3DRenderConfiguration
+    let configuration: Model3DLocalRenderConfiguration
     let viewControls: Model3DViewControls
+    var viewportInsets = EdgeInsets()
     @Binding var loading: Bool
     @Binding var error: String?
     func makeCoordinator() -> Model3DWebCoordinator {
@@ -463,18 +499,31 @@ struct Model3DWebView: UIViewRepresentable {
 
     static func dismantleUIView(_ view: WKWebView, coordinator: Model3DWebCoordinator) {
         coordinator.owner.viewControls.detach(view)
-        view.stopLoading(); coordinator.stop(); view.configuration.userContentController.removeScriptMessageHandler(forName: "model3D")
+        view.evaluateJavaScript("window.disposeModelViewer?.(); null"); view.stopLoading(); coordinator.stop(); view.configuration.userContentController.removeScriptMessageHandler(forName: "model3D")
     }
 }
 #endif
+
+private extension Model3DWebView {
+    var viewportInsetsJavaScript: String {
+        // CSS pixels and SwiftUI points share the same viewport scale.
+        let values = [viewportInsets.top, viewportInsets.trailing, viewportInsets.bottom, viewportInsets.leading]
+        return "[" + values.map { String(Double($0.isFinite ? max(0, $0) : 0)) }.joined(separator: ",") + "]"
+    }
+}
 
 @MainActor private func makeWebView(_ coordinator: Model3DWebCoordinator) -> WKWebView {
     let config = WKWebViewConfiguration()
     config.setURLSchemeHandler(coordinator, forURLScheme: "sekai3d")
     config.userContentController.add(coordinator, name: "model3D")
+    config.userContentController.addUserScript(WKUserScript(
+        source: "window.addEventListener('error', e => window.webkit.messageHandlers.model3D.postMessage({type:'error',message:String(e.error ?? e.message)})); window.addEventListener('unhandledrejection', e => window.webkit.messageHandlers.model3D.postMessage({type:'error',message:String(e.reason)}));",
+        injectionTime: .atDocumentStart,
+        forMainFrameOnly: true
+    ))
     let theme = coordinator.owner.colorScheme == .dark ? "dark" : "light"
     config.userContentController.addUserScript(WKUserScript(
-        source: "window.viewerColorScheme = '\(theme)';",
+        source: "window.viewerColorScheme = '\(theme)'; window.viewerViewportInsets = \(coordinator.owner.viewportInsetsJavaScript);",
         injectionTime: .atDocumentStart,
         forMainFrameOnly: true
     ))
@@ -492,8 +541,14 @@ struct Model3DWebView: UIViewRepresentable {
     #if !os(macOS)
     // The canvas handles pan/pinch itself; prevent the web page from scrolling or zooming.
     view.scrollView.isScrollEnabled = false
+    view.scrollView.contentInsetAdjustmentBehavior = .never
     view.scrollView.bounces = false
     view.scrollView.pinchGestureRecognizer?.isEnabled = false
+    if #available(iOS 26.0, *) {
+        // WebKit owns this scroll view, so SwiftUI's scroll-edge modifiers do
+        // not remove its automatic backdrop behind the navigation title.
+        view.scrollView.topEdgeEffect.isHidden = true
+    }
     #endif
     view.load(URLRequest(url: URL(string: "sekai3d://viewer/index.html")!))
     return view
