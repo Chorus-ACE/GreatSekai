@@ -316,7 +316,7 @@ struct HomeBirthdayView: View {
         } else if showBirthdayDate == 1 {
             return systemBirthdays != nil && birthdays != nil && (systemBirthdays != birthdays)
         }
-        return true
+        return false
     }
 }
 

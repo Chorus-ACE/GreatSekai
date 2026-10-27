@@ -114,16 +114,6 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
             }
         }
         .navigationTitle(Text(information?.title.majorValue ?? (platform == .macOS ? String(localized: String.LocalizationValue(PreviewInformation.singularName.key)) : "")))
-        #if os(iOS)
-        .wrapIf(showSubtitle) { content in
-            if #available(iOS 26, macOS 14.0, *) {
-                content
-                    .navigationSubtitle(information?.title != nil ? "#\(String(currentID))" : "")
-            } else {
-                content
-            }
-        }
-        #endif
         .onChange(of: currentID) {
             Task {
                 await getInformation(id: currentID)

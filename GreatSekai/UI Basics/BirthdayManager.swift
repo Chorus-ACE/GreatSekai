@@ -53,7 +53,7 @@ class BirthdayManager {
     
     static func isTodayTheirBirthday(_ birthday: Date) -> Bool {
         Self.isSameDay(
-            date1: birthday, timeZone1: .current,
+            date1: birthday, timeZone1: .JST,
             date2: .now, timeZone2: .current)
     }
     

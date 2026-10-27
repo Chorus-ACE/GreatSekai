@@ -5980,6 +5980,7 @@
       }
     },
     "Model-3d.browser.colors.%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6006,18 +6007,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The selected accessory includes its own hairstyle. Choose another accessory to change hair."
+            "value" : "Change an accessory to unlock hairstyle settings."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "当前头饰包含发型，更换头饰后可单独选择发型。"
+            "value" : "更换头饰以解锁发型设置。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "目前頭飾包含髮型，更換頭飾後可單獨選擇髮型。"
           }
         }
@@ -6056,6 +6057,7 @@
       }
     },
     "Model-3d.device.cached" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6078,6 +6080,7 @@
       }
     },
     "Model-3d.device.catalog-source" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6100,6 +6103,7 @@
       }
     },
     "Model-3d.device.character" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6122,6 +6126,7 @@
       }
     },
     "Model-3d.device.converted" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6144,6 +6149,7 @@
       }
     },
     "Model-3d.device.downloaded" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6166,6 +6172,7 @@
       }
     },
     "Model-3d.device.duration" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6188,6 +6195,7 @@
       }
     },
     "Model-3d.device.empty" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6210,6 +6218,7 @@
       }
     },
     "Model-3d.device.note" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6232,6 +6241,7 @@
       }
     },
     "Model-3d.device.online" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6254,6 +6264,7 @@
       }
     },
     "Model-3d.device.part" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6276,6 +6287,7 @@
       }
     },
     "Model-3d.device.pending" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6298,6 +6310,7 @@
       }
     },
     "Model-3d.device.process" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6320,6 +6333,7 @@
       }
     },
     "Model-3d.device.processing" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6342,6 +6356,7 @@
       }
     },
     "Model-3d.device.ready-count" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6364,6 +6379,7 @@
       }
     },
     "Model-3d.device.region" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6386,6 +6402,7 @@
       }
     },
     "Model-3d.device.sample" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6408,6 +6425,7 @@
       }
     },
     "Model-3d.device.samples" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6430,6 +6448,7 @@
       }
     },
     "Model-3d.device.source" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6452,6 +6471,7 @@
       }
     },
     "Model-3d.device.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6474,6 +6494,7 @@
       }
     },
     "Model-3d.device.unsupported-region" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6500,13 +6521,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No models available in this region yet"
+            "value" : "No Available Models"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "此地区暂无可用模型"
+            "value" : "无可用模型"
           }
         }
       }

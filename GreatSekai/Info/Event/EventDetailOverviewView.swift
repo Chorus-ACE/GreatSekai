@@ -57,11 +57,13 @@ struct EventDetailOverviewView: View {
                 }
             }
             
-            DetailInfoItem("Event.character") {
-                CharacterWrappingHStack(characters: information.event.characters, wrapCompleteVirtualSingers: true)
-                Text("+\(information.event.characterBonus)%")
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: true)
+            if !information.event.characters.isEmpty {
+                DetailInfoItem("Event.character") {
+                    CharacterWrappingHStack(characters: information.event.characters, wrapCompleteVirtualSingers: true)
+                    Text("+\(information.event.characterBonus)%")
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: true)
+                }
             }
             
             if let focusID = information.event.focusCharacterID,

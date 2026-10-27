@@ -55,7 +55,7 @@ struct EventInfo: View {
         } detail: {
             Group {
                 HighlightableText(
-                    event.focusCharacterLabel(in: locale ?? .primaryLocale) ?? event.unit?.localizedName ?? String(localized: "Event.shuffle"),
+                    event.focusCharacterLabel(in: locale ?? .primaryLocale) ?? event.unit?.localizedName ?? (event.characters.isEmpty ? String(localized: "Info.unknown") : String(localized: "Event.shuffle")),
                     suffix: "\(String(localized: "Typography.bold-dot-seperater"))\(event.eventType.localizedName)"
                 )
                 .typesettingLanguage(.explicit(.init(identifier: (locale ?? .primaryLocale).nsLocale.language.minimalIdentifier)))
