@@ -36,8 +36,9 @@ struct CardImage: View {
 //    @State var trainedCardIsOnHover = false
     @State var focusIndex: Int = 0
     
-    init(_ card: Card, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both) {
+    init(_ card: Card, showNavigationHints: Bool = true, displayType: CardImageDisplayType = .both, isNormalImageUnavailable: Bool = false) {
         self.card = card
+        self._isNormalImageUnavailable = State(initialValue: isNormalImageUnavailable)
         
         self.showNavigationHints = showNavigationHints
         self.displayType = displayType
@@ -106,17 +107,9 @@ struct CardImage: View {
             }
             
             return result.compactMap({ $0 })
-        }()) {
+        }(), sectionTitle: (focusIndex < 0 ? "Image.image.untrained" : focusIndex > 0 ? "Image.image.trained" : nil)) {
             if showNavigationHints {
                 CardCoverNavigationHints(showCardDetailView: $showCardDetailView, card: card)
-                
-                if focusIndex < 0 {
-                    Text("Image.image.untrained")
-//                    Label("Image.image.untrained", systemImage: "star")
-                } else if focusIndex > 0 {
-                    Text("Image.image.trained")
-//                    Label("Image.image.trained", systemImage: "star.fill")
-                }
             }
         }
         .navigationDestination(isPresented: $showCardDetailView, destination: {

@@ -16,7 +16,7 @@ import SekaiKit
 import SwiftUI
 
 struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & TitleDescribable,
-                      PreviewInformation: Identifiable & SekaiTypeDescribable,
+                      PreviewInformation: ListGettable & SekaiCachable & SekaiTypeDescribable,
                       Content: View,
                       SwitcherDestination: View>: View where Information.ID == Int, PreviewInformation.ID == Int {
     var previewList: [PreviewInformation]?
@@ -124,10 +124,11 @@ struct DetailViewBase<Information: Sendable & Identifiable & SekaiCachable & Tit
             await getInformation(id: currentID)
             if let previewList {
                 allPreviewIDs = previewList.map({ $0.id })
-            } else if let ListGettableType = Information.self as? (any (Sendable & Identifiable & ListGettable & SekaiTypeDescribable & SekaiCachable).Type) {
-                allPreviewIDs = await SekaiCache.withDirectCache(id: "All\(String(describing: Information.Type.self))", invocation: {
-                    await ListGettableType.all() as? [Information]
-                })?.map { $0.id } ?? []
+            } else {
+                // Extended detail models may not provide a list; load the preview model instead.
+                let previews = await PreviewInformation.allWithCache()
+                guard !Task.isCancelled else { return }
+                allPreviewIDs = previews?.map { $0.id } ?? []
             }
         }
         .toolbar {
@@ -887,7 +888,9 @@ struct DetailSectionBase<Element: Hashable & SekaiTypeDescribable, Content: View
                 Spacer()
                 if (localizedElements.forLocale(locale)?.count ?? 0) > 3 {
                     Button(action: {
-                        showAll.toggle()
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showAll.toggle()
+                        }
                     }, label: {
                         Text(showAll ? "Details.show-less" : "Details.show-all.\(localizedElements.forLocale(locale)?.count ?? 0)")
                             .foregroundStyle(.secondary)
@@ -964,6 +967,7 @@ extension DetailInfoItem {
     init<S: StringProtocol>(_ titleKey: LocalizedStringResource, text: S) {
         self.init(titleKey) {
             Text(text)
+                .textSelection(.enabled)
         }
     }
     

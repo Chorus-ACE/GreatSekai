@@ -4,18 +4,42 @@ import SwiftUI
 struct GachaDetailView: View {
     let id: Int
     var allGachas: [Gacha]? = nil
+    @State private var cardsRetry = 0
+    @State private var parsedCards: [Card]?
+    @State private var cardsByID: [Int: Card]?
+    @State private var cardsFailed = false
 
     var body: some View {
         DetailViewBase(forType: Gacha.self, previewList: allGachas, initialID: id) { information in
-            GachaDetailContent(information: information).id(information.id)
+            GachaDetailContent(information: information, cards: parsedCards, cardsByID: cardsByID,
+                               cardsFailed: cardsFailed, retryCards: { cardsRetry += 1 })
+                .id(information.id)
+                .task(id: "\(information.id)-\(cardsRetry)") {
+                    await loadCards()
+                }
         } switcherDestination: {
             GachaSearchView()
         }
+    }
+
+    private func loadCards() async {
+        cardsFailed = false
+        parsedCards = nil
+        cardsByID = nil
+        let cards = await Card.allWithCache()
+        guard !Task.isCancelled else { return }
+        parsedCards = cards
+        cardsByID = cards.map { Dictionary($0.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first }) }
+        cardsFailed = cards == nil
     }
 }
 
 private struct GachaDetailContent: View {
     let information: Gacha
+    let cards: [Card]?
+    let cardsByID: [Int: Card]?
+    let cardsFailed: Bool
+    let retryCards: () -> Void
 
     @AppStorage("showAdvancedDetails") var showAdvancedDetails = false
     var body: some View {
@@ -42,7 +66,7 @@ private struct GachaDetailContent: View {
             
             if !information.configuration.map({ $0?.pickupCardIDs }).isCollectionEmpty {
                 DetailInfoItem("Gacha.pickup-cards") {
-                    GachaPickupCardsView(information: information)
+                    GachaPickupCardsView(information: information, cardsByID: cardsByID, failed: cardsFailed, retry: retryCards)
                 }
             }
             DetailInfoItem("ID", text: String(information.id))
@@ -51,6 +75,7 @@ private struct GachaDetailContent: View {
                 DetailInfoItem("Info.asset-bundle-name", content: {
                     Text(information.assetBundleName)
                         .fontDesign(.monospaced)
+                        .textSelection(.enabled)
                 })
             }
         } head: {
@@ -62,8 +87,9 @@ private struct GachaDetailContent: View {
             .frame(maxWidth: bannerWidth)
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
-        GachaDetailCardsView(information: information)
-        GachaDetailRatesView(information: information)
+
+        GachaDetailCardsView(information: information, cardsByID: cardsByID, failed: cardsFailed, retry: retryCards)
+        GachaDetailPossibilityView(information: information, cards: cards)
         GachaDetailPaymentView(information: information)
         if !information.summary.isCollectionEmpty {
             GachaTextSection(title: "Gacha.summary", text: information.summary.majorValue ?? "")
@@ -112,7 +138,9 @@ private struct GachaTextSection: View {
                 Text(title).font(.title2).bold()
                 Spacer()
                 Button(expanded ? "Details.collapse" : "Details.expand") {
-                    expanded.toggle()
+                    withAnimation {
+                        expanded.toggle()
+                    }
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
@@ -123,41 +151,5 @@ private struct GachaTextSection: View {
     }
 }
 
-/// A region switch belongs to its section, and is omitted when all editions agree.
-struct GachaRegionalSection<Value: Equatable, Content: View>: View {
-    let title: LocalizedStringKey
-    let values: LocalizableData<Value>
-    let content: (Value) -> Content
-    @State private var locale: SekaiLocale
-
-    init(_ title: LocalizedStringKey, values: LocalizableData<Value>, @ViewBuilder content: @escaping (Value) -> Content) {
-        self.title = title
-        self.values = values
-        self.content = content
-        _locale = State(initialValue: values.majorLocale ?? .primaryLocale)
-    }
-
-    private var locales: [SekaiLocale] { values.localizedData?.allAvailableLocales ?? [.primaryLocale] }
-    private var needsPicker: Bool {
-        guard let first = locales.first else { return false }
-        return locales.dropFirst().contains { values.localizedData?[$0] != values.localizedData?[first] }
-    }
-
-    var body: some View {
-        Section {
-            if let value = values.localizedData?[locale] ?? (values.localizedData == nil ? values.majorValue : nil) {
-                content(value).id(locale).frame(maxWidth: infoContentMaxWidth)
-            }
-        } header: {
-            HStack {
-                Text(title).font(.title2).bold()
-                if needsPicker {
-                    DetailSectionOptionPicker(selection: $locale, options: locales)
-                        .accessibilityLabel(Text("Content.locale"))
-                }
-                Spacer()
-            }
-            .frame(maxWidth: infoContentMaxWidth).detailSectionHeader()
-        }
-    }
-}
+// Existing gacha sections share the regional presentation used by other detail pages.
+typealias GachaRegionalSection<Value: Equatable, Content: View> = RegionalDetailSection<Value, Content>

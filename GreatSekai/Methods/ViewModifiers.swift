@@ -48,10 +48,16 @@ extension View {
     func imageContextMenu<V: View>(
         _ info: [ImageInfo],
         otherContentAt placement: _ImageContextMenuModifier<V>.ContentPlacement = .start,
+        sectionTitle: LocalizedStringResource? = nil,
         @ViewBuilder otherContent: @escaping () -> V = { EmptyView() }
     ) -> some View {
         self
-            .modifier(_ImageContextMenuModifier(imageInfo: info, otherContentPlacement: placement, otherContent: otherContent))
+            .modifier(_ImageContextMenuModifier(
+                imageInfo: info,
+                otherContentPlacement: placement,
+                otherContent: otherContent,
+                sectionTitle: sectionTitle
+            ))
     }
 }
 
@@ -59,6 +65,7 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
     var imageInfo: [ImageInfo]
     var otherContentPlacement: ContentPlacement
     var otherContent: (() -> V)?
+    var sectionTitle: LocalizedStringResource?
     @State private var isFileExporterPresented = false
     @State private var exportingImageDocument: _ImageFileDocument?
     @State private var imageSaveError: String?
@@ -69,7 +76,7 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
                 if otherContentPlacement == .start, let otherContent {
                     otherContent()
                 }
-                Section {
+                Section(content: {
 #if os(macOS)
                     forEachImageInfo("Image.save.download", systemImage: "square.and.arrow.down") { info in
                         Task {
@@ -96,7 +103,11 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
                         }
                     }
 #endif
-                }
+                }, header: {
+                    if let sectionTitle {
+                        Text(sectionTitle)
+                    }
+                })
                 Section {
                     forEachImageInfo("Image.copy.link", systemImage: "doc.on.doc") { info in
 #if os(macOS)
@@ -120,7 +131,7 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
                     }
                     if #available(iOS 18.0, macOS 15.0, *) {
                         forEachImageInfo("Image.copy.subject", systemImage: "circle.dashed.rectangle") { info in
-                            DispatchQueue(label: "com.memz233.Greatdori.Fetch-Trimmed-Image", qos: .userInitiated).async {
+                            DispatchQueue(label: "com.chorus-ace.GreatSekai.Fetch-Trimmed-Image", qos: .userInitiated).async {
                                 Task {
                                     var subjectImageData: Data? = nil
                                     var onlineImageFetchSucceeded = false
@@ -128,7 +139,7 @@ struct _ImageContextMenuModifier<V: View>: ViewModifier {
                                         subjectImageData = try? Data(contentsOf: URL(string: info.url.absoluteString.replacingOccurrences(of: "card", with: "trim"))!)
                                         onlineImageFetchSucceeded = subjectImageData != nil
                                     }
-                                    
+//                                    
                                     if !onlineImageFetchSucceeded {
                                         if let data = await info.resolvedData() {
                                             subjectImageData = await getImageSubject(data)

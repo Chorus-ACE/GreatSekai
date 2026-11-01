@@ -19,6 +19,7 @@ import SwiftUI
 // MARK: SongDetailOverviewView
 struct SongDetailOverviewView: View {
     @Environment(\.horizontalSizeClass) var sizeClass
+    @Environment(\.defaultMinListRowHeight) var minHeight
     let information: ExtendedSong
     @State private var selectedVocalID: Int?
 
@@ -120,6 +121,7 @@ struct SongDetailOverviewView: View {
                                 url: information.song.musicURL(vocalAssetBundleName: selectedVocal.assetBundleName),
                                 startOffset: information.song.fillerSec
                             )
+                            .frame(minHeight: minHeight * (platform == .macOS ? 1 : 0.75))
                             Divider()
                             ListItem(title: {
                                 Text("Song.player.version")
@@ -138,6 +140,7 @@ struct SongDetailOverviewView: View {
                                     }
                                 }, currentValueLabel: {
                                     Text(selectedVocal.conclusionTitle)
+                                        .multilineTextAlignment(.trailing)
                                 })
                                 .labelsHidden()
                                 .pickerStyle(.menu)

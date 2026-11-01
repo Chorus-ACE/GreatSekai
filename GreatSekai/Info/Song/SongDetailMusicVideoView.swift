@@ -3,8 +3,7 @@ import SekaiKit
 import SwiftUI
 
 struct SongDetailMusicVideoView: View {
-    let song: Song
-    @State private var content: LocalizedData<Song.VideoContent>?
+    let content: LocalizedData<Song.VideoContent>?
     @State private var locale = SekaiLocale.primaryLocale
     @State private var selectedID: String?
     private var locales: [SekaiLocale] {
@@ -49,9 +48,7 @@ struct SongDetailMusicVideoView: View {
                 }
             }
         }
-        .task(id: song.id) {
-            content = await song.videoContent()
-            guard !Task.isCancelled else { return }
+        .onChange(of: locales, initial: true) {
             if !locales.contains(locale) {
                 locale = locales.contains(.secondaryLocale) ? .secondaryLocale : (locales.first ?? .primaryLocale)
             }

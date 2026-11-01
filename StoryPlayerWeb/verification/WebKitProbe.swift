@@ -68,8 +68,7 @@ import WebKit
                 if let error { print(error); exit(1) }
             }
         case "error": exit(1)
-        case "loaded":
-            web.evaluateJavaScript("document.querySelector('.pjsk-start').click(); null")
+        case "loaded": break // Autoplay must reach progress without a second click.
         case "playing": playing = true
         case "progress":
             if playing, !resume, let index = body["index"] as? Int, index >= 5 {
@@ -87,8 +86,8 @@ import WebKit
             } else if resume, !verifying, playing, let index = body["index"] as? Int, index >= 5 {
                 verifying = true
                 snapshot("resumed") {
-                    self.web.evaluateJavaScript("document.querySelector('[data-k=log]').click(); document.querySelector('#log').open") { value, error in
-                        print("STORY LOG OPEN", value as Any, error as Any)
+                    self.web.evaluateJavaScript("window.storyPlayer.setModes({auto:false, fast:true, uiHidden:true, voice:false}); document.querySelectorAll('dialog, .pjsk-menu').length === 0 && document.querySelector('.pjsk-stage').classList.contains('ui-hidden')") { value, error in
+                        print("NATIVE MENU BRIDGE", value as Any, error as Any)
                         guard (value as? NSNumber)?.boolValue == true else { exit(1) }
                         self.web.evaluateJavaScript("window.storyPlayer.destroy(); document.querySelectorAll('canvas').length") { value, error in
                             print("DESTROYED CANVAS COUNT", value as Any, error as Any)

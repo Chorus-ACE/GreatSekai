@@ -1,0 +1,4 @@
+/* Privacy - Photo Library Additions Usage Description */
+"NSPhotoLibraryAddUsageDescription" = "GreatSekaiが写真ライブラリに写真を追加するには、許可が必要です。";
+
+"Privacy.photo-library.add-only.description" = "GreatSekaiが写真ライブラリに写真を追加するには、許可が必要です。";

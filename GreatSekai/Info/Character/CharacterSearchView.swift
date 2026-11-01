@@ -109,6 +109,9 @@ struct CharacterSearchView: View {
                 await getCharacters()
             }
         }
+        .task {
+            await CharacterDetailCardStore.shared.load()
+        }
         .navigationTitle("Character")
         .wrapIf(platform == .macOS, in: { content in
             if #available(iOS 26.0, macOS 26.0, *) {

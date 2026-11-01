@@ -889,14 +889,17 @@ struct LayoutPicker<T: Hashable>: View {
 struct LocalePicker<L: View>: View {
     @Binding var locale: SekaiLocale
     var label: (() -> L)?
-    init(_ locale: Binding<SekaiLocale>, label: @escaping () -> L) {
+    var options: [SekaiLocale] = SekaiLocale.allCases
+    init(_ locale: Binding<SekaiLocale>, label: @escaping () -> L, options: [SekaiLocale] = SekaiLocale.allCases) {
         self._locale = locale
         self.label = label
+        self.options = options
     }
     
-    init(_ locale: Binding<SekaiLocale>) where L == EmptyView {
+    init(_ locale: Binding<SekaiLocale>, options: [SekaiLocale] = SekaiLocale.allCases) where L == EmptyView {
         self._locale = locale
         self.label = nil
+        self.options = options
     }
     
     var body: some View {

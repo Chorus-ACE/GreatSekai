@@ -94,3 +94,14 @@ extension MySekaiFixture: SekaiTypeDescribable {
     static var pluralName: LocalizedStringResource { "Type.fixture.plural" }
     static var symbol: String { "chair.lounge" }
 }
+
+extension Honor: SekaiTypeDescribable {
+    static var singularName: LocalizedStringResource { "Type.honor.singular" }
+    static var pluralName: LocalizedStringResource { "Type.honor.plural" }
+    static var symbol: String { "rosette" }
+}
+extension VirtualLive: SekaiTypeDescribable {
+    static var singularName: LocalizedStringResource { "Type.virtual-live.singular" }
+    static var pluralName: LocalizedStringResource { "Type.virtual-live.plural" }
+    static var symbol: String { "microphone.dynamic.on.stand" }
+}

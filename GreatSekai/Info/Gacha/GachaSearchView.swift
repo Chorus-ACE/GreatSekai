@@ -42,15 +42,28 @@ struct GachaInfo: View {
     let gacha: Gacha
     var showDetails = true
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.regularInfoImageSizeFactor) private var sizeFactor
+
+    private var imageMaxWidth: CGFloat {
+        bannerHeight * bannerRatio * (sizeClass == .regular ? sizeFactor : 1)
+    }
+
     var body: some View {
         SummaryViewBase(.vertical(hidesDetail: !showDetails), source: gacha) {
             FallbackableWebImage(throughURLs: gacha.previewImageURLs()) { image in
-                image.resizable().scaledToFit()
+                image
+                    .resizable()
+                    .antialiased(true)
+                    .aspectRatio(bannerRatio, contentMode: .fit)
+                    .frame(maxWidth: imageMaxWidth)
             } placeholder: {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(getPlaceholderColor())
+                    .aspectRatio(bannerRatio, contentMode: .fit)
+                    .frame(maxWidth: imageMaxWidth)
             }
-            .aspectRatio(2.346, contentMode: .fit)
+            .interpolation(.high)
             .clipShape(RoundedRectangle(cornerRadius: 10))
         } detail: {
             HighlightableText(gacha.type.localizedName)

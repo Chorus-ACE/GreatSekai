@@ -22,6 +22,15 @@ struct CardDetailOverviewView: View {
     @Environment(\.horizontalSizeClass) var sizeClass
     let information: Card
     let cardCoverScalingFactor: CGFloat = 1
+    let regionalSkills: [SekaiLocale: [Skill]]?
+    private var skillDescription: LocalizedData<String> {
+        LocalizedData { locale in
+            let skillID = information.isInitiallySpecialTrained ? information.specialTrainingSkillID ?? information.skillID : information.skillID
+            let skill = regionalSkills?[locale]?.first { $0.id == skillID }
+            let level = skill?.effects.flatMap { $0.details.map(\.level) }.max() ?? 1
+            return skill?.description(atLevel: level, characterName: SekaiCache.preCache.character(id: information.characterID)?.fullName.forLocale(locale))
+        }
+    }
     var body: some View {
         DetailInfoBase {
             DetailInfoItem("Card.title", localizableText: information.name)
@@ -96,9 +105,9 @@ struct CardDetailOverviewView: View {
                 .accessibilityLabel("\(information.rarity.localizedName)")
             }
             
-//            if let skill = allSkills.first(where: { $0.id == information.card.skillID }) {
-//                DetailInfoItem("Card.skill", text: skill.maximumDescription)
-//            }
+            if !skillDescription.isEmpty {
+                DetailInfoItem("Card.skill", localizableText: .localized(skillDescription))
+            }
             
             if !information.gachaPhrase.isCollectionEmpty {
                 DetailInfoItem("Card.gacha-phrase") {
@@ -128,13 +137,5 @@ struct CardDetailOverviewView: View {
 //                .frame(maxWidth: infoContentMaxWidth)
             }
         }
-//        .task {
-//            // Load skills asynchronously once when the view appears
-//            if allSkills.isEmpty {
-//                if let fetched = await Skill.all() {
-//                    allSkills = fetched
-//                }
-//            }
-//        }
     }
 }

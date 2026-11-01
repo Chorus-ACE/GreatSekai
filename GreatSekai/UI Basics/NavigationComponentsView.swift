@@ -65,6 +65,8 @@ import SwiftUI
         tabValue: .stickers,
         destination: { StickerSearchView() }
     ),
+    InfoDestinationItem(title: "App.info.titles", symbol: "rosette", lightColor: .purple, tabValue: .titles, destination: { HonorSearchView() }),
+    InfoDestinationItem(title: "App.info.virtual-lives", symbol: "microphone.dynamic.on.stand", lightColor: .pink, tabValue: .virtualLives, destination: { VirtualLiveSearchView() }),
     InfoDestinationItem(title: "App.info.comics", symbol: "book", lightColor: .brown, tabValue: .comics, destination: { ComicSearchView() }),
     InfoDestinationItem(title: "App.info.fixtures", symbol: "chair.lounge", lightColor: .teal, tabValue: .fixtures, destination: { MySekaiFixtureSearchView() }),
 //    InfoDestinationItem(

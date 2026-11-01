@@ -11,6 +11,7 @@ import SwiftUI
 
 struct SongDetailVocalsView: View {
     var information: ExtendedSong
+    let releaseConditions: [ReleaseCondition]?
     @State private var expanded = false
 
     private var displayedVocals: [Song.VocalVersion] {
@@ -74,7 +75,7 @@ struct SongDetailVocalsView: View {
                                     })
                                 }
                                 
-                                ListItemReleaseCondition(releaseConditionID: vocal.releaseConditionID)
+                                ListItemReleaseCondition(sentence: releaseConditions?.first { $0.id == vocal.releaseConditionID }?.title)
                             }
                             .insert {
                                 Divider()
@@ -117,8 +118,7 @@ struct SongDetailVocalsView: View {
 }
 
 struct ListItemReleaseCondition: View {
-    var releaseConditionID: Int
-    @State var sentence: LocalizableData<String>? = nil
+    let sentence: LocalizableData<String>?
     var body: some View {
         ListItem(title: {
             Text("Release-condition")
@@ -130,10 +130,5 @@ struct ListItemReleaseCondition: View {
                     .redacted(reason: .placeholder)
             }
         })
-        .onChange(of: releaseConditionID, initial: true) {
-            Task {
-                sentence = await ReleaseCondition(id: releaseConditionID)?.title
-            }
-        }
     }
 }

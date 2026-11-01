@@ -15,6 +15,7 @@
 import SDWebImageSwiftUI
 import SekaiKit
 import SwiftUI
+import WebKit
 
 #if os(iOS)
 import UIKit
@@ -130,7 +131,8 @@ struct SettingsAdvancedUISection: View {
 
 struct SettingsAdvancedStorageSection: View {
     @State private var cacheSize = ""
-    @State private var isClearCacheAlertPresented = false
+    @State private var cacheManagementSheetIsDisplaying = false
+
     var body: some View {
         Section {
             HStack {
@@ -141,55 +143,27 @@ struct SettingsAdvancedStorageSection: View {
                         .font(.footnote)
                 }
                 Spacer()
-                Text(cacheSize)
-                    .foregroundStyle(.secondary)
-                Button(role: .destructive, action: {
-                    isClearCacheAlertPresented = true
-                }, label: {
-                    Text("Settings.advanced.storage.clear-cache.clear")
-                })
+                Text(cacheSize).foregroundStyle(.secondary)
+                Button("Settings.advanced.storage.clear-cache.clear") {
+                    cacheManagementSheetIsDisplaying = true
+                }
             }
-            .alert("Settings.advanced.storage.clear-cache.alert.title", isPresented: $isClearCacheAlertPresented) {
-                Button(role: .destructive, action: {
-                    if let contents = try? FileManager.default.contentsOfDirectory(atPath: NSTemporaryDirectory()) {
-                        for content in contents {
-                            try? FileManager.default.removeItem(atPath: NSTemporaryDirectory() + "/\(content)")
-                        }
-                    }
-                    if let contents = try? FileManager.default.contentsOfDirectory(atPath: NSHomeDirectory() + "/Library/Caches/com.hackemist.SDImageCache/default") {
-                        for content in contents {
-                            try? FileManager.default.removeItem(atPath: NSHomeDirectory() + "/Library/Caches/com.hackemist.SDImageCache/default/\(content)")
-                        }
-                    }
-                    SekaiCache.invalidateAll()
-                    URLCache.shared.removeAllCachedResponses()
-                    updateCacheSize()
-                }, label: {
-                    Text("Settings.advanced.storage.clear-cache.alert.action.confirm")
-                })
-            } message: {
-                Text("Settings.advanced.storage.clear-cache.alert.message")
+            .sheet(isPresented: $cacheManagementSheetIsDisplaying) {
+                SettingsAdvancedCacheManagementView()
             }
-            .onAppear {
-                updateCacheSize()
+            .task(id: cacheManagementSheetIsDisplaying) {
+                guard !cacheManagementSheetIsDisplaying,
+                      let snapshot = try? await AdvancedCacheStorage.snapshot() else { return }
+                cacheSize = snapshot.formattedSize(for: Set(AdvancedCacheCategory.allCases))
             }
         } header: {
             Text("Settings.advanced.storage")
         }
     }
-    
-    func updateCacheSize() {
-        let metaCacheSize = URL(
-            filePath: NSHomeDirectory() + "/Library/Caches/"
-        ).directorySize(including: /SekaiKit_.+\.cache/)
-        let otherCacheSize = URL(filePath: NSTemporaryDirectory()).directorySize()
-        let totalCacheSize = metaCacheSize + otherCacheSize
-        cacheSize = ByteCountFormatter().string(fromByteCount: totalCacheSize)
-    }
 }
 
 func resetAllAdvancedSettings(showBannerAtHome: Bool = true) {
-    if let _data = try? Data(contentsOf: URL(filePath: NSHomeDirectory() + "/Library/Preferences/com.memz233.GreatSekai.plist")),
+    if let _data = try? Data(contentsOf: URL(filePath: NSHomeDirectory() + "/Library/Preferences/com.chorus-ace.GreatSekai.plist")),
        let serialization = try? PropertyListSerialization.propertyList(from: _data, format: nil) as? [String: Any] {
         for key in serialization.keys where key.hasPrefix("Adv_") {
             UserDefaults.standard.removeObject(forKey: key)
@@ -198,4 +172,197 @@ func resetAllAdvancedSettings(showBannerAtHome: Bool = true) {
             UserDefaults.standard.set(true, forKey: "AdvancedSettingsHaveReset")
         }
     }
+}
+
+
+struct SettingsAdvancedCacheManagementView: View {
+    @State private var snapshot: AdvancedCacheStorage.Snapshot?
+    @State private var selected: Set<AdvancedCacheCategory> = []
+    @State private var isBusy = false
+    @State private var errorMessage: String?
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text("Settings.advanced.storage.cache.management.introduction")
+                }
+                Section {
+                    ForEach(AdvancedCacheCategory.allCases) { category in
+                        CacheListItem(
+                            title: category.title,
+                            caption: category.caption,
+                            symbol: category.symbol,
+                            size: snapshot?.formattedSize(for: [category]) ?? "—",
+                            isSelected: Binding(
+                                get: { selected.contains(category) },
+                                set: { if $0 { selected.insert(category) } else { selected.remove(category) } }
+                            )
+                        )
+                    }
+                }
+                Section {
+                    Button(role: .destructive) {
+                        Task { await clearSelection() }
+                    } label: {
+                        HStack {
+                            if isBusy { ProgressView().controlSize(.small) }
+                            if selected.isEmpty {
+                                Text("Settings.advanced.storage.cache.management.delete.no-selection")
+                            } else {
+                                Text("Settings.advanced.storage.cache.management.delete.\(snapshot?.formattedSize(for: selected) ?? "—")")
+                            }
+                        }
+                    }
+                    .disabled(selected.isEmpty || snapshot == nil || isBusy)
+                    if let errorMessage {
+                        Text(errorMessage).font(.footnote).foregroundStyle(.red)
+                        Button("General.retry") { Task { await refresh() } }
+                    }
+                }
+            }
+            .formStyle(.grouped)
+            .disabled(isBusy)
+            .navigationTitle("Settings.advanced.storage.cache.management")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { dismiss() } label: {
+                        Label("General.done", systemImage: "checkmark")
+                            .wrapIf(true) { content in
+                                #if os(macOS)
+                                content.labelStyle(.titleOnly)
+                                #else
+                                content.labelStyle(.iconOnly)
+                                #endif
+                            }
+                    }
+                    .disabled(isBusy)
+                }
+            }
+            .interactiveDismissDisabled(isBusy)
+            .task { await refresh() }
+            #if os(macOS)
+            .frame(minWidth: 540, minHeight: 460)
+            #endif
+        }
+    }
+
+    private func refresh() async {
+        isBusy = true
+        defer { isBusy = false }
+        do {
+            snapshot = try await AdvancedCacheStorage.snapshot()
+            errorMessage = nil
+        } catch {
+            errorMessage = String(localized: "Settings.advanced.storage.cache.management.error") + " " + error.localizedDescription
+        }
+    }
+
+    private func clearSelection() async {
+        isBusy = true
+        defer { isBusy = false }
+        do {
+            try await AdvancedCacheStorage.clear(selected)
+            selected.removeAll()
+            errorMessage = nil
+        } catch {
+            errorMessage = String(localized: "Settings.advanced.storage.cache.management.error") + " " + error.localizedDescription
+        }
+        // Refresh even after a partial failure so the remaining size stays accurate.
+        do { snapshot = try await AdvancedCacheStorage.snapshot() }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    struct CacheListItem: View {
+        var title: LocalizedStringResource
+        var caption: LocalizedStringResource
+        var symbol: String
+        var size: String
+        @Binding var isSelected: Bool
+        var body: some View {
+            HStack {
+                Image(systemName: symbol)
+                    .foregroundStyle(.accent)
+                    .font(.title3)
+                    .frame(width: 28)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading) {
+                    Text(title)
+                    Text(caption)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .multilineTextAlignment(.leading)
+                Spacer()
+                Text(size).font(.callout).foregroundStyle(.secondary)
+                Toggle(isOn: $isSelected) { Text(title) }.labelsHidden()
+            }
+        }
+    }
+}
+
+@MainActor
+private enum AdvancedCacheStorage {
+    struct Snapshot: Sendable {
+        var bytes: [AdvancedCacheCategory: Int64]
+        var hasWebResources: Bool
+
+        func formattedSize(for categories: Set<AdvancedCacheCategory>) -> String {
+            let total = categories.reduce(Int64(0)) { $0 + (bytes[$1] ?? 0) }
+            let formatted = ByteCountFormatter.string(fromByteCount: total, countStyle: .file)
+            if categories.contains(.story), hasWebResources {
+                return String(localized: "Settings.advanced.storage.cache.management.size.system.\(formatted)")
+            }
+            return formatted
+        }
+    }
+
+    // WebKit exposes cache records and deletion, but not their byte sizes.
+    static var webCacheTypes: Set<String> {
+        [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache, WKWebsiteDataTypeFetchCache]
+    }
+
+    static func snapshot() async throws -> Snapshot {
+        let imageBytes = await withCheckedContinuation { continuation in
+            SDImageCache.shared.calculateSize { _, bytes in
+                continuation.resume(returning: Int64(bytes))
+            }
+        }
+        var bytes = try await Task.detached(priority: .utility) {
+            var result: [AdvancedCacheCategory: Int64] = [:]
+            for category in AdvancedCacheCategory.allCases where category != .images {
+                result[category] = try AdvancedCacheFiles.roots(for: category).reduce(0) { try $0 + AdvancedCacheFiles.size(of: $1) }
+            }
+            return result
+        }.value
+        bytes[.images] = imageBytes
+        bytes[.information, default: 0] += Int64(URLCache.shared.currentDiskUsage)
+        let records = await WKWebsiteDataStore.default().dataRecords(ofTypes: webCacheTypes)
+        return Snapshot(bytes: bytes, hasWebResources: !records.isEmpty)
+    }
+
+    static func clear(_ categories: Set<AdvancedCacheCategory>) async throws {
+        if categories.contains(.images) {
+            SDImageCache.shared.clearMemory()
+            await withCheckedContinuation { continuation in
+                SDImageCache.shared.clearDisk { continuation.resume() }
+            }
+        }
+        if categories.contains(.story) {
+            await WKWebsiteDataStore.default().removeData(ofTypes: webCacheTypes, modifiedSince: .distantPast)
+        }
+        if categories.contains(.information) {
+            URLCache.shared.removeAllCachedResponses()
+            CharacterDetailCardStore.shared.invalidate()
+        }
+        try await Task.detached(priority: .utility) {
+            try AdvancedCacheFiles.remove(categories)
+        }.value
+    }
+
+}
+
+#Preview("Cache Management") {
+    SettingsAdvancedCacheManagementView()
 }

@@ -1,12 +1,9 @@
-import { PjskPlayer, DEFAULT_MENU, scriptLines } from 'pjsk-scenario-player';
+import { PjskPlayer } from 'pjsk-scenario-player';
 import { ASSET_ROOTS, createResolver } from './resolver.mjs';
-import { applyRegionText } from './region-text.mjs';
+import { applyRegionText, activeTranscriptIndices, transcriptIndices } from './region-text.mjs';
 import './style.css';
 
 const stage = document.querySelector('#stage');
-const log = document.querySelector('#log');
-const lines = document.querySelector('#lines');
-const close = document.querySelector('#close-log');
 const post = (type, detail = {}) => window.webkit?.messageHandlers?.storyPlayer?.postMessage({ type, ...detail });
 let player;
 let config;
@@ -15,6 +12,9 @@ let generation = 0;
 let active = true;
 let snippet = 0;
 let modes;
+let updatingModes = false;
+let muted = false;
+let jumpIndices = [];
 
 async function json(url, signal) {
   const controller = new AbortController();
@@ -49,8 +49,6 @@ function destroy() {
   request = undefined;
   player?.destroy();
   player = undefined;
-  log.close();
-  lines.replaceChildren();
 }
 
 async function mount() {
@@ -62,6 +60,8 @@ async function mount() {
   try {
     post('loading');
     const scenario = config.regional ? applyRegionText(config.scenario, config.regional) : config.scenario;
+    jumpIndices = transcriptIndices(config.scenario, config.regional);
+    const indices = activeTranscriptIndices(config.scenario, config.regional);
     const { index, root } = await assetIndex(signal);
     let character2ds = new Map();
     if (scenario.TalkData.some(t => t.Voices?.some(v => v.VoiceId?.startsWith('partvoice')))) {
@@ -69,20 +69,19 @@ async function mount() {
       character2ds = new Map(records.map(c => [c.id, { assetName: c.assetName, unit: c.unit }]));
     }
     if (mine !== generation) return;
+    const desiredHidden = modes?.uiHidden ?? false;
     const assets = createResolver(root, index, { ...config, character2ds });
     const instance = new PjskPlayer(stage, {
       assets, models: index.models, fonts: false,
       locale: config.uiLocale, labels: config.labels,
       textScript: config.textScript, autoplay: false, preload: true,
-      auto: modes?.auto ?? true, muted: modes?.muted ?? false, voice: modes?.voice ?? true,
+      auto: modes?.auto ?? true, muted, voice: modes?.voice ?? true,
       cubismCoreUrl: `${root}/story-player/v1/lib/live2dcubismcore.min.js`,
-      menu: DEFAULT_MENU
+      menu: false
     });
     player = instance;
     if (modes) { instance.setFast(modes.fast); instance.setUiHidden(modes.uiHidden); }
-    instance.on('mode', value => { if (mine === generation) modes = value; });
-    close.textContent = config.closeLabel;
-    log.setAttribute('aria-label', config.labels.menu.log);
+    instance.on('mode', value => { if (mine === generation) { modes = value; muted = value.muted; if (!updatingModes) post('mode', value); } });
     document.documentElement.lang = config.language;
     instance.on('error', ({ error }) => { if (mine === generation) post('error', { message: error.message }); });
     instance.on('loading', ({ failed }) => { if (mine === generation && failed.length) post('missingModels', { count: failed.length }); });
@@ -101,38 +100,41 @@ async function mount() {
     instance.on('progress', ({ index, total }) => {
       if (mine !== generation) return;
       snippet = index;
-      post('progress', { index, total });
-      for (const button of lines.children) {
-        const current = Number(button.dataset.index) === index;
-        button.classList.toggle('current', current);
-        if (current) button.setAttribute('aria-current', 'true'); else button.removeAttribute('aria-current');
-      }
+      post('progress', { index, total, transcriptIndex: indices[index] ?? null });
     });
     instance.on('end', () => { if (mine === generation) post('ended'); });
-    instance.on('log', () => {
-      if (log.open) log.close(); else { log.showModal(); instance.setLogActive(true); }
-    });
-    for (const line of scriptLines(scenario)) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.dataset.index = line.index;
-      button.textContent = `${line.name ? line.name + '\n' : ''}${line.body}`;
-      button.addEventListener('click', () => { log.close(); void instance.jumpTo(line.index); });
-      lines.append(button);
-    }
     // The engine now owns its loading/retry/start overlays.
     post('prepared');
-    await instance.load(scenario, { autoplay: false });
-    if (mine === generation) post('loaded');
+    await instance.load(scenario, { autoplay: true });
+    if (mine === generation) {
+      instance.setUiHidden(desiredHidden);
+      post('loaded');
+    }
   } catch (error) {
     if (mine === generation && !signal.aborted) post('error', { message: error.message });
   }
 }
 
-close.addEventListener('click', () => log.close());
-log.addEventListener('close', () => player?.setLogActive(false));
 window.storyPlayer = {
-  load(value) { config = value; snippet = 0; modes = undefined; return mount(); },
+  load(value) { config = value; snippet = 0; return mount(); },
+  setModes(value) {
+    modes = { ...modes, ...value };
+    if (!player) return;
+    updatingModes = true;
+    // Setters emit a mode snapshot synchronously. Preserve the complete desired
+    // state across those snapshots and publish once, after the batch finishes.
+    player.setAuto(value.auto);
+    player.setFast(value.fast);
+    player.setUiHidden(value.uiHidden);
+    player.setVoice(value.voice);
+    updatingModes = false;
+    post('mode', modes);
+  },
+  setMuted(value) { muted = value; player?.setMuted(value); },
+  jumpTo(lineID) {
+    const index = jumpIndices.indexOf(lineID);
+    if (index >= 0) return player?.jumpTo(index);
+  },
   setActive(value) {
     if (active === value) return;
     active = value;

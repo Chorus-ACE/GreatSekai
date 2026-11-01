@@ -48,6 +48,18 @@ struct EventDetailView: View {
                             ArtsItem(title: .init(stringLiteral: locale.rawValue.uppercased()), url: information.event.logoImageURL(in: locale))
                         }
                     }
+
+                    ArtsTab("Event.arts.background", ratio: 16.0 / 9.0) {
+                        for locale in SekaiLocale.allCases where information.event.title.localizedData?.availableInLocale(locale) == true {
+                            ArtsItem(title: .init(stringLiteral: locale.rawValue.uppercased()), url: information.event.backgroundImageURL(in: locale))
+                        }
+                    }
+
+                    ArtsTab("Event.arts.character", ratio: 16.0 / 9.0) {
+                        for locale in SekaiLocale.allCases where information.event.title.localizedData?.availableInLocale(locale) == true {
+                            ArtsItem(title: .init(stringLiteral: locale.rawValue.uppercased()), url: information.event.characterImageURL(in: locale))
+                        }
+                    }
                 }
                 
                 ExternalLinksSection(links: [

@@ -1,5 +1,13 @@
 # Content and collection validation
 
+Run `sh GreatSekai/Tests/run-lyrics-typography-tests.sh` from the Sekai workspace to
+check performer ID/color resolution, mixed performer groups, contrast in light and
+dark appearances, and native ruby annotation ranges and wrapping. The renderer uses
+UTF-16 ranges, including emoji before annotated words. Set `SEKAI_RUBY_PREVIEW` to a
+PNG path to inspect the offscreen rendering. Lyrics without readings retain native
+selectable text; annotated lines expose a copy-line context-menu action and a plain
+Japanese accessibility label.
+
 From the Sekai workspace:
 
 ```sh
@@ -70,3 +78,12 @@ team score or efficiency calculations.
   output, texture orientation, motion playback, resize, pause/resume and resource release.
   Performance has not been measured. The model importer currently accepts local folders;
   an in-app online model catalog is not implemented.
+
+## Cache management checks
+
+Run `sh GreatSekai/Tests/run-advanced-cache-tests.sh` to verify byte totals and
+selective removal for information, story transcripts, and all four 3D cache roots.
+Fixtures also check empty selections, repeated clearing, symlinks, missing directories,
+and preservation of unrelated files. SDWebImage and WebKit caches use their respective
+framework APIs; WebKit does not expose cache byte counts, so the UI labels those
+resources as system-managed instead of reporting zero bytes.

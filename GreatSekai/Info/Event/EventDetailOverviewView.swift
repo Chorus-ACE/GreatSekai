@@ -117,6 +117,7 @@ struct EventDetailOverviewView: View {
                 DetailInfoItem("Info.asset-bundle-name", content: {
                     Text(information.event.assetBundleName)
                         .fontDesign(.monospaced)
+                        .textSelection(.enabled)
                 })
             }
         } head: {

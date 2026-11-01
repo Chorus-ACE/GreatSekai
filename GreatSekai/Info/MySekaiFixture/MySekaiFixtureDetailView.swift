@@ -15,7 +15,10 @@ struct MySekaiFixtureDetailView: View {
                 DetailInfoItem("Fixture.subgenre", localizableText: fixture.subGenre)
                 DetailInfoItem("Fixture.site", localizableText: fixture.site.map { $0?.localizedName })
                 DetailInfoItem("Fixture.layout", localizableText: fixture.layout.map { $0?.localizedName })
-                DetailInfoItem("Fixture.size", localizableText: fixture.size.map { $0.map { "\($0.width) × \($0.depth) × \($0.height)" } })
+                
+                if !fixture.size.isEmpty {
+                    DetailInfoItem("Fixture.size", localizableText: fixture.size.map { $0.map { "\($0.width) × \($0.depth) × \($0.height)" } })
+                }
                 DetailInfoItem("Fixture.disassemble", localizableText: fixture.canDisassemble.map { $0.map { String(localized: $0 ? "General.yes" : "General.no") } })
                 DetailInfoItem("Fixture.character-action", localizableText: fixture.hasCharacterAction.map { $0.map { String(localized: $0 ? "General.yes" : "General.no") } })
                 DetailInfoItem("ID", text: String(fixture.id))

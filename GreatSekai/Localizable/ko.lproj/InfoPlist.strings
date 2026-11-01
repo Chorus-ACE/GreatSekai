@@ -1,0 +1,4 @@
+/* Privacy - Photo Library Additions Usage Description */
+"NSPhotoLibraryAddUsageDescription" = "GreatSekai에서 사진 보관함에 사진을 추가하려면 권한이 필요합니다.";
+
+"Privacy.photo-library.add-only.description" = "GreatSekai에서 사진 보관함에 사진을 추가하려면 권한이 필요합니다.";
