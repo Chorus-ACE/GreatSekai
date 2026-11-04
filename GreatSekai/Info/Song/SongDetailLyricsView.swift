@@ -85,14 +85,82 @@ struct SongDetailLyricsView: View {
     
     var body: some View {
         Section {
-            content
-                .frame(maxWidth: infoContentMaxWidth)
+            VStack {
+                CustomGroupBox {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(displayedLines) { line in
+                            VStack(alignment: .leading, spacing: 1) {
+                                LyricsLineText(line: line, colors: showPerformers ? performerColors : [:], showReadings: showReadings)
+                                if let translation = language.translation(of: line), !translation.isEmpty {
+                                    Text(translation)
+                                        .font(.callout)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.top, line.stanzaBreakBefore == true ? 8 : 0)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    } 
+                    .textSelection(.enabled)
+                }
+                .animation(.default, value: showPerformers)
+                .animation(.default, value: showReadings)
+                
+                Group {
+                    if showPerformers, let rendition, !rendition.performers.isEmpty {
+                        CustomGroupBox {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text("Song.lyrics.performers").font(.caption).bold()
+                                    ForEach(rendition.performers) { performer in
+                                        Label {
+                                            Text(performer.name)
+                                        } icon: {
+                                            Circle()
+                                                .fill(performerColors[performer.performerID] ?? .secondary)
+                                                .frame(width: 8, height: 8)
+                                        }
+                                        .font(.caption)
+                                    }
+                                }
+                                Spacer()
+                            }
+                        }
+                    }
+                }
+                .animation(.default, value: showPerformers)
+                
+                HStack {
+                    VStack(alignment: .leading) {
+                        footerSourceText()
+                        
+                        let translator = credits?.translation
+                        let proofreader = credits?.proofreading
+
+                        if let translator, let proofreader {
+                            Text("Song.lyrics.footer.translator.\(translator).proofreader.\(proofreader)")
+                        } else if let translator {
+                            Text("Song.lyrics.footer.translator.\(translator)")
+                        } else  if let proofreader {
+                            Text("Song.lyrics.footer.proofreader.\(proofreader)")
+                        }
+                    }
+                    .foregroundStyle(.secondary)
+                    .font(.caption)
+                    .multilineTextAlignment(.leading)
+                    Spacer()
+                }
+                .padding(.vertical, 1)
+            }
+            .frame(maxWidth: infoContentMaxWidth)
+            .sheet(isPresented: $attributionSheetIsDisplaying, content: {
+                LyricsAttributionView(lyrics: lyrics)
+            })
         } header: {
             HStack {
                 Text("Song.lyrics")
                     .font(.title2)
                     .bold()
-                //                Spacer()
                 Menu {
                     if lyrics.renditions.count > 1 {
                         Picker("Song.lyrics.rendition", selection: Binding(
@@ -176,82 +244,6 @@ struct SongDetailLyricsView: View {
         ?? ""
     }
     
-    private var content: some View {
-        let colors = performerColors
-        return VStack {
-            CustomGroupBox {
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(displayedLines) { line in
-                        VStack(alignment: .leading, spacing: 1) {
-                            LyricsLineText(line: line, colors: showPerformers ? colors : [:], showReadings: showReadings)
-                            if let translation = language.translation(of: line), !translation.isEmpty {
-                                Text(translation).font(.callout).foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(.top, line.stanzaBreakBefore == true ? 8 : 0)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                .textSelection(.enabled)
-            }
-            if showPerformers, let rendition, !rendition.performers.isEmpty {
-                CustomGroupBox {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Song.lyrics.performers").font(.caption).bold()
-                            ForEach(rendition.performers) { performer in
-                                Label {
-                                    Text(performer.name)
-                                } icon: {
-                                    Circle().fill(colors[performer.performerID] ?? .secondary)
-                                        .frame(width: 8, height: 8)
-                                }
-                                .font(.caption)
-                            }
-                        }
-                        Spacer()
-                    }
-                }
-            }
-            //            if language == .chinese || (language == .english && lyrics.version < 4) {
-            //                if let translator = credits?.translation {
-            //                    LabeledContent("Song.lyrics.translator") { Text(translator) }.font(.caption)
-            //                }
-            //                if let proofreader = credits?.proofreading {
-            //                    LabeledContent("Song.lyrics.proofreader") { Text(proofreader) }.font(.caption)
-            //                }
-            //            }
-            //            if let rendition {
-            //                LyricsSources(songID: lyrics.songID, attribution: lyrics.attribution, sources: rendition.provenance)
-            //            }
-            HStack {
-                VStack(alignment: .leading) {
-                    footerSourceText()
-                    
-                    let translator = credits?.translation
-                    let proofreader = credits?.proofreading
-
-                    if let translator, let proofreader {
-                        Text("Song.lyrics.footer.translator.\(translator).proofreader.\(proofreader)")
-                    } else if let translator {
-                        Text("Song.lyrics.footer.translator.\(translator)")
-                    } else  if let proofreader {
-                        Text("Song.lyrics.footer.proofreader.\(proofreader)")
-                    }
-                }
-                .foregroundStyle(.secondary)
-                .font(.caption)
-                .multilineTextAlignment(.leading)
-                Spacer()
-            }
-            .padding(.vertical, 1)
-        }
-        .frame(maxWidth: infoContentMaxWidth)
-        .sheet(isPresented: $attributionSheetIsDisplaying, content: {
-            LyricsAttributionView(lyrics: lyrics)
-        })
-    }
-    
     private func footerSourceText() -> some View {
         let attributionURL = URL(string: "greatsekai-action://lyrics-attribution")!
         let moeSekaiLink = LocalizedLinkText.link("MoeSekai", destination: URL(string: "https://pjsk.moe/lyrics/\(lyrics.songID)/")!)
@@ -284,7 +276,7 @@ private struct LyricsSources: View {
     var body: some View {
         DisclosureGroup("Song.lyrics.sources") {
             VStack(alignment: .leading, spacing: 12) {
-                Link("Moesekai", destination: URL(string: "https://pjsk.moe/zh-cn/lyrics/\(songID)/")!)
+                Link(ExternalLink.DefaultSource.moeSekai.localizedName, destination: URL(string: "https://pjsk.moe/zh-cn/lyrics/\(songID)/")!)
                 if let attribution { Text(attribution) }
                 ForEach(Array(sources.enumerated()), id: \.offset) { _, source in
                     VStack(alignment: .leading, spacing: 3) {

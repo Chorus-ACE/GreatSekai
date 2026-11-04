@@ -45,11 +45,13 @@ struct StoryPlayerView: View {
     @State private var retry = 0
     @State private var muted = false
     @State private var muteChosen = false
+    
+    let cornerRadius: CGFloat = 7
 
     var body: some View {
         VStack {
             ZStack {
-                Rectangle().fill(.black)
+                RoundedRectangle(cornerRadius: cornerRadius).fill(.black)
                 if requested {
                     if let configuration {
                         StoryPlayerWebView(configuration: configuration, active: scenePhase == .active,
@@ -57,6 +59,7 @@ struct StoryPlayerView: View {
                                            currentLineID: $currentLineID, playing: $playing,
                                            muted: $muted, fullscreen: $fullscreen, controls: $playbackControls, jump: jump)
                             .id("\(locale.rawValue)-\(retry)")
+                            .mask(RoundedRectangle(cornerRadius: cornerRadius))
                     }
                     if loading, error == nil {
                         ProgressView("Story.player.loading")
@@ -103,7 +106,7 @@ struct StoryPlayerView: View {
                 }
                 #endif
             }
-            .aspectRatio(fullscreen ? nil : 16.0 / 9, contentMode: .fit)
+            .aspectRatio(16.0 / 9, contentMode: .fit)
             .clipped()
             if !fullscreen {
                 controls

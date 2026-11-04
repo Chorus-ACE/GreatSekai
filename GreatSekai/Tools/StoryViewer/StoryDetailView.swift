@@ -1,6 +1,7 @@
 // Transcript presentation adapted from Greatdori (Apache-2.0).
 // https://greatdori.com/LICENSE.txt
 import AVKit
+import Combine
 import SekaiKit
 import SwiftUI
 import SDWebImageSwiftUI
@@ -22,6 +23,54 @@ struct StoryDetailView: View {
     @State private var jump: StoryPlayerCommand?
     @State private var searchSelection: Int?
     @State private var searchNavigationID = UUID()
+    @State private var detailSheetIsDisplaying = false
+    @State private var translationLanguage: SekaiLocale?
+    @AppStorage("Story.translation.alwaysUseModel") private var alwaysUseModel = false
+    @State private var translation = StoryTranslation()
+    @State private var translationRetryID = 0
+
+    private var translationRequest: StoryTranslation.Request {
+        var modelID = ""
+        var configuration: OnlineModelConfiguration?
+        var chatGPTProfile: ChatGPTProfile?
+        if #available(iOS 27.0, macOS 27.0, *) {
+            let manager = LanguageModelManager.shared
+            modelID = manager.selectedID
+            configuration = manager.onlineModels.first { $0.id == modelID }
+            chatGPTProfile = ChatGPTConnection.shared.profiles.first { $0.id == modelID }
+        }
+        return .init(episode: currentEpisode ?? episode, transcript: transcript,
+                     target: translationLanguage, alwaysUseModel: alwaysUseModel,
+                     modelID: modelID, configuration: configuration, chatGPTProfile: chatGPTProfile, retryID: translationRetryID)
+    }
+
+    private var preferredModelName: String {
+        if #available(iOS 27.0, macOS 27.0, *) {
+            let manager = LanguageModelManager.shared
+            return manager.entries.first { $0.id == manager.selectedID }?.name ?? manager.selectedID
+        }
+        return String(localized: "Settings.models.requires-system")
+    }
+
+    @ViewBuilder private var translationStatus: some View {
+        if translationLanguage != nil {
+            VStack(alignment: .leading, spacing: 8) {
+                if let status = translation.status {
+                    HStack {
+                        if translation.isLoading { ProgressView().controlSize(.small) }
+                        Text(status).foregroundStyle(.secondary)
+                    }
+                }
+                if let error = translation.error {
+                    Text(error).foregroundStyle(.secondary)
+                    Button("General.retry") { translationRetryID += 1 }
+                }
+            }
+            .font(.callout)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
     @AccessibilityFocusState private var accessibilityLine: Int?
     @FocusState private var focusedLine: Int?
     @FocusState private var searchFieldFocused: Bool
@@ -83,6 +132,7 @@ struct StoryDetailView: View {
                                 .id("story-player")
                             if !fullscreen {
                                 DetailSectionsSpacer(height: 15)
+                                translationStatus
                                 LazyVStack(alignment: .leading) {
                                     if transcript.lines.isEmpty {
                                         ContentUnavailableView("Story.no-dialogue", systemImage: "text.bubble")
@@ -172,9 +222,11 @@ struct StoryDetailView: View {
         .toolbar {
             if !fullscreen {
                 ToolbarItem {
-                    Menu {
-                        LocalePicker($locale) { Text("Story.region") }.pickerStyle(.inline)
-                    } label: { Label("Story.region", systemImage: "globe") }
+                    Button(action: {
+                        detailSheetIsDisplaying = true
+                    }, label: {
+                        Label("Story.region", systemImage: "globe")
+                    })
                 }
                 if !query.isEmpty {
                     ToolbarItem {
@@ -195,13 +247,36 @@ struct StoryDetailView: View {
         #endif
         .navigationBarBackButtonHidden(fullscreen)
         .task(id: "\(episode.id)-\(locale.rawValue)-\(retryID)") { await load() }
+        .task(id: translationRequest) { await translation.load(translationRequest) }
+        .onChange(of: locale) {
+            if translationLanguage == locale {
+                translationLanguage = SekaiLocale.secondaryLocale != locale ? .secondaryLocale
+                    : SekaiLocale.allCases.first { $0 != locale }
+            }
+        }
         .onReceive(player.publisher(for: \.timeControlStatus)) { status in
             voiceLineID = status == .playing ? requestedVoiceLineID : nil
+        }
+        .onReceive(player.publisher(for: \.currentItem).map { item in
+            item?.publisher(for: \.status).eraseToAnyPublisher()
+                ?? Just(AVPlayerItem.Status.unknown).eraseToAnyPublisher()
+        }.switchToLatest()) { status in
+            if status == .failed { stopVoice() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemFailedToPlayToEndTime)) { notification in
+            if let item = notification.object as? AVPlayerItem, item === player.currentItem { stopVoice() }
         }
         .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime)) { notification in
             if let item = notification.object as? AVPlayerItem, item === player.currentItem { stopVoice() }
         }
         .onDisappear { stopVoice() }
+        .sheet(isPresented: $detailSheetIsDisplaying, content: {
+            StoryLanguageView(language: $locale, translationLanguage: $translationLanguage,
+                              alwaysUseModel: $alwaysUseModel,
+                              translationStatus: translation.status, translationError: translation.error,
+                              preferredModelName: preferredModelName,
+                              retryTranslation: { translationRetryID += 1 })
+        })
     }
 
     private func isSceneCaption(_ line: StoryTranscript.Line) -> Bool {
@@ -213,7 +288,16 @@ struct StoryDetailView: View {
         let dimmed = !query.isEmpty && !matches.contains(line.id)
         Group {
             if isSceneCaption(line) {
-                HighlightableText(line.text)
+                VStack(spacing: 4) {
+                    HighlightableText(line.text)
+                        .typesettingLanguage(.explicit(locale.nsLocale.language))
+                    
+                    if let translated = translation.lines[line.id] {
+                        HighlightableText(translated.text)
+                            .foregroundStyle(.secondary)
+                            .typesettingLanguage(.explicit(translationLanguage?.nsLocale.language ?? locale.nsLocale.language))
+                    }
+                }
                     .font(.body).underline()
                     .foregroundStyle(currentLineID == line.id ? Color.accentColor : Color.primary)
                     .multilineTextAlignment(.center)
@@ -223,8 +307,11 @@ struct StoryDetailView: View {
                     .contentShape(Rectangle())
                     .onTapGesture { jumpTo(line) }
             } else {
-                StoryDialogueRow(line: line, isCurrent: currentLineID == line.id,
+                StoryDialogueRow(line: line, sourceLanguage: locale,
+                                 translation: translation.lines[line.id], translationLanguage: translationLanguage,
+                                 isCurrent: currentLineID == line.id,
                                  voicePlaying: voiceLineID == line.id,
+                                 voiceLoading: requestedVoiceLineID == line.id && voiceLineID != line.id,
                                  playVoice: { playVoice(line) }, jump: { jumpTo(line) })
             }
         }
@@ -303,8 +390,12 @@ struct StoryDetailView: View {
 
 private struct StoryDialogueRow: View {
     let line: StoryTranscript.Line
+    let sourceLanguage: SekaiLocale
+    let translation: StoryTranslation.Text?
+    let translationLanguage: SekaiLocale?
     let isCurrent: Bool
     let voicePlaying: Bool
+    let voiceLoading: Bool
     var playVoice: () -> Void
     var jump: () -> Void
 
@@ -334,7 +425,18 @@ private struct StoryDialogueRow: View {
                 HStack {
                     HStack {
                         characterIcon
-                            HighlightableText(speaker).font(.headline)
+
+                        Group {
+                            HighlightableText(speaker)
+                                .typesettingLanguage(.explicit(sourceLanguage.nsLocale.language))
+
+                            if !isNarrator, let translation, translation.speaker != speaker {
+                                HighlightableText(translation.speaker)
+                                    .foregroundStyle(.secondary)
+                                    .typesettingLanguage(.explicit(translationLanguage?.nsLocale.language ?? .init(identifier: "en")))
+                            }
+                        }
+                        .font(.headline)
                     }
                     .accessibilityElement(children: .combine)
                     .contentShape(Rectangle())
@@ -345,14 +447,27 @@ private struct StoryDialogueRow: View {
                         .onTapGesture(perform: jump)
                     if line.voiceURL != nil {
                         Button(action: playVoice) {
-                            Image(systemName: voicePlaying ? "speaker.wave.2.fill" : "speaker.wave.2")
-                                .foregroundStyle(voicePlaying ? Color.accentColor : Color.primary)
+                            if voiceLoading {
+                                ProgressView().controlSize(.small)
+                            } else {
+                                Image(systemName: voicePlaying ? "speaker.wave.2.fill" : "speaker.wave.2")
+                                    .foregroundStyle(voicePlaying ? Color.accentColor : Color.primary)
+                            }
                         }
                         .buttonStyle(.borderless)
                         .accessibilityLabel(Text("Story.play-voice"))
                     }
                 }
-                HighlightableText(displayedText)
+                Group {
+                    HighlightableText(displayedText)
+                        .typesettingLanguage(.explicit(sourceLanguage.nsLocale.language))
+
+                    if let translation {
+                        HighlightableText(translation.text)
+                            .foregroundStyle(.secondary)
+                            .typesettingLanguage(.explicit(translationLanguage?.nsLocale.language ?? .init(identifier: "en")))
+                    }
+                }
                     .font(.body)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
@@ -389,5 +504,84 @@ private struct StoryDialogueRow: View {
         }
         .frame(width: 20, height: 20)
         .accessibilityHidden(true)
+    }
+}
+
+
+struct StoryLanguageView: View {
+    @Binding var language: SekaiLocale
+    @Binding var translationLanguage: SekaiLocale?
+    @Binding var alwaysUseModel: Bool
+    let translationStatus: String?
+    let translationError: String?
+    let preferredModelName: String
+    let retryTranslation: () -> Void
+    @State private var lastTranslationLanguage = SekaiLocale.secondaryLocale
+
+    private var options: [SekaiLocale] { SekaiLocale.allCases.filter { $0 != language } }
+    private var selectedLanguage: SekaiLocale { translationLanguage ?? (options.contains(lastTranslationLanguage) ? lastTranslationLanguage : options[0]) }
+    private var useTranslate: Binding<Bool> {
+        Binding(get: { translationLanguage != nil }, set: { enabled in
+            if enabled { translationLanguage = selectedLanguage }
+            else {
+                lastTranslationLanguage = translationLanguage ?? selectedLanguage
+                translationLanguage = nil
+            }
+        })
+    }
+
+    @Environment(\.dismiss) var dismiss
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Story.language.main") {
+                    LocalePicker($language, label: {
+                        Text("Story.language.main")
+                    })
+                }
+
+                Section("Story.language.translate") {
+                    Toggle("Story.language.translate.toggle", isOn: useTranslate)
+                    if translationLanguage != nil {
+                        Picker("Story.language.translate.target", selection: Binding(
+                            get: { selectedLanguage },
+                            set: { translationLanguage = $0; lastTranslationLanguage = $0 }
+                        )) {
+                            ForEach(options, id: \.self) { locale in
+                                Text(locale.nsLocale.localizedString(forIdentifier: locale.nsLocale.identifier) ?? locale.rawValue.uppercased())
+                                    .tag(locale)
+                            }
+                        }
+                        Toggle("Story.language.translate.always-model", isOn: $alwaysUseModel)
+                        if let translationStatus { Text(translationStatus).foregroundStyle(.secondary) }
+                        if let translationError {
+                            Text(translationError).foregroundStyle(.secondary)
+                            Button("General.retry", action: retryTranslation)
+                        }
+                        LabeledContent("Story.language.translate.preferred-model", value: preferredModelName)
+                    }
+
+                }
+            }
+            .formStyle(.grouped)
+            .navigationTitle("Story.language")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { dismiss() } label: {
+                        Label("General.done", systemImage: "checkmark")
+                            .wrapIf(true) { content in
+                                #if os(macOS)
+                                content.labelStyle(.titleOnly)
+                                #else
+                                content.labelStyle(.iconOnly)
+                                #endif
+                            }
+                    }
+                }
+            }
+            #if os(macOS)
+            .frame(minWidth: 540, minHeight: 460)
+            #endif
+        }
     }
 }

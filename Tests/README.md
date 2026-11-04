@@ -1,5 +1,18 @@
 # Content and collection validation
 
+After a macOS Xcode build, run
+`sh GreatSekai/Tests/run-story-translation-tests.sh /path/to/Build/Products/Debug`
+to validate official transcript alignment across differing snippet offsets,
+unique voice matching, ambiguous/missing matches, and model JSON validation
+(including missing, duplicate, and unexpected IDs or empty translations).
+These checks use local fixtures and make no model or network requests.
+
+On macOS 27 or later, run `sh GreatSekai/Tests/run-language-model-tests.sh` to
+validate model CRUD, default selection, persistence, protected system entries,
+credential failures, direct `LanguageModelSession` initialization, and a complete
+function-tool round-trip. Network requests are intercepted with `URLProtocol`;
+the suite uses isolated preferences and in-memory credentials, with no real API calls.
+
 Run `sh GreatSekai/Tests/run-lyrics-typography-tests.sh` from the Sekai workspace to
 check performer ID/color resolution, mixed performer groups, contrast in light and
 dark appearances, and native ruby annotation ranges and wrapping. The renderer uses
@@ -87,3 +100,26 @@ Fixtures also check empty selections, repeated clearing, symlinks, missing direc
 and preservation of unrelated files. SDWebImage and WebKit caches use their respective
 framework APIs; WebKit does not expose cache byte counts, so the UI labels those
 resources as system-managed instead of reporting zero bytes.
+
+## ChatGPT connections
+
+`sh GreatSekai/Tests/run-language-model-tests.sh` also runs the ChatGPT tests.
+They verify signed RSA identities (including forged tokens and incorrect claims),
+callback state and registration isolation, identity-only grants, SSE completion and
+late failures, serialized token rotation, sign-out during refresh, and an actual
+loopback callback exchange. The tests use generated keys and in-memory credentials;
+no OpenAI account or live inference is needed.
+
+The ChatGPT provider supports text sessions, including story translation, on iOS 27
+and macOS 27. Tools, guided generation, and unsupported sampling controls fail
+explicitly. OAuth tokens stay in device-only Keychain entries; only account labels,
+registration IDs, model choices, and the installation host ID are in UserDefaults.
+The listener binds only to `127.0.0.1` and is closed on completion, cancellation, or
+a five-minute timeout. macOS requires the incoming-network sandbox capability.
+iOS presents SFSafariViewController to keep the app's callback listener running.
+
+Manual verification still requires an eligible real account: authorize plan use,
+select an account-provided model, translate a story, restart and verify renewal,
+switch registrations, deny plan usage, and disconnect from ChatGPT Settings.
+Verify the Safari callback on an iPhone/iPad; compilation and the macOS loopback
+test do not establish end-to-end mobile OAuth behavior.
