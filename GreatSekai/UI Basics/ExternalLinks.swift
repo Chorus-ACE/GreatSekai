@@ -191,6 +191,14 @@ private struct ExternalLinkRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .contextMenu {
+            Button("External-link.copy-link", systemImage: "doc.on.doc") {
+                Task { @MainActor in
+                    let url = await item.url()
+                    copyStringToClipboard(url.absoluteString)
+                }
+            }
+        }
         .disabled(opening)
         .frame(minHeight: rowHeight * (platform == .iOS ? 0.75 : 1))
     }

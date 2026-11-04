@@ -30,13 +30,6 @@ import SwiftUI
         tabValue: .cards,
         destination: { CardSearchView() }
     ),
-//    InfoDestinationItem(
-//        title: "App.info.costumes",
-//        symbol: "swatchpalette",
-//        lightColor: .blue,
-//        tabValue: .costumes,
-//        destination: {CostumeSearchView()}
-//    ),
     InfoDestinationItem(
         title: "App.info.events",
         symbol: "star.hexagon",
@@ -65,10 +58,34 @@ import SwiftUI
         tabValue: .stickers,
         destination: { StickerSearchView() }
     ),
-    InfoDestinationItem(title: "App.info.titles", symbol: "rosette", lightColor: .purple, tabValue: .titles, destination: { HonorSearchView() }),
-    InfoDestinationItem(title: "App.info.virtual-lives", symbol: "microphone.dynamic.on.stand", lightColor: .pink, tabValue: .virtualLives, destination: { VirtualLiveSearchView() }),
-    InfoDestinationItem(title: "App.info.comics", symbol: "book", lightColor: .brown, tabValue: .comics, destination: { ComicSearchView() }),
-    InfoDestinationItem(title: "App.info.fixtures", symbol: "chair.lounge", lightColor: .teal, tabValue: .fixtures, destination: { MySekaiFixtureSearchView() }),
+    InfoDestinationItem(
+        title: "App.info.titles",
+        symbol: "rosette",
+        lightColor: .indigo,
+        tabValue: .titles,
+        destination: { HonorSearchView() }
+    ),
+    InfoDestinationItem(
+        title: "App.info.virtual-lives",
+        symbol: "microphone.dynamic.on.stand",
+        lightColor: .purple,
+        tabValue: .virtualLives,
+        destination: { VirtualLiveSearchView() }
+    ),
+    InfoDestinationItem(
+        title: "App.info.comics",
+        symbol: "book",
+        lightColor: .brown,
+        tabValue: .comics,
+        destination: { ComicSearchView() }
+    ),
+    InfoDestinationItem(
+        title: "App.info.fixtures",
+        symbol: "chair.lounge",
+        lightColor: .teal,
+        tabValue: .fixtures,
+        destination: { MySekaiFixtureSearchView() }
+    ),
 //    InfoDestinationItem(
 //        title: "App.info.song-meta",
 //        symbol: "music.note.list",

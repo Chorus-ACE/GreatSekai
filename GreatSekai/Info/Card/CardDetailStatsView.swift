@@ -18,7 +18,6 @@ import SwiftUI
 struct CardDetailStatsView: View {
     let card: Card
     @State private var tab = 1
-    @State private var locale: SekaiLocale = .primaryLocale
     @State private var level = 1.0
     @State private var masterRank = 0
     @State private var episodes = 0
@@ -28,22 +27,11 @@ struct CardDetailStatsView: View {
     let regionalSkills: [SekaiLocale: [Skill]]?
     let retry: () -> Void
 
-    private var regionalCard: Card? { regionalCards?[locale] }
-    private var rules: CardStatRules? { regionalCard?.statRules.majorValue }
-    private var skills: [Skill]? { regionalSkills?[locale] }
-    private var failed: Bool { regionalCards != nil && rules == nil }
-
-    private var availableLocales: [SekaiLocale] {
-        card.name.localizedData?.allAvailableLocales ?? [.primaryLocale]
-    }
-
-    private var activeCard: Card {
-        regionalCard ?? card
-    }
+    private var rules: CardStatRules? { card.statRules }
 
     private var maximumLevel: Int {
         guard let rules else { return 1 }
-        return trained || activeCard.isInitiallySpecialTrained ? (rules.trainedMaxLevel ?? rules.normalMaxLevel) : rules.normalMaxLevel
+        return trained || card.isInitiallySpecialTrained ? (rules.trainedMaxLevel ?? rules.normalMaxLevel) : rules.normalMaxLevel
     }
 
     private var selectedLevel: Int {
@@ -51,25 +39,18 @@ struct CardDetailStatsView: View {
     }
 
     private var power: CardStatRules.Power? {
-        rules?.power(for: activeCard, level: selectedLevel,
+        rules?.power(for: card, level: selectedLevel,
                      masterRank: tab == 0 ? 0 : tab == 1 ? (rules?.masterRanks.last ?? 0) : masterRank,
                      episodes: tab == 0 ? 0 : tab == 1 ? (rules?.episodeCount ?? 0) : episodes,
-                     trained: tab == 1 ? activeCard.canTrain : tab == 0 ? false : trained,
+                     trained: tab == 1 ? card.canTrain : tab == 0 ? false : trained,
                      mySekaiCanvas: tab == 1 ? rules?.mySekaiCanvasBonus != nil : tab == 2 && mySekaiCanvas)
     }
 
     var body: some View {
         Section {
             Group {
-                if failed {
-                    Button(action: retry) {
-                        DetailUnavailableView(title: "Card.stats.unavailable", symbol: "arrow.clockwise")
-                    }
-                    .buttonStyle(.plain)
-                } else if rules == nil {
-                    CustomGroupBox(useExtenedConstraints: true) {
-                        ProgressView()
-                    }
+                if rules == nil {
+                    DetailUnavailableView(title: "Card.stats.unavailable", symbol: "exclamationmark.triangle")
                 } else {
                     VStack {
                         Group {
@@ -120,20 +101,16 @@ struct CardDetailStatsView: View {
                     2: String(localized: "Card.stats.custom")
                 ])
                 Spacer()
-                if availableLocales.count > 1 {
-                    DetailSectionOptionPicker(selection: $locale, options: availableLocales)
-                }
             }
             .frame(maxWidth: infoContentMaxWidth)
             .detailSectionHeader()
         }
-        .onAppear { locale = card.name.majorLocale ?? .primaryLocale }
-        .onChange(of: regionalCard, initial: true) { configureStats() }
+        .onChange(of: card, initial: true) { configureStats() }
         .onChange(of: maximumLevel) { level = min(level, Double(maximumLevel)) }
-        CardDetailSkillsView(card: activeCard, locale: locale, skills: skills) {
+        CardDetailSkillsView(baseCard: card, regionalCards: regionalCards, regionalSkills: regionalSkills) {
             retry()
         }
-        .id("\(card.id)-\(locale.rawValue)")
+        .id(card.id)
     }
 
     private var customControls: some View {
@@ -177,11 +154,11 @@ struct CardDetailStatsView: View {
                             .labelsHidden().toggleStyle(.switch)
                     }
                 }
-                if activeCard.canTrain {
+                if card.canTrain {
                     Divider()
                     ListItem { Text("Card.stats.trained").bold() } value: {
                         Toggle("Card.stats.trained", isOn: $trained).labelsHidden().toggleStyle(.switch)
-                            .disabled(activeCard.isInitiallySpecialTrained)
+                            .disabled(card.isInitiallySpecialTrained)
                     }
                 }
             }
@@ -200,8 +177,8 @@ struct CardDetailStatsView: View {
 
     private func configureStats() {
         mySekaiCanvas = false
-        guard let loaded = regionalCard, let rules else { return }
-        trained = loaded.canTrain || loaded.isInitiallySpecialTrained
+        guard let rules else { return }
+        trained = card.canTrain || card.isInitiallySpecialTrained
         level = Double(trained ? (rules.trainedMaxLevel ?? rules.normalMaxLevel) : rules.normalMaxLevel)
         masterRank = rules.masterRanks.last ?? 0
         episodes = rules.episodeCount
@@ -210,9 +187,16 @@ struct CardDetailStatsView: View {
 }
 
 private struct CardDetailSkillsView: View {
-    let card: Card
-    let locale: SekaiLocale
-    let skills: [Skill]?
+    let baseCard: Card
+    let regionalCards: [SekaiLocale: Card]?
+    private var card: Card { regionalCards?[locale] ?? baseCard }
+    let regionalSkills: [SekaiLocale: [Skill]]?
+    @State private var locale: SekaiLocale = .primaryLocale
+
+    private var skills: [Skill]? { regionalSkills?[locale] }
+    private var availableLocales: [SekaiLocale] {
+        baseCard.name.localizedData?.allAvailableLocales ?? [.primaryLocale]
+    }
     let retry: () -> Void
     @State private var skillLevel = 1
     @State private var trainedSkill = false
@@ -318,11 +302,17 @@ private struct CardDetailSkillsView: View {
                     ])
                 }
                 Spacer()
+                if availableLocales.count > 1 {
+                    DetailSectionOptionPicker(selection: $locale, options: availableLocales)
+                }
             }
             .frame(maxWidth: infoContentMaxWidth)
             .detailSectionHeader()
         }
-        .onAppear { trainedSkill = card.isInitiallySpecialTrained && hasTrainedSkill }
+        .onAppear {
+            locale = baseCard.name.majorLocale ?? .primaryLocale
+            trainedSkill = card.isInitiallySpecialTrained && hasTrainedSkill
+        }
         .onChange(of: levels, initial: true) {
             if !levels.contains(skillLevel) {
                 skillLevel = levels.first ?? 1

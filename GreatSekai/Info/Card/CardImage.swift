@@ -107,7 +107,7 @@ struct CardImage: View {
             }
             
             return result.compactMap({ $0 })
-        }(), sectionTitle: (focusIndex < 0 ? "Image.image.untrained" : focusIndex > 0 ? "Image.image.trained" : nil)) {
+        }(), sectionTitle: (focusIndex < 0 ? "Image.card.normal" : focusIndex > 0 ? "Image.card.trained" : nil)) {
             if showNavigationHints {
                 CardCoverNavigationHints(showCardDetailView: $showCardDetailView, card: card)
             }

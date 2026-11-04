@@ -45,12 +45,14 @@ struct StoryPlayerView: View {
     @State private var retry = 0
     @State private var muted = false
     @State private var muteChosen = false
+    
+    let cornerRadius: CGFloat = 7
 
     var body: some View {
         VStack {
             StoryStageLayout(fullscreen: fullscreen) {
                 ZStack {
-                    Rectangle().fill(.black)
+                    RoundedRectangle(cornerRadius: cornerRadius).fill(.black)
                     if requested {
                         if let renderer {
                             AstrayStoryView(
@@ -58,6 +60,7 @@ struct StoryPlayerView: View {
                                 contentMode: fillsScreen ? .fill : .fit,
                                 safeAreaInsets: safeAreaInsets
                             )
+                          .mask(RoundedRectangle(cornerRadius: cornerRadius))
                         }
                         if loading, error == nil {
                             ProgressView("Story.player.loading")
