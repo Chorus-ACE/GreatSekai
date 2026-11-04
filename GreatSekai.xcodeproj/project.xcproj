@@ -39,7 +39,15 @@
     },
   ],
   "files": [
+    { "path": "Packages/Astray/Astray.xcodeproj" },
     {
+      "path": "<PRODUCTS>/Astray.framework",
+      "type": "wrapper.framework",
+      "target-membership": [
+        { "build-phase": "GreatSekai/copy/Embed Frameworks", "code-sign-on-copy": true, "header-preservation": "remove-on-copy" },
+        "GreatSekai/frameworks",
+      ],
+    }, {
       "kind": "group",
       "name": "GreatSekaiWidgets",
       "children": [
@@ -262,9 +270,10 @@
               "name": "StoryViewer",
               "children": [
                 { "path": "<PROJECT>/GreatSekai/Tools/StoryViewer/StoryViewerView.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
-                { "path": "<PROJECT>/GreatSekai/Resources/StoryPlayerWeb.bundle", "target-membership": [ "GreatSekai/resources" ] },
                 { "path": "<PROJECT>/GreatSekai/Tools/StoryViewer/StoryDetailView.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
                 { "path": "<PROJECT>/GreatSekai/Tools/StoryViewer/StoryPlayerView.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "<PROJECT>/GreatSekai/Tools/StoryViewer/StoryPlaybackDocument.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "<PROJECT>/GreatSekai/Tools/StoryViewer/StoryPlaybackAssets.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
               ],
             }, {
               "kind": "group",
@@ -323,6 +332,10 @@
           "kind": "copy",
           "name": "Embed App Extensions",
           "bundle-base-path": "plugins-directory",
+        }, {
+          "kind": "copy",
+          "name": "Embed Frameworks",
+          "bundle-base-path": "frameworks-directory",
         },
         "compile-sources",
         "frameworks",
@@ -397,6 +410,7 @@
         "ENABLE_RESOURCE_ACCESS_PRINTING": "NO",
         "ENABLE_RESOURCE_ACCESS_USB": "NO",
         "ENABLE_USER_SELECTED_FILES": "readwrite",
+        "EXCLUDED_ARCHS[sdk=iphonesimulator*]": "arm64",
         "GENERATE_INFOPLIST_FILE": "YES",
         "INFOPLIST_FILE": "GreatSekai/Info.plist",
         "INFOPLIST_KEY_CFBundleDisplayName": "GreatSekai",

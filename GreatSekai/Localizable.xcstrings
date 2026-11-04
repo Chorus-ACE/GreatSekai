@@ -15516,6 +15516,40 @@
         }
       }
     },
+    "Settings.birthday-time-zone.name.adaptive" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System Time"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "システム時刻"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "시스템 시간"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统时间"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系統時間"
+          }
+        }
+      }
+    },
     "Settings.birthday-time-zone.name.CST" : {
       "localizations" : {
         "en" : {
@@ -15652,7 +15686,7 @@
         }
       }
     },
-    "Settings.birthday-time-zone.name.adaptive" : {
+    "Settings.birthday-time-zone.selection.adaptive" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15682,6 +15716,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "系統時間"
+          }
+        }
+      }
+    },
+    "Settings.birthday-time-zone.selection.adaptive.abbr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follow System"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "システムに従う"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "시스템 설정 따르기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统时区"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系統時區"
           }
         }
       }
@@ -15822,6 +15890,40 @@
         }
       }
     },
+    "Settings.birthday-time-zone.selection.PT.abbr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PT"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "PT"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "PT"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PT"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PT"
+          }
+        }
+      }
+    },
     "Settings.birthday-time-zone.selection.PT.PDT" : {
       "localizations" : {
         "en" : {
@@ -15890,40 +15992,6 @@
         }
       }
     },
-    "Settings.birthday-time-zone.selection.PT.abbr" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PT"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "PT"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "PT"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PT"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PT"
-          }
-        }
-      }
-    },
     "Settings.birthday-time-zone.selection.UTC" : {
       "localizations" : {
         "en" : {
@@ -15988,74 +16056,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "UTC"
-          }
-        }
-      }
-    },
-    "Settings.birthday-time-zone.selection.adaptive" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System Time"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "システム時刻"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "시스템 시간"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "系统时间"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "系統時間"
-          }
-        }
-      }
-    },
-    "Settings.birthday-time-zone.selection.adaptive.abbr" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Follow System"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "システムに従う"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "시스템 설정 따르기"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "系统时区"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "系統時區"
           }
         }
       }
@@ -17780,18 +17780,6 @@
             "value" : "Copy lyric line"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "复制这行歌词"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "複製這行歌詞"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17802,6 +17790,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이 가사 줄 복사"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制这行歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "複製這行歌詞"
           }
         }
       }
@@ -20118,6 +20118,7 @@
     },
     "Story.player.continue" : {
       "comment" : "Embedded story player: continue",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20257,6 +20258,7 @@
     },
     "Story.player.files" : {
       "comment" : "Embedded story player: files",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20583,6 +20585,7 @@
     },
     "Story.player.models" : {
       "comment" : "Embedded story player: models",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20725,6 +20728,7 @@
     },
     "Story.player.preload-failed" : {
       "comment" : "Embedded story player: preload-failed",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20760,6 +20764,7 @@
     },
     "Story.player.preloading" : {
       "comment" : "Embedded story player: preloading",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20795,6 +20800,7 @@
     },
     "Story.player.process-ended" : {
       "comment" : "Embedded story player: process-ended",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20889,6 +20895,7 @@
     },
     "Story.player.start" : {
       "comment" : "Embedded story player: start",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

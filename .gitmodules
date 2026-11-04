@@ -1,0 +1,3 @@
+[submodule "Packages/Astray"]
+	path = Packages/Astray
+	url = https://github.com/Chorus-ACE/Astray.git
