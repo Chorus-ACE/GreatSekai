@@ -20652,6 +20652,7 @@
     },
     "Story.player.continue" : {
       "comment" : "Embedded story player: continue",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20791,6 +20792,7 @@
     },
     "Story.player.files" : {
       "comment" : "Embedded story player: files",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21069,6 +21071,7 @@
     },
     "Story.player.models" : {
       "comment" : "Embedded story player: models",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21139,6 +21142,7 @@
     },
     "Story.player.preload-failed" : {
       "comment" : "Embedded story player: preload-failed",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21174,6 +21178,7 @@
     },
     "Story.player.preloading" : {
       "comment" : "Embedded story player: preloading",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21209,6 +21214,7 @@
     },
     "Story.player.process-ended" : {
       "comment" : "Embedded story player: process-ended",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21279,6 +21285,7 @@
     },
     "Story.player.start" : {
       "comment" : "Embedded story player: start",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

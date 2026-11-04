@@ -120,84 +120,102 @@ struct StoryDetailView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(spacing: fullscreen ? 0 : 20) {
-                        if let transcript {
-                            StoryPlayerView(episode: currentEpisode ?? episode, locale: locale,
-                                            currentLineID: $currentLineID, playing: $playing,
-                                            fullscreen: $fullscreen, jump: jump, transcript: transcript.lines, stopTranscriptVoice: stopVoice)
-                                .frame(height: fullscreen ? geometry.size.height : nil)
-                                .id("story-player")
-                            if !fullscreen {
-                                DetailSectionsSpacer(height: 15)
-                                translationStatus
-                                LazyVStack(alignment: .leading) {
-                                    if transcript.lines.isEmpty {
-                                        ContentUnavailableView("Story.no-dialogue", systemImage: "text.bubble")
+        GeometryReader { container in
+            #if os(iOS)
+            let fillsScreen = fullscreen && container.size.width > container.size.height
+            #else
+            let fillsScreen = false
+            #endif
+            GeometryReader { geometry in
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: fullscreen ? 0 : 20) {
+                            if let transcript {
+                                StoryPlayerView(
+                                    episode: currentEpisode ?? episode,
+                                    locale: locale,
+                                    currentLineID: $currentLineID,
+                                    playing: $playing,
+                                    fullscreen: $fullscreen,
+                                    fillsScreen: fillsScreen,
+                                    safeAreaInsets: fillsScreen ? container.safeAreaInsets : .init(),
+                                    jump: jump,
+                                    transcript: transcript.lines,
+                                    stopTranscriptVoice: stopVoice
+                                )
+                                    .frame(height: fullscreen ? geometry.size.height : nil)
+                                    .id("story-player")
+                                if !fullscreen {
+                                    DetailSectionsSpacer(height: 15)
+                                    LazyVStack(alignment: .leading) {
+                                        if transcript.lines.isEmpty {
+                                            ContentUnavailableView("Story.no-dialogue", systemImage: "text.bubble")
+                                        }
+                                        ForEach(Array(transcript.lines.enumerated()), id: \.element.id) { index, line in
+                                            transcriptRow(line,
+                                                          previous: index > 0 ? transcript.lines[index - 1] : nil,
+                                                          next: index + 1 < transcript.lines.count ? transcript.lines[index + 1] : nil)
+                                                .id(line.id)
+                                                #if os(macOS)
+                                                .contentShape(.focusEffect, RoundedRectangle(cornerRadius: 20))
+                                                #endif
+                                                .focusable(interactions: .activate)
+                                                .focused($focusedLine, equals: line.id)
+                                                .accessibilityFocused($accessibilityLine, equals: line.id)
+                                        }
                                     }
-                                    ForEach(Array(transcript.lines.enumerated()), id: \.element.id) { index, line in
-                                        transcriptRow(line,
-                                                      previous: index > 0 ? transcript.lines[index - 1] : nil,
-                                                      next: index + 1 < transcript.lines.count ? transcript.lines[index + 1] : nil)
-                                            .id(line.id)
-                                            #if os(macOS)
-                                            .contentShape(.focusEffect, RoundedRectangle(cornerRadius: 20))
-                                            #endif
-                                            .focusable(interactions: .activate)
-                                            .focused($focusedLine, equals: line.id)
-                                            .accessibilityFocused($accessibilityLine, equals: line.id)
-                                    }
+                                    .environment(\.searchedKeyword, $query)
+                                    .typesettingLanguage(.explicit(.init(identifier: locale.nsLocale.language.minimalIdentifier)))
+                                    ExternalLinksSection(links: storyExternalLinks)
                                 }
-                                .environment(\.searchedKeyword, $query)
-                                .typesettingLanguage(.explicit(.init(identifier: locale.nsLocale.language.minimalIdentifier)))
-                                ExternalLinksSection(links: storyExternalLinks)
+                            } else if failed {
+                                ContentUnavailableView {
+                                    Label("Story.unavailable", systemImage: "books.vertical")
+                                } actions: {
+                                    Button("General.retry") { retryID += 1 }
+                                }
+                            } else {
+                                ProgressView().controlSize(.large)
+                                    .frame(maxWidth: .infinity, minHeight: 200)
                             }
-                        } else if failed {
-                            ContentUnavailableView {
-                                Label("Story.unavailable", systemImage: "books.vertical")
-                            } actions: {
-                                Button("General.retry") { retryID += 1 }
-                            }
-                        } else {
-                            ProgressView().controlSize(.large)
-                                .frame(maxWidth: .infinity, minHeight: 200)
+                        }
+                        .frame(maxWidth: fullscreen ? .infinity : infoContentMaxWidth)
+                        .padding(fullscreen ? 0 : 16)
+                        .frame(maxWidth: .infinity)
+                    }
+                    .scrollDisabled(fullscreen)
+                    // Resizing must not replace the subtree that owns playback state.
+                    .contentMargins(.all, fillsScreen ? 0 : nil, for: .scrollContent)
+                    .onChange(of: fullscreen) {
+                        if fullscreen { proxy.scrollTo("story-player", anchor: .top) }
+                    }
+                    .onChange(of: query) {
+                        searchSelection = matches.first
+                        if let first = matches.first {
+                            withAnimation { proxy.scrollTo(first, anchor: .center) }
+                            accessibilityLine = first
                         }
                     }
-                    .frame(maxWidth: fullscreen ? .infinity : infoContentMaxWidth)
-                    .padding(fullscreen ? 0 : 16)
-                    .frame(maxWidth: .infinity)
-                }
-                .scrollDisabled(fullscreen)
-                .onChange(of: fullscreen) {
-                    if fullscreen { proxy.scrollTo("story-player", anchor: .top) }
-                }
-                .onChange(of: query) {
-                    searchSelection = matches.first
-                    if let first = matches.first {
-                        withAnimation { proxy.scrollTo(first, anchor: .center) }
-                        accessibilityLine = first
+                    .onChange(of: searchNavigationID) {
+                        guard let searchSelection else { return }
+                        let navigationID = searchNavigationID
+                        focusedLine = nil
+                        withAnimation(.default) {
+                            proxy.scrollTo(searchSelection, anchor: .center)
+                        } completion: {
+                            guard searchNavigationID == navigationID, self.searchSelection == searchSelection else { return }
+                            focusedLine = searchSelection
+                            accessibilityLine = searchSelection
+                        }
                     }
-                }
-                .onChange(of: searchNavigationID) {
-                    guard let searchSelection else { return }
-                    let navigationID = searchNavigationID
-                    focusedLine = nil
-                    withAnimation(.default) {
-                        proxy.scrollTo(searchSelection, anchor: .center)
-                    } completion: {
-                        guard searchNavigationID == navigationID, self.searchSelection == searchSelection else { return }
-                        focusedLine = searchSelection
+                    .onChange(of: searchSelection) {
+                        guard let searchSelection else { focusedLine = nil; accessibilityLine = nil; return }
+                        withAnimation { proxy.scrollTo(searchSelection, anchor: .center) }
                         accessibilityLine = searchSelection
                     }
                 }
-                .onChange(of: searchSelection) {
-                    guard let searchSelection else { focusedLine = nil; accessibilityLine = nil; return }
-                    withAnimation { proxy.scrollTo(searchSelection, anchor: .center) }
-                    accessibilityLine = searchSelection
-                }
             }
+            .ignoresSafeArea(.container, edges: fillsScreen ? .all : [])
         }
         .navigationTitle(currentEpisode?.title ?? String(localized: "App.tools.story-viewer"))
         .wrapIf(true) { content in
@@ -244,6 +262,7 @@ struct StoryDetailView: View {
         }
         #if os(iOS)
         .toolbar(fullscreen ? .hidden : .visible, for: .navigationBar, .tabBar)
+        .statusBarHidden(fullscreen)
         #endif
         .navigationBarBackButtonHidden(fullscreen)
         .task(id: "\(episode.id)-\(locale.rawValue)-\(retryID)") { await load() }

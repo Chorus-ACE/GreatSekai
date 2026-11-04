@@ -1,9 +1,9 @@
+import Astray
+import SwiftUI
+import SekaiKit
+import Foundation
 import AVFoundation
 import AudioToolbox
-import Foundation
-import SekaiKit
-import SwiftUI
-import WebKit
 import SDWebImageSwiftUI
 
 struct StoryPlayerCommand: Equatable {
@@ -16,10 +16,6 @@ struct StoryPlaybackControls: Equatable {
     var fast = false
     var uiHidden = false
     var voice = true
-
-    var javaScript: String {
-        "{auto: \(autoPlay), fast: \(fast), uiHidden: \(uiHidden), voice: \(voice)}"
-    }
 }
 
 struct StoryPlayerView: View {
@@ -30,6 +26,8 @@ struct StoryPlayerView: View {
     @Binding var currentLineID: Int?
     @Binding var playing: Bool
     @Binding var fullscreen: Bool
+    let fillsScreen: Bool
+    let safeAreaInsets: EdgeInsets
     let jump: StoryPlayerCommand?
     let transcript: [StoryTranscript.Line]
     let stopTranscriptVoice: () -> Void
@@ -38,7 +36,9 @@ struct StoryPlayerView: View {
     @State private var backlogLines: [StoryTranscript.Line] = []
     @State private var lastTranscriptLineID: Int?
     @State private var requested = false
-    @State private var configuration: String?
+    @State private var player = Astray.StoryPlayer()
+    @State private var renderer: StoryRenderer?
+    @State private var document: StoryPlaybackDocument?
     @State private var error: String?
     @State private var loading = true
     @State private var missingModels = false
@@ -50,63 +50,66 @@ struct StoryPlayerView: View {
 
     var body: some View {
         VStack {
-            ZStack {
-                RoundedRectangle(cornerRadius: cornerRadius).fill(.black)
-                if requested {
-                    if let configuration {
-                        StoryPlayerWebView(configuration: configuration, active: scenePhase == .active,
-                                           loading: $loading, error: $error, missingModels: $missingModels,
-                                           currentLineID: $currentLineID, playing: $playing,
-                                           muted: $muted, fullscreen: $fullscreen, controls: $playbackControls, jump: jump)
-                            .id("\(locale.rawValue)-\(retry)")
-                            .mask(RoundedRectangle(cornerRadius: cornerRadius))
-                    }
-                    if loading, error == nil {
-                        ProgressView("Story.player.loading")
-                            .wrapIf(colorScheme == .light, in: { content in
-                                content.colorInvert()
-                            })
-                            .opacity(0.8)
-//                            .padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-                    }
-                    if let error {
-                        ContentUnavailableView {
-                            Label("Story.player.error", systemImage: "exclamationmark.triangle")
-                        } description: { Text(error) } actions: {
-                            Button("General.retry") { retry += 1 }
+            StoryStageLayout(fullscreen: fullscreen) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: cornerRadius).fill(.black)
+                    if requested {
+                        if let renderer {
+                            AstrayStoryView(
+                                renderer: renderer,
+                                contentMode: fillsScreen ? .fill : .fit,
+                                safeAreaInsets: safeAreaInsets
+                            )
+                          .mask(RoundedRectangle(cornerRadius: cornerRadius))
                         }
-                        .background(.regularMaterial)
+                        if loading, error == nil {
+                            ProgressView("Story.player.loading")
+                                .wrapIf(colorScheme == .light, in: { content in
+                                    content.colorInvert()
+                                })
+                                .opacity(0.8)
+                        }
+                        if let error {
+                            ContentUnavailableView {
+                                Label("Story.player.error", systemImage: "exclamationmark.triangle")
+                            } description: { Text(error) } actions: {
+                                Button("General.retry") { retry += 1 }
+                            }
+                            .padding(safeAreaInsets)
+                            .background(.regularMaterial)
+                        }
+                    } else {
+                        Button(action: {
+                            requested = true
+                        }, label: {
+                            Image(systemName: "play.fill")
+                                .foregroundStyle(.white)
+                                .opacity(0.7)
+                                .font(.system(size: 50))
+                                .accessibilityLabel("Story.player.load")
+                        })
+                        .buttonStyle(.borderless)
                     }
-                } else {
-                    Button(action: {
-                        requested = true
-                    }, label: {
-                        Image(systemName: "play.fill")
-                            .foregroundStyle(.white)
-                            .opacity(0.7)
-                            .font(.system(size: 50))
-                            .accessibilityLabel("Story.player.load")
-                    })
-                    .buttonStyle(.borderless)
-                }
-                #if os(iOS)
-                if requested, !loading, !playbackControls.uiHidden {
-                    VStack {
-                        HStack {
+                    #if os(iOS)
+                    if requested, !loading, !playbackControls.uiHidden {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                actionMenu
+                                    .wrapIf(true) { content in
+                                        if #available(iOS 26.0, *) { content.buttonStyle(.glass) }
+                                        else { content.buttonStyle(.bordered) }
+                                    }
+                                    .buttonBorderShape(.circle)
+                            }
                             Spacer()
-                            actionMenu
-                                .wrapIf(true) { content in
-                                    if #available(iOS 26.0, *) { content.buttonStyle(.glass) }
-                                    else { content.buttonStyle(.bordered) }
-                                }
-                                .buttonBorderShape(.circle)
                         }
-                        Spacer()
-                    }.padding(7)
+                        .padding(7)
+                        .padding(safeAreaInsets)
+                    }
+                    #endif
                 }
-                #endif
             }
-            .aspectRatio(16.0 / 9, contentMode: .fit)
             .clipped()
             if !fullscreen {
                 controls
@@ -141,27 +144,28 @@ struct StoryPlayerView: View {
         }
         .task(id: "\(requested)-\(locale.rawValue)-\(retry)") {
             guard requested else { return }
-            currentLineID = nil
-            lastTranscriptLineID = nil
-            playing = false
-            configuration = nil
-            error = nil
-            missingModels = false
-            loading = true
-            #if os(iOS)
-            try? AVAudioSession.sharedInstance().setCategory(.playback)
-            try? AVAudioSession.sharedInstance().setActive(true)
-            #endif
+            await load()
+        }
+        .onChange(of: scenePhase) { updateActivity() }
+        .onChange(of: backlogPresented) { updateActivity() }
+        .onChange(of: playbackControls) { updateControls() }
+        .onChange(of: muted) { updateControls() }
+        .onChange(of: player.isDialogueHidden) {
+            playbackControls.uiHidden = player.isDialogueHidden
+        }
+        .onChange(of: jump) {
+            guard let jump, let index = document?.snippetIndex(for: jump.lineID) else { return }
             do {
-                let result = try await StoryPlaybackDocument.configuration(for: episode, textLocale: locale)
-                try Task.checkCancellation()
-                configuration = result
-            } catch is CancellationError {
+                try player.jump(to: index)
+                updateActivity()
             } catch {
-                guard !Task.isCancelled else { return }
-                self.error = error.localizedDescription
-                loading = false
+                fail(error)
             }
+        }
+        .onDisappear {
+            player.onEvent = nil
+            player.stop()
+            playing = false
         }
         .task {
             #if os(iOS)
@@ -171,6 +175,88 @@ struct StoryPlayerView: View {
         }
     }
 
+    private func load() async {
+        player.onEvent = nil
+        player.stop()
+        renderer = nil
+        document = nil
+        currentLineID = nil
+        lastTranscriptLineID = nil
+        playing = false
+        error = nil
+        missingModels = false
+        loading = true
+        stopTranscriptVoice()
+        #if os(iOS)
+        try? AVAudioSession.sharedInstance().setCategory(.playback)
+        try? AVAudioSession.sharedInstance().setActive(true)
+        #endif
+        do {
+            let document = try await StoryPlaybackDocument.load(for: episode, textLocale: locale)
+            let renderer = try StoryRenderer(player: player)
+            let resolver = try await document.assetResolver()
+            try Task.checkCancellation()
+            self.document = document
+            player.onEvent = { event in
+                switch event {
+                case .progress(let index, _), .dialogue(let index):
+                    currentLineID = document.lineID(at: index)
+                case .finished:
+                    currentLineID = nil
+                    playing = false
+                case .warning(let warning):
+                    switch warning {
+                    case .assetUnavailable(let url, _) where url.path.contains("/live2d/"):
+                        missingModels = true
+                    case .renderingFailed, .metalUnavailable, .shaderLibraryUnavailable:
+                        fail(warning)
+                    default: break
+                    }
+                default: break
+                }
+            }
+            updateControls()
+            try await player.load(document.scenario, resolver: resolver)
+            try Task.checkCancellation()
+            self.renderer = renderer
+            loading = false
+            updateActivity()
+        } catch is CancellationError {
+        } catch {
+            guard !Task.isCancelled else { return }
+            fail(error)
+        }
+    }
+    
+    private func updateControls() {
+        player.isAutomatic = playbackControls.autoPlay
+        player.isFastForwarding = playbackControls.fast
+        player.isDialogueHidden = playbackControls.uiHidden
+        player.setVolume(
+            bgm: muted ? 0 : 0.7,
+            voice: muted || !playbackControls.voice ? 0 : 1,
+            sound: muted ? 0 : 1
+        )
+    }
+    
+    private func updateActivity() {
+        guard !loading, error == nil else { return }
+        if scenePhase == .active, !backlogPresented {
+            player.play()
+        } else {
+            player.pause()
+        }
+        playing = player.status == .playing
+    }
+    
+    private func fail(_ error: Error) {
+        player.pause()
+        playing = false
+        currentLineID = nil
+        loading = false
+        self.error = error.localizedDescription
+    }
+    
     private var availableBacklog: [StoryTranscript.Line] {
         guard let lastTranscriptLineID,
               let index = transcript.firstIndex(where: { $0.id == lastTranscriptLineID }) else { return [] }
@@ -250,6 +336,35 @@ struct StoryPlayerView: View {
     }
 }
 
+private struct StoryStageLayout: Layout {
+    let fullscreen: Bool
+    
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) -> CGSize {
+        let width = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? 1280
+        let height = proposal.height.flatMap { $0.isFinite ? $0 : nil } ?? width * 9 / 16
+        return .init(width: width, height: fullscreen ? height : width * 9 / 16)
+    }
+    
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) {
+        for subview in subviews {
+            subview.place(
+                at: bounds.origin,
+                anchor: .topLeading,
+                proposal: .init(width: bounds.width, height: bounds.height)
+            )
+        }
+    }
+}
+
 #if os(iOS)
 // Like Greatdori's Mute dependency, infer silent mode from the completion time
 // of a silent System Sound. System Sounds respect the ringer switch even while
@@ -280,283 +395,6 @@ private enum StorySilentMode {
     }
 }
 #endif
-
-/// The JP record supplies staging and audio. Each selected region supplies its own
-/// episode record and scenario URL; bundle paths are never inferred across regions.
-enum StoryPlaybackDocument {
-    static func resolve(_ episode: Episode, in locale: SekaiLocale) async throws -> Episode {
-        if episode.locale == locale { return episode }
-        let episodes = await Episode.all(in: locale, kind: episode.kind)
-        try Task.checkCancellation()
-        guard let match = episodes?.first(where: { $0.episodeID == episode.episodeID && $0.parentID == episode.parentID }) else {
-            throw PlaybackError(key: locale == .jp ? "Story.player.no-jp" : "Story.player.no-region")
-        }
-        return match
-    }
-
-    static func scenario(_ episode: Episode) async throws -> [String: Any] {
-        guard let url = episode.scenarioURL else { throw URLError(.badURL) }
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 30
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try Task.checkCancellation()
-        guard let response = response as? HTTPURLResponse, (200..<300).contains(response.statusCode) else {
-            throw PlaybackError(key: "Story.unavailable")
-        }
-        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              object["Snippets"] is [Any], object["TalkData"] is [Any],
-              object["SpecialEffectData"] is [Any] else {
-            throw PlaybackError(key: "Story.player.invalid-script")
-        }
-        return object
-    }
-
-    static func configuration(for episode: Episode, textLocale: SekaiLocale) async throws -> String {
-        let jp = try await resolve(episode, in: .jp)
-        let script = try await scenario(jp)
-        let menu: [String: String] = [
-            "fullscreen": String(localized: "Story.player.fullscreen"),
-            "auto": String(localized: "Story.player.auto"),
-            "mute": String(localized: "Story.player.mute"),
-            "fast": String(localized: "Story.player.fast"),
-            "hide": String(localized: "Story.player.hide"),
-            "log": String(localized: "Story.player.log")
-        ]
-        let labels: [String: Any] = [
-            "start": String(localized: "Story.player.start"),
-            "loading": String(localized: "Story.player.loading"),
-            "models": String(localized: "Story.player.models"),
-            "files": String(localized: "Story.player.files"),
-            "preloading": String(localized: "Story.player.preloading"),
-            "preloadFailed": String(localized: "Story.player.preload-failed"),
-            "retry": String(localized: "General.retry"),
-            "continue": String(localized: "Story.player.continue"),
-            "menu": menu
-        ]
-        let language = Bundle.main.preferredLocalizations.first ?? "en"
-        let uiLocale = language.hasPrefix("zh") ? "zh" : language.hasPrefix("ja") ? "ja" : "en"
-        let textScript = textLocale == .jp ? "ja" : textLocale == .en ? "latin" : textLocale == .kr ? "ko" : "zh"
-        var object: [String: Any] = [
-            "scenario": script, "kind": jp.kind.rawValue,
-            "textScript": textScript, "language": textLocale.nsLocale.identifier,
-            "uiLocale": uiLocale, "closeLabel": String(localized: "General.done"), "labels": labels
-        ]
-        if jp.kind == .event {
-            let path = jp.scenarioPath.split(separator: "/")
-            guard path.count > 1, path[0] == "event_story" else { throw PlaybackError(key: "Story.player.invalid-script") }
-            object["eventBundle"] = String(path[1])
-        }
-        if textLocale != .jp {
-            let regional = try await resolve(episode, in: textLocale)
-            object["regional"] = try await scenario(regional)
-        }
-        let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
-        guard let json = String(data: data, encoding: .utf8) else { throw PlaybackError(key: "Story.player.invalid-script") }
-        return json
-    }
-
-    struct PlaybackError: LocalizedError {
-        let key: String
-        var errorDescription: String? { NSLocalizedString(key, comment: "") }
-    }
-}
-
-@MainActor final class StoryPlayerWebCoordinator: NSObject, WKURLSchemeHandler, WKScriptMessageHandler, WKNavigationDelegate {
-    var owner: StoryPlayerWebView
-    private var ready = false
-    private var sentConfiguration: String?
-    private var sentActive: Bool?
-    private var stopped = false
-    private var sentMuted: Bool?
-    private var sentJump: UUID?
-    private var sentControls: StoryPlaybackControls?
-
-    init(_ owner: StoryPlayerWebView) { self.owner = owner }
-
-    func webView(_ webView: WKWebView, start urlSchemeTask: any WKURLSchemeTask) {
-        do {
-            guard let url = urlSchemeTask.request.url, url.host == "viewer",
-                  let root = Bundle.main.url(forResource: "StoryPlayerWeb", withExtension: "bundle") else {
-                throw URLError(.fileDoesNotExist)
-            }
-            let file = root.appendingPathComponent(url.path).standardizedFileURL.resolvingSymlinksInPath()
-            guard file.path.hasPrefix(root.resolvingSymlinksInPath().path + "/") else { throw URLError(.noPermissionsToReadFile) }
-            let mime: String
-            switch file.pathExtension {
-            case "html": mime = "text/html"
-            case "js", "mjs": mime = "text/javascript"
-            case "css": mime = "text/css"
-            case "txt": mime = "text/plain"
-            default: throw URLError(.unsupportedURL)
-            }
-            let data = try Data(contentsOf: file)
-            let response = URLResponse(url: url, mimeType: mime, expectedContentLength: data.count, textEncodingName: "utf-8")
-            urlSchemeTask.didReceive(response)
-            urlSchemeTask.didReceive(data)
-            urlSchemeTask.didFinish()
-        } catch {
-            urlSchemeTask.didFailWithError(error)
-        }
-    }
-
-    func webView(_ webView: WKWebView, stop urlSchemeTask: any WKURLSchemeTask) {}
-
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard !stopped, message.frameInfo.isMainFrame,
-              message.frameInfo.request.url?.scheme == "sekai-story",
-              let body = message.body as? [String: Any], let type = body["type"] as? String else { return }
-        switch type {
-        case "ready":
-            ready = true
-            if let view = message.webView { update(view) }
-        case "mode":
-            if let muted = body["muted"] as? Bool { owner.muted = muted }
-            if let auto = body["auto"] as? Bool, let fast = body["fast"] as? Bool,
-               let hidden = body["uiHidden"] as? Bool, let voice = body["voice"] as? Bool {
-                owner.controls = StoryPlaybackControls(autoPlay: auto, fast: fast, uiHidden: hidden, voice: voice)
-            }
-        case "fullscreen": owner.fullscreen = true
-        case "playing": owner.playing = true
-        case "progress": owner.currentLineID = body["transcriptIndex"] as? Int
-        case "ended": owner.currentLineID = nil; owner.playing = false
-        case "loading":
-            owner.playing = false
-            owner.currentLineID = nil
-            owner.loading = true
-        case "prepared", "loaded": owner.loading = false
-        case "missingModels": owner.missingModels = true
-        case "error":
-            owner.playing = false
-            owner.currentLineID = nil
-            owner.loading = false
-            let message = body["message"] as? String ?? ""
-            owner.error = message == "regionalMismatch" ? String(localized: "Story.player.regional-mismatch") : message
-        default: break
-        }
-    }
-
-    func update(_ view: WKWebView) {
-        guard ready, !stopped else { return }
-        // Set lifecycle state before loading so a page initialized in the background stays idle.
-        if sentActive != owner.active {
-            sentActive = owner.active
-            view.evaluateJavaScript("window.storyPlayer.setActive(\(owner.active)); null")
-        }
-        if sentControls != owner.controls {
-            sentControls = owner.controls
-            view.evaluateJavaScript("window.storyPlayer.setModes(\(owner.controls.javaScript)); null")
-        }
-        if sentMuted != owner.muted {
-            sentMuted = owner.muted
-            view.evaluateJavaScript("window.storyPlayer.setMuted(\(owner.muted)); null")
-        }
-        if let jump = owner.jump, sentJump != jump.id {
-            sentJump = jump.id
-            view.evaluateJavaScript("window.storyPlayer.jumpTo(\(jump.lineID)); null")
-        }
-        if sentConfiguration != owner.configuration {
-            sentConfiguration = owner.configuration
-            view.evaluateJavaScript("window.storyPlayer.load(\(owner.configuration)); null") { [weak self] _, error in
-                guard let self, !self.stopped, let error else { return }
-                self.owner.error = error.localizedDescription
-                self.owner.loading = false
-            }
-        }
-    }
-
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
-                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        let url = navigationAction.request.url
-        decisionHandler(url?.scheme == "sekai-story" && url?.host == "viewer" ? .allow : .cancel)
-    }
-
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        fail(error)
-    }
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { fail(error) }
-    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
-        guard !stopped else { return }
-        owner.playing = false
-        owner.currentLineID = nil
-        owner.error = String(localized: "Story.player.process-ended")
-        owner.loading = false
-    }
-    private func fail(_ error: Error) {
-        guard !stopped else { return }
-        owner.playing = false
-        owner.currentLineID = nil
-        owner.error = error.localizedDescription
-        owner.loading = false
-    }
-
-    func stop(_ view: WKWebView) {
-        stopped = true
-        view.evaluateJavaScript("window.storyPlayer?.destroy(); null")
-        view.setAllMediaPlaybackSuspended(true)
-        view.stopLoading()
-        view.configuration.userContentController.removeScriptMessageHandler(forName: "storyPlayer")
-        view.navigationDelegate = nil
-    }
-}
-
-#if os(macOS)
-struct StoryPlayerWebView: NSViewRepresentable {
-    let configuration: String
-    let active: Bool
-    @Binding var loading: Bool
-    @Binding var error: String?
-    @Binding var missingModels: Bool
-    @Binding var currentLineID: Int?
-    @Binding var playing: Bool
-    @Binding var muted: Bool
-    @Binding var fullscreen: Bool
-    @Binding var controls: StoryPlaybackControls
-    let jump: StoryPlayerCommand?
-    func makeCoordinator() -> StoryPlayerWebCoordinator { StoryPlayerWebCoordinator(self) }
-    func makeNSView(context: Context) -> WKWebView { makeStoryWebView(context.coordinator) }
-    func updateNSView(_ view: WKWebView, context: Context) { context.coordinator.owner = self; context.coordinator.update(view) }
-    static func dismantleNSView(_ view: WKWebView, coordinator: StoryPlayerWebCoordinator) { coordinator.stop(view) }
-}
-#else
-struct StoryPlayerWebView: UIViewRepresentable {
-    let configuration: String
-    let active: Bool
-    @Binding var loading: Bool
-    @Binding var error: String?
-    @Binding var missingModels: Bool
-    @Binding var currentLineID: Int?
-    @Binding var playing: Bool
-    @Binding var muted: Bool
-    @Binding var fullscreen: Bool
-    @Binding var controls: StoryPlaybackControls
-    let jump: StoryPlayerCommand?
-    func makeCoordinator() -> StoryPlayerWebCoordinator { StoryPlayerWebCoordinator(self) }
-    func makeUIView(context: Context) -> WKWebView { makeStoryWebView(context.coordinator) }
-    func updateUIView(_ view: WKWebView, context: Context) { context.coordinator.owner = self; context.coordinator.update(view) }
-    static func dismantleUIView(_ view: WKWebView, coordinator: StoryPlayerWebCoordinator) { coordinator.stop(view) }
-}
-#endif
-
-@MainActor private func makeStoryWebView(_ coordinator: StoryPlayerWebCoordinator) -> WKWebView {
-    let configuration = WKWebViewConfiguration()
-    configuration.setURLSchemeHandler(coordinator, forURLScheme: "sekai-story")
-    configuration.userContentController.add(coordinator, name: "storyPlayer")
-    configuration.preferences.isElementFullscreenEnabled = true
-    configuration.mediaTypesRequiringUserActionForPlayback = []
-    #if !os(macOS)
-    configuration.allowsInlineMediaPlayback = true
-    #endif
-    let view = WKWebView(frame: .zero, configuration: configuration)
-    view.navigationDelegate = coordinator
-    #if os(macOS)
-    view.allowsMagnification = false
-    #else
-    view.scrollView.isScrollEnabled = false
-    view.scrollView.bounces = false
-    #endif
-    view.load(URLRequest(url: URL(string: "sekai-story://viewer/index.html")!))
-    return view
-}
 
 // Backlog layout adapted from Greatdori's ISVBacklogView (Apache-2.0).
 // https://greatdori.com/LICENSE.txt
