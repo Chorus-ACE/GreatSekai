@@ -62,11 +62,15 @@ private struct SongMoviePlayer: View {
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
+    @State private var statusObservation: NSKeyValueObservation?
 
     var body: some View {
         Group {
             if loading {
-                ProgressView().frame(maxWidth: .infinity).aspectRatio(16.0 / 9.0, contentMode: .fit)
+                CustomGroupBox(useExtenedConstraints: true) {
+                    ProgressView()
+                }
+                .aspectRatio(16.0 / 9.0, contentMode: .fit)
             } else if failed {
                 ContentUnavailableView {
                     Label("Song.music-video.unavailable", systemImage: "film")
@@ -74,7 +78,7 @@ private struct SongMoviePlayer: View {
                     Button("General.retry") { retry += 1 }
                 }
             } else {
-                VideoPlayer(player: player)
+                SongVideoPlayerView(player: player)
                     .aspectRatio(16.0 / 9.0, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
             }
@@ -82,15 +86,79 @@ private struct SongMoviePlayer: View {
         .task(id: retry) {
             loading = true
             failed = false
-            let url = await video.videoURL()
-            guard !Task.isCancelled else { return }
-            if let url { player.replaceCurrentItem(with: AVPlayerItem(url: url)) }
-            failed = url == nil
-            loading = false
+            statusObservation?.invalidate()
+            player.replaceCurrentItem(with: nil)
+            do {
+                guard let url = await video.videoURL() else { throw URLError(.resourceUnavailable) }
+                let asset = try await SongMovieAsset.make(videoURL: url, audioURL: video.audioURL)
+                try Task.checkCancellation()
+                let item = AVPlayerItem(asset: asset)
+                statusObservation = item.observe(\.status, options: [.new]) { item, _ in
+                    let didFail = item.status == .failed
+                    if didFail {
+                        Task { @MainActor in
+                            if player.currentItem === item { failed = true }
+                        }
+                    }
+                }
+                player.replaceCurrentItem(with: item)
+                loading = false
+            } catch {
+                guard !Task.isCancelled else { return }
+                failed = true
+                loading = false
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemFailedToPlayToEndTime)) { notification in
+            if let item = notification.object as? AVPlayerItem, item === player.currentItem { failed = true }
         }
         .onDisappear {
+            statusObservation?.invalidate()
+            statusObservation = nil
             player.pause()
             player.replaceCurrentItem(with: nil)
         }
     }
 }
+
+// Avoid _AVKit_SwiftUI's generic VideoPlayer host, which aborts while
+// initializing its superclass metadata on macOS 27.3.
+#if os(macOS)
+private struct SongVideoPlayerView: NSViewRepresentable {
+    let player: AVPlayer
+
+    func makeNSView(context: Context) -> AVPlayerView {
+        let view = AVPlayerView()
+        view.controlsStyle = .inline
+        view.videoGravity = .resizeAspect
+        view.player = player
+        return view
+    }
+
+    func updateNSView(_ view: AVPlayerView, context: Context) {
+        if view.player !== player { view.player = player }
+    }
+
+    static func dismantleNSView(_ view: AVPlayerView, coordinator: ()) {
+        view.player = nil
+    }
+}
+#else
+private struct SongVideoPlayerView: UIViewControllerRepresentable {
+    let player: AVPlayer
+
+    func makeUIViewController(context: Context) -> AVPlayerViewController {
+        let controller = AVPlayerViewController()
+        controller.player = player
+        return controller
+    }
+
+    func updateUIViewController(_ controller: AVPlayerViewController, context: Context) {
+        if controller.player !== player { controller.player = player }
+    }
+
+    static func dismantleUIViewController(_ controller: AVPlayerViewController, coordinator: ()) {
+        controller.player = nil
+    }
+}
+#endif

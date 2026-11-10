@@ -79,8 +79,23 @@ struct LanguageModelTests {
         let credentials = LanguageModelManager.Credentials(
             read: { keys[$0] ?? "" }, write: { keys[$0] = $1 }, delete: { keys.removeValue(forKey: $0) })
         let manager = LanguageModelManager(defaults: defaults, credentials: credentials, chatGPTConnection: chatGPT)
-        assert(manager.entries.count == 1 && manager.selectedID == LanguageModelManager.systemID)
+        assert(manager.entries.count == 2 && manager.selectedID == LanguageModelManager.systemID)
         do { try manager.delete(LanguageModelManager.systemID); fatalError("Deleted system model") } catch {}
+        assert(manager.entries[1].id == LanguageModelManager.privateCloudID)
+        assert(manager.entries[1].kind == .privateCloudCompute)
+        for id in [LanguageModelManager.systemID, LanguageModelManager.privateCloudID] {
+            do { try manager.delete(id); fatalError("Deleted a built-in model") } catch {}
+            do { try manager.register(SystemLanguageModel.default, id: id, name: "Overwrite"); fatalError("Registered over a built-in model") } catch {}
+            let protected = OnlineModelConfiguration(id: id, name: "Overwrite", baseURL: "https://models.example/v1", modelID: "test")
+            do { try manager.save(protected, apiKey: ""); fatalError("Saved over a built-in model") } catch {}
+        }
+        try manager.select(LanguageModelManager.privateCloudID)
+        assert(LanguageModelManager(defaults: defaults, credentials: credentials, chatGPTConnection: chatGPT).selectedID == LanguageModelManager.privateCloudID)
+        let privateCloud = try manager.model()
+        assert(privateCloud is PrivateCloudComputeLanguageModel)
+        _ = LanguageModelSession(model: privateCloud)
+        assert(manager.isAvailable(manager.entries[1]) == manager.privateCloudModel.isAvailable)
+        try manager.select(LanguageModelManager.systemID)
         var configuration = OnlineModelConfiguration(name: "Test", baseURL: "https://models.example/v1/", modelID: "text-model")
         var protected = configuration; protected.id = LanguageModelManager.systemID
         do { try manager.save(protected, apiKey: ""); fatalError("Overwrote system model") } catch {}
@@ -97,7 +112,7 @@ struct LanguageModelTests {
         assert(!String(data: defaults.data(forKey: "LanguageModels.configurations.v1")!, encoding: .utf8)!.contains("test-secret"))
         configuration.name = "Renamed"
         try manager.save(configuration, apiKey: "new-secret")
-        assert(manager.entries.count == 2 && manager.onlineModels[0].name == "Renamed")
+        assert(manager.entries.count == 3 && manager.onlineModels[0].name == "Renamed")
         let failingStore = LanguageModelManager.Credentials(read: { _ in "" },
             write: { _, _ in throw ModelManagerError.keychain(-1) }, delete: { _ in throw ModelManagerError.keychain(-1) })
         let failingManager = LanguageModelManager(defaults: defaults, credentials: failingStore, chatGPTConnection: chatGPT)
@@ -132,7 +147,7 @@ struct LanguageModelTests {
         _ = LanguageModelSession(model: registered)
         try manager.delete("another-provider")
         try manager.delete(configuration.id)
-        assert(manager.selectedID == LanguageModelManager.systemID && manager.entries.count == 1)
+        assert(manager.selectedID == LanguageModelManager.systemID && manager.entries.count == 2)
         assert(keys[configuration.id] == nil)
         let corruptData = Data("corrupt".utf8)
         defaults.set(corruptData, forKey: "LanguageModels.configurations.v1")

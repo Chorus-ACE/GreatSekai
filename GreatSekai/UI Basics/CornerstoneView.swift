@@ -921,6 +921,63 @@ struct LocalePicker<L: View>: View {
     }
 }
 
+// MARK: ModelPicker
+/// Changes the persisted default model shared by translation, summaries, and other AI features.
+/// Use `ModelPicker()` or supply a label with `ModelPicker { Text(...) }`.
+struct ModelPicker<L: View>: View {
+    private let label: () -> L
+
+    init(@ViewBuilder label: @escaping () -> L) {
+        self.label = label
+    }
+
+    init() where L == Text {
+        self.label = { Text("Settings.models.default") }
+    }
+
+    var body: some View {
+        if #available(iOS 27.0, macOS 27.0, *) {
+            DefaultModelPicker(label: label)
+        } else {
+            LabeledContent(content: { Text("Settings.models.requires-system") }, label: label)
+        }
+    }
+}
+
+@available(iOS 27.0, macOS 27.0, *)
+private struct DefaultModelPicker<L: View>: View {
+    let label: () -> L
+    @State private var manager = LanguageModelManager.shared
+    @State private var errorMessage: String?
+
+    var body: some View {
+        Picker(selection: Binding(get: { manager.selectedID }, set: { id in
+            do { try manager.select(id) }
+            catch { errorMessage = error.localizedDescription }
+        })) {
+            ForEach(manager.entries) { entry in
+                Text(verbatim: entry.name)
+                    .tag(entry.id)
+                    .disabled(!manager.isAvailable(entry))
+            }
+            if !manager.entries.contains(where: { $0.id == manager.selectedID }) {
+                Text("Settings.models.unavailable")
+                    .tag(manager.selectedID)
+                    .disabled(true)
+            }
+        } label: {
+            label()
+        }
+        .alert("Settings.models.error", isPresented: Binding(
+            get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("General.done") { errorMessage = nil }
+        } message: {
+            Text(errorMessage ?? "")
+        }
+    }
+}
+
 struct MultilingualText: View {
     @Environment(\.disablePopover) var envDisablesPopover
     

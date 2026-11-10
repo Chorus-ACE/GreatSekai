@@ -13,3 +13,4 @@
   Created by ThreeManager785 on 2026/8/4. */
 "Privacy.photo-library.add-only.description" = "GreatSekai 需要權限才能將照片加入你的照片圖庫。";
 
+"NSCameraUsageDescription" = "使用攝影機捕捉表情和臉部動作，驅動 Live2D 模型。";

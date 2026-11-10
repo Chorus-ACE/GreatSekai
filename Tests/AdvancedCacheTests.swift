@@ -24,6 +24,10 @@ struct AdvancedCacheTests {
             try manager.createDirectory(at: path, withIntermediateDirectories: true)
             try Data(repeating: 2, count: 31).write(to: path.appending(path: "asset"))
         }
+        let ai = information.appending(path: "AIOutputs")
+        try manager.createDirectory(at: ai, withIntermediateDirectories: true)
+        try Data(repeating: 3, count: 41).write(to: ai.appending(path: "translation.json"))
+        try Data(repeating: 4, count: 43).write(to: ai.appending(path: "summary.json"))
         // A linked external file must not be counted or removed as model data.
         try manager.createSymbolicLink(at: models.appending(path: "LocalViewer/external"),
                                        withDestinationURL: information.appending(path: "unrelated.cache"))
@@ -36,10 +40,15 @@ struct AdvancedCacheTests {
         let modelBytes = try roots(.models).reduce(Int64(0)) { try $0 + AdvancedCacheFiles.size(of: $1) }
         precondition(infoBytes == 18 && storyBytes == 17 && modelBytes == 124)
         check(try roots(.images).isEmpty)
+        let aiBytes = try roots(.aiOutputs).reduce(Int64(0)) { try $0 + AdvancedCacheFiles.size(of: $1) }
+        check(aiBytes == 84)
         try AdvancedCacheFiles.remove([], informationRoot: information, modelRoot: models)
         check(try roots(.information).count == 2)
         try AdvancedCacheFiles.remove([.story], informationRoot: information, modelRoot: models)
         check(try roots(.story).isEmpty)
+        check(try roots(.aiOutputs).count == 1)
+        try AdvancedCacheFiles.remove([.aiOutputs], informationRoot: information, modelRoot: models)
+        check(try roots(.aiOutputs).isEmpty)
         check(try roots(.information).count == 2)
         try AdvancedCacheFiles.remove([.information, .models], informationRoot: information, modelRoot: models)
         check(try roots(.information).isEmpty)

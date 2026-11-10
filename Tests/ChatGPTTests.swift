@@ -57,6 +57,7 @@ enum ChatGPTTests {
             _ = try await unsupported.respond(to: "Hello", options: .init(temperature: 0.5))
             fatalError("Silently dropped unsupported ChatGPT sampling")
         } catch { }
+        try await inferenceValidation()
         try await refreshValidation()
         try await listenerValidation()
         print("ChatGPT callback validation, signed identity verification, SSE terminal errors, token rotation, refresh serialization, sign-out races, and loopback listener passed.")
@@ -135,6 +136,61 @@ enum ChatGPTTests {
         var empty = ChatGPTEventStream(); rejects { try event(done, parser: &empty) }
     }
 
+    static func inferenceValidation() async throws {
+        let memory = MemoryCredentials()
+        let vault = ChatGPTCredentialVault(storage: memory.storage)
+        try await vault.save(ChatGPTTokens(accessToken: "fixture-token", refreshToken: "fixture-refresh", idToken: "fixture-id",
+            scopes: ["chatgpt.tokens.use.direct"], expiresAt: .distantFuture), clientID: "fixture-client")
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.urlCache = nil
+        configuration.protocolClasses = [ChatGPTInferenceProtocol.self]
+        configuration.timeoutIntervalForRequest = 5
+        configuration.timeoutIntervalForResource = 5
+        let transport = URLSession(configuration: configuration)
+        defer { transport.invalidateAndCancel() }
+        for modelID in ["full-stream", "lf-stream", "cr-stream", "multiline-stream", "bom-stream", "held-stream"] {
+            let model = ChatGPTModel(clientID: "fixture-client", modelID: modelID, credentialVault: vault, session: transport)
+            let session = LanguageModelSession(model: model, instructions: "Translate faithfully")
+            let response = try await session.respond(to: "Translate this story")
+            assert(response.content == "Hello 🌏")
+        }
+        for (modelID, expectedStatus, expectedCode) in [
+            ("http-error", 429, "subscription_sharing_usage_limit_exceeded"),
+            ("http-detail", 403, nil as String?),
+            ("late-error", nil as Int?, "subscription_sharing_usage_unavailable"),
+            ("root-error", nil as Int?, "subscription_sharing_unsupported_capability"),
+            ("interrupted", nil as Int?, nil as String?),
+            ("missing-delimiter", nil as Int?, nil as String?)
+        ] {
+            let model = ChatGPTModel(clientID: "fixture-client", modelID: modelID, credentialVault: vault, session: transport)
+            let session = LanguageModelSession(model: model)
+            do {
+                _ = try await session.respond(to: "Translate this story")
+                fatalError("An unsuccessful HTTP stream was accepted")
+            } catch let failure as ChatGPTError {
+                switch failure {
+                case .service(let status, let code): assert(status == expectedStatus && code == expectedCode)
+                case .inference(let code): assert(expectedStatus == nil && code == expectedCode)
+                case .stream: assert(expectedStatus == nil && expectedCode == nil)
+                default: fatalError("Unexpected ChatGPT error")
+                }
+                assert(!failure.localizedDescription.contains("private-request-data"))
+            }
+        }
+        let models = try await ChatGPTAPI.models(token: "fixture-token", session: transport)
+        assert(models.map(\.slug) == ["account-second", "account-first"])
+        let refreshedMemory = MemoryCredentials(), counter = RefreshCounter()
+        let refreshedVault = ChatGPTCredentialVault(storage: refreshedMemory.storage, refresh: { _, _, _ in try await counter.refresh() })
+        try await refreshedVault.save(ChatGPTTokens(accessToken: "expired", refreshToken: "old-refresh", idToken: "fixture-id",
+            scopes: ["chatgpt.tokens.use.direct"], expiresAt: .distantPast), clientID: "expired-client")
+        let renewedModel = ChatGPTModel(clientID: "expired-client", modelID: "full-stream", credentialVault: refreshedVault, session: transport)
+        let renewedResponse = try await LanguageModelSession(model: renewedModel).respond(to: "Hello")
+        assert(renewedResponse.content == "Hello 🌏")
+        let renewals = await counter.calls
+        assert(renewals == 1)
+        print("ChatGPT production HTTP/session path, fragmented UTF-8, SSE boundaries, terminal events, HTTP errors, catalog and refreshed-token inference passed.")
+    }
+
     static func refreshValidation() async throws {
         let memory = MemoryCredentials(), counter = RefreshCounter()
         let vault = ChatGPTCredentialVault(storage: memory.storage, refresh: { _, _, _ in try await counter.refresh() })
@@ -207,5 +263,73 @@ nonisolated private struct ChatGPTBodyTestExecutor: LanguageModelExecutor {
         assert(input.contains { $0["role"] as? String == "developer" && $0["content"] as? String == "Translate faithfully" })
         assert(input.last?["role"] as? String == "user" && input.last?["content"] as? String == "Hello")
         await channel.send(.response(action: .appendText("checked", tokenCount: 0)))
+    }
+}
+
+/// Intercepts requests from the actual executor. No real tokens or prompts leave the process.
+nonisolated private final class ChatGPTInferenceProtocol: URLProtocol, @unchecked Sendable {
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func stopLoading() {}
+    override func startLoading() {
+        do {
+            precondition(["Bearer fixture-token", "Bearer renewed"].contains(request.value(forHTTPHeaderField: "Authorization") ?? ""))
+            if request.url?.path == "/v1/models" {
+                precondition(request.httpMethod == "GET")
+                send(Data(#"{"models":[{"slug":"account-second","display_name":"Second","visibility":"list"},{"slug":"hidden","display_name":"Hidden","visibility":"hidden"},{"slug":"account-first","display_name":"First","visibility":"list"}]}"#.utf8), status: 200, type: "application/json")
+                return
+            }
+            precondition(request.url?.absoluteString == "https://api.openai.com/v1/responses")
+            precondition(request.httpMethod == "POST")
+            let bodyData: Data
+            if let body = request.httpBody { bodyData = body }
+            else if let stream = request.httpBodyStream {
+                stream.open()
+                defer { stream.close() }
+                var body = Data(), buffer = [UInt8](repeating: 0, count: 1024)
+                while stream.hasBytesAvailable {
+                    let count = stream.read(&buffer, maxLength: buffer.count)
+                    if count <= 0 { break }
+                    body.append(contentsOf: buffer.prefix(count))
+                }
+                bodyData = body
+            } else { throw ModelManagerError.invalidResponse }
+            let body = try JSONSerialization.jsonObject(with: bodyData) as! [String: Any]
+            let model = body["model"] as! String
+            precondition(body["store"] as? Bool == false && body["stream"] as? Bool == true)
+            precondition(body["temperature"] == nil && body["max_output_tokens"] == nil)
+            precondition((body["input"] as? [[String: Any]])?.last?["role"] as? String == "user")
+            if model == "http-error" {
+                send(Data(#"{"error":{"code":"subscription_sharing_usage_limit_exceeded","message":"private-request-data"}}"#.utf8), status: 429, type: "application/json")
+                return
+            }
+            if model == "http-detail" {
+                send(Data(#"{"detail":"private-request-data"}"#.utf8), status: 403, type: "application/json")
+                return
+            }
+            let newline = model == "lf-stream" ? "\n" : model == "cr-stream" ? "\r" : "\r\n"
+            func event(_ value: String) -> String { "event: response" + newline + "data: " + value + newline + newline }
+            let delta = #"{"type":"response.output_text.delta","delta":"Hello 🌏"}"#
+            let completed = #"{"type":"response.completed","response":{"status":"completed","model":"account-model","output":[{"type":"message","content":[{"type":"output_text","text":"Hello 🌏"}]}],"usage":{"input_tokens":3,"output_tokens":2}}}"#
+            var stream = ": keepalive" + newline + newline
+            stream += event(model == "multiline-stream" ? delta.replacingOccurrences(of: ",", with: "," + newline + "data: ") : delta)
+            switch model {
+            case "late-error": stream += event(#"{"type":"response.failed","response":{"error":{"code":"subscription_sharing_usage_unavailable"}}}"#)
+            case "root-error": stream += event(#"{"type":"error","code":"subscription_sharing_unsupported_capability"}"#)
+            case "interrupted": break
+            case "missing-delimiter": stream += "data: " + completed
+            default: stream += event(completed)
+            }
+            if model == "bom-stream" { stream = "\u{feff}" + stream }
+            send(Data(stream.utf8), status: 200, type: "text/event-stream", finish: model != "held-stream")
+        } catch { client?.urlProtocol(self, didFailWithError: error) }
+    }
+    private func send(_ bytes: Data, status: Int, type: String, finish: Bool = true) {
+        client?.urlProtocol(self, didReceive: HTTPURLResponse(url: request.url!, statusCode: status,
+            httpVersion: "HTTP/1.1", headerFields: ["Content-Type": type])!, cacheStoragePolicy: .notAllowed)
+        for start in stride(from: 0, to: bytes.count, by: 7) {
+            client?.urlProtocol(self, didLoad: bytes.subdata(in: start..<min(start + 7, bytes.count)))
+        }
+        if finish { client?.urlProtocolDidFinishLoading(self) }
     }
 }

@@ -17,13 +17,8 @@ extension StoryPlaybackDocument {
     
     static func scenario(_ episode: Episode) async throws -> Scenario {
         guard let url = episode.scenarioURL else { throw URLError(.badURL) }
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 30
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let data = try await StoryAssetCache.shared.data(at: url, revalidate: true)
         try Task.checkCancellation()
-        guard let response = response as? HTTPURLResponse, (200..<300).contains(response.statusCode) else {
-            throw PlaybackError(key: "Story.unavailable")
-        }
         do {
             guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                   object["Snippets"] is [Any], object["TalkData"] is [Any],

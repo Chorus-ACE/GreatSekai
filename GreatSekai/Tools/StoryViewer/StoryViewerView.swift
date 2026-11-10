@@ -71,14 +71,19 @@ struct StoryViewerView: View {
                 }
                 DetailSectionsSpacer(height: 15)
                 if episodes != nil {
-                    if displayed.isEmpty { ContentUnavailableView.search(text: query) }
+                    if displayed.isEmpty {
+                        if query.isEmpty {
+                            DetailUnavailableView(title: "Story.no-episodes", symbol: "books.vertical")
+                        } else {
+                            ContentUnavailableView.search(text: query)
+                        }
+                    }
                     LazyVStack {
                         ForEach(displayed) { EpisodeRow(episode: $0) }
                     }
                 } else if failed {
-                    ContentUnavailableView {
-                        Label("Story.unavailable", systemImage: "text.bubble")
-                    } actions: { Button("General.retry") { retryID += 1 } }
+                    DetailUnavailableView(title: "Story.unavailable", symbol: "books.vertical")
+                    Button("General.retry") { retryID += 1 }
                 } else { ProgressView() }
             }.frame(maxWidth: infoContentMaxWidth).padding().frame(maxWidth: .infinity)
         }
@@ -170,12 +175,12 @@ struct EpisodeRow: View {
             CustomGroupBox(cornerRadius: 20) {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 5) {
-//                        if episode.kind == .card {
+                        if let label = episode.numberLabel {
+                            Text(label)
+                        } else {
                             Text("Story.episode.\(episode.number)")
+                        }
                             Text(episode.title).font(.title3).bold()
-//                        } else {
-//                            (Text("Story.episode.\(episode.number)") + Text(" · " + episode.title)).font(.headline)
-//                        }
                     }
                     Spacer()
                     if let image = episode.imageURL {
@@ -202,13 +207,13 @@ struct EventEpisodesSection: View {
             VStack {
                 if let episodes {
                     if episodes.isEmpty {
-                        Text("Story.no-episodes")
-                        .foregroundStyle(.secondary)
+                        DetailUnavailableView(title: "Story.no-episodes", symbol: "books.vertical")
                     }
                     ForEach(episodes) {
                         EpisodeRow(episode: $0)
                     }
                 } else if failed {
+                    DetailUnavailableView(title: "Story.unavailable", symbol: "books.vertical")
                     Button("General.retry") { Task { await load() } }
                 } else {
                     CustomGroupBox {

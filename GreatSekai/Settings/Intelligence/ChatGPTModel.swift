@@ -8,6 +8,17 @@ nonisolated struct ChatGPTModel: LanguageModel {
     typealias Executor = ChatGPTExecutor
     let clientID: String
     let modelID: String
+    let credentialVault: ChatGPTCredentialVault
+    let session: URLSession
+
+    init(clientID: String, modelID: String, credentialVault: ChatGPTCredentialVault = .shared,
+         session: URLSession = ChatGPTAPI.session) {
+        self.clientID = clientID
+        self.modelID = modelID
+        self.credentialVault = credentialVault
+        self.session = session
+    }
+
     var capabilities: LanguageModelCapabilities { .init([]) }
     var executorConfiguration: Executor.Configuration { .init(clientID: clientID, modelID: modelID) }
 }
@@ -22,19 +33,30 @@ nonisolated struct ChatGPTExecutor: LanguageModelExecutor {
     func respond(to request: LanguageModelExecutorGenerationRequest, model: Model,
                  streamingInto channel: LanguageModelExecutorGenerationChannel) async throws {
         let body = try Self.requestBody(request, modelID: model.modelID)
-        let token = try await ChatGPTCredentialVault.shared.accessToken(model.clientID)
+        let token = try await model.credentialVault.accessToken(model.clientID)
         var urlRequest = URLRequest(url: URL(string: ChatGPTAPI.resource + "/responses")!)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("text/event-stream", forHTTPHeaderField: "Accept")
         urlRequest.httpBody = try JSONSerialization.data(withJSONObject: body)
-        let (bytes, response) = try await ChatGPTAPI.session.bytes(for: urlRequest)
+        let (bytes, response) = try await model.session.bytes(for: urlRequest)
+        defer { bytes.task.cancel() }
+        if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
+            var data = Data()
+            for try await byte in bytes {
+                try Task.checkCancellation()
+                guard data.count < 64 * 1024 else { break }
+                data.append(byte)
+            }
+            try ChatGPTAPI.check(response, data: data)
+        }
         try ChatGPTAPI.check(response)
         var parser = ChatGPTEventStream()
-        for try await line in bytes.lines {
+        // AsyncBytes.lines discards empty lines, which are significant SSE event boundaries.
+        for try await byte in bytes {
             try Task.checkCancellation()
-            if let event = try parser.feed(line) {
+            if let event = try parser.feed(byte: byte) {
                 switch event {
                 case .text(let text): await channel.send(.response(action: .appendText(text, tokenCount: 0)))
                 case .completed(let modelID, let input, let output, let cached, let reasoning):
@@ -44,6 +66,8 @@ nonisolated struct ChatGPTExecutor: LanguageModelExecutor {
                             input: .init(totalTokenCount: input, cachedTokenCount: cached),
                             output: .init(totalTokenCount: output, reasoningTokenCount: reasoning))))
                     }
+                    try parser.finish()
+                    return
                 }
             }
         }
@@ -95,6 +119,31 @@ nonisolated struct ChatGPTEventStream {
     private var byteCount = 0
     private(set) var completed = false
     private var hasText = false
+    private var lineBytes = Data()
+    private var skipLineFeed = false
+    private var firstLine = true
+
+    /// Preserve blank lines, fragmented UTF-8 and all three SSE line endings.
+    mutating func feed(byte: UInt8) throws -> Event? {
+        if skipLineFeed {
+            skipLineFeed = false
+            if byte == 0x0a { return nil }
+        }
+        if byte == 0x0a || byte == 0x0d {
+            skipLineFeed = byte == 0x0d
+            guard var line = String(data: lineBytes, encoding: .utf8) else { throw ChatGPTError.stream }
+            lineBytes.removeAll(keepingCapacity: true)
+            if firstLine {
+                firstLine = false
+                if line.first == "\u{feff}" { line.removeFirst() }
+            }
+            return try feed(line)
+        }
+        guard lineBytes.count < 4 * 1024 * 1024 else { throw ChatGPTError.stream }
+        lineBytes.append(byte)
+        return nil
+    }
+
     mutating func feed(_ line: String) throws -> Event? {
         if line.isEmpty {
             guard !dataLines.isEmpty else { return nil }
@@ -140,6 +189,6 @@ nonisolated struct ChatGPTEventStream {
         return nil
     }
     func finish() throws {
-        guard completed, dataLines.isEmpty else { throw ChatGPTError.stream }
+        guard completed, dataLines.isEmpty, lineBytes.isEmpty else { throw ChatGPTError.stream }
     }
 }

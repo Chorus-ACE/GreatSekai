@@ -30,6 +30,7 @@ struct CardDetailView: View {
     @State private var parsedGachas: [Gacha]?
     @State private var eventsFailed = false
     @State private var gachasFailed = false
+    @State private var costumes3D: (cardID: Int, items: [CardCostume3D])?
     @State private var regionalCards: [SekaiLocale: Card]?
     @State private var regionalSkills: [SekaiLocale: [Skill]]?
 
@@ -38,7 +39,7 @@ struct CardDetailView: View {
             Group {
                 CardDetailOverviewView(information: information, regionalSkills: regionalSkills)
                 CardDetailStatsView(card: information, regionalCards: regionalCards, regionalSkills: regionalSkills, retry: { statsRetry += 1 }).id(information.id)
-    //            DetailsCostumesSection(costumes: [information.costume])
+                CardDetailCostumesSection(costumes: costumes3D?.cardID == information.id ? costumes3D?.items ?? [] : [])
                 CardRelatedSections(events: parsedEvents, gachas: parsedGachas,
                                     eventsFailed: eventsFailed, gachasFailed: gachasFailed,
                                     retryEvents: { eventsRetry += 1 },
@@ -119,11 +120,28 @@ struct CardDetailView: View {
             .task(id: "\(information.id)-gachas-\(gachasRetry)") {
                 await loadGachas(for: information.id)
             }
+            .task(id: "\(information.id)-costumes3d-\(SekaiLocale.primaryLocale.rawValue)-\(SekaiLocale.secondaryLocale.rawValue)") {
+                await loadCostumes(for: information)
+            }
             .task(id: "\(information.id)-stats-\(statsRetry)") {
                 await loadStats(for: information)
             }
         } switcherDestination: {
             CardSearchView()
+        }
+    }
+
+    private func loadCostumes(for card: Card) async {
+        costumes3D = nil
+        var visited = Set<SekaiLocale>()
+        let locales = [.primaryLocale, .secondaryLocale] + (card.name.localizedData?.allAvailableLocales ?? [])
+        for locale in locales where visited.insert(locale).inserted {
+            guard !Task.isCancelled else { return }
+            if let result = await card.costumes3D(in: locale), !result.isEmpty {
+                guard !Task.isCancelled else { return }
+                costumes3D = (card.id, result)
+                return
+            }
         }
     }
 

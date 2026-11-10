@@ -1,7 +1,8 @@
 import Foundation
+import CryptoKit
 
-enum AdvancedCacheCategory: CaseIterable, Identifiable, Sendable {
-    case information, images, story, models
+nonisolated enum AdvancedCacheCategory: CaseIterable, Identifiable, Sendable {
+    case information, images, story, models, aiOutputs
     var id: Self { self }
     var title: LocalizedStringResource {
         switch self {
@@ -9,6 +10,7 @@ enum AdvancedCacheCategory: CaseIterable, Identifiable, Sendable {
         case .images: "Settings.advanced.storage.cache.management.images"
         case .story: "Settings.advanced.storage.cache.management.story"
         case .models: "Settings.advanced.storage.cache.management.models"
+        case .aiOutputs: "Settings.advanced.storage.cache.management.ai-outputs"
         }
     }
     var caption: LocalizedStringResource {
@@ -17,6 +19,7 @@ enum AdvancedCacheCategory: CaseIterable, Identifiable, Sendable {
         case .images: "Settings.advanced.storage.cache.management.images.description"
         case .story: "Settings.advanced.storage.cache.management.story.description"
         case .models: "Settings.advanced.storage.cache.management.models.description"
+        case .aiOutputs: "Settings.advanced.storage.cache.management.ai-outputs.description"
         }
     }
     var symbol: String {
@@ -25,12 +28,17 @@ enum AdvancedCacheCategory: CaseIterable, Identifiable, Sendable {
         case .images: "photo"
         case .story: "book"
         case .models: "cube.transparent"
+        case .aiOutputs: "sparkles"
         }
     }
 }
 
 /// Disk paths shared by cache measurement and deletion.
 enum AdvancedCacheFiles {
+    nonisolated static var aiOutputRoot: URL {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appending(path: "AIOutputs")
+    }
+
     nonisolated static func remove(_ categories: Set<AdvancedCacheCategory>, informationRoot: URL? = nil, modelRoot: URL? = nil) throws {
         for category in categories where category != .images {
             for url in try roots(for: category, informationRoot: informationRoot, modelRoot: modelRoot) {
@@ -46,6 +54,9 @@ enum AdvancedCacheFiles {
         let root = informationRoot ?? URL(filePath: NSHomeDirectory()).appending(path: "Library/Caches")
         let modelRoot = modelRoot ?? manager.urls(for: .cachesDirectory, in: .userDomainMask)[0].appending(path: "SekaiKit")
         switch category {
+        case .aiOutputs:
+            let directory = informationRoot?.appending(path: "AIOutputs") ?? aiOutputRoot
+            return manager.fileExists(atPath: directory.path) ? [directory] : []
         case .images: return [] // Use SDImageCache's API rather than assuming its directory.
         case .models:
             return ["Models3D", "DeviceModels", "DeviceSourceMetadata", "LocalViewer"].map { modelRoot.appending(path: $0) }
@@ -76,5 +87,29 @@ enum AdvancedCacheFiles {
         }
         if let failure { throw failure }
         return total
+    }
+}
+
+/// All model outputs live here, separately from official master data and transcripts.
+/// No memory layer: clearing this category also takes effect for existing readers.
+actor AIOutputCache {
+    static let shared = AIOutputCache()
+    let root: URL
+
+    init(root: URL = AdvancedCacheFiles.aiOutputRoot) { self.root = root }
+
+    nonisolated static func key(_ parts: [String]) -> String {
+        let data = try! JSONEncoder().encode(parts)
+        return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    }
+
+    func read(_ key: String) -> String? {
+        guard let data = try? Data(contentsOf: root.appending(path: key + ".json")) else { return nil }
+        return try? JSONDecoder().decode(String.self, from: data)
+    }
+
+    func write(_ value: String, for key: String) throws {
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try JSONEncoder().encode(value).write(to: root.appending(path: key + ".json"), options: .atomic)
     }
 }

@@ -19,6 +19,7 @@ private struct VirtualLiveDetailContent: View {
     @AppStorage("showAdvancedDetails") private var showAdvancedDetails = false
     @State private var events: [Event]?
     @State private var eventsFailed = false
+    @State private var descriptionExpanded = false
 
     private var characterIDs: LocalizableData<[Int]> {
         information.record.map { record in
@@ -36,6 +37,11 @@ private struct VirtualLiveDetailContent: View {
             DetailInfoItem("VirtualLive.type", localizableText: information.record.map { $0?.type.localizedName })
             DetailInfoItem("VirtualLive.start-date", date: information.startDate)
             DetailInfoItem("VirtualLive.end-date", date: information.endDate)
+            if !characterIDs.isCollectionEmpty {
+                DetailInfoItem("VirtualLive.performers") {
+                    VirtualLivePerformers(values: characterIDs)
+                }
+            }
             DetailInfoItem("VirtualLive.countdown") {
                 CountdownText(startDate: information.startDate.localizedData ?? .init(), endDate: information.endDate.localizedData ?? .init())
             }
@@ -48,13 +54,6 @@ private struct VirtualLiveDetailContent: View {
             VirtualLiveImage(information: information).frame(maxWidth: bannerWidth)
         }
 
-        if !characterIDs.isCollectionEmpty {
-            RegionalDetailSection("VirtualLive.performers", values: characterIDs) { ids in
-                CustomGroupBox {
-                    CharacterWrappingHStack(characters: ids).frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-        }
         VirtualLiveSetlistSection(information: information)
         VirtualLiveSchedulesSection(information: information)
 
@@ -70,8 +69,11 @@ private struct VirtualLiveDetailContent: View {
             }
         }
         if !information.record.map({ $0?.virtualLiveInformation?.description }).isCollectionEmpty {
-            RegionalDetailSection("VirtualLive.description", values: information.record.map { $0?.virtualLiveInformation?.description }) { text in
-                CustomGroupBox { Text(text).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled) }
+            RegionalDetailSection("VirtualLive.description", values: information.record.map { $0?.virtualLiveInformation?.description }, expanded: $descriptionExpanded) { text in
+                CustomGroupBox {
+                    Text(text).lineLimit(descriptionExpanded ? nil : 5)
+                        .frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                }
             }
         }
         DetailArtsSection {
@@ -95,6 +97,23 @@ private struct VirtualLiveDetailContent: View {
         guard !Task.isCancelled else { return }
         guard let loaded else { eventsFailed = true; return }
         events = loaded.filter { $0.virtualLiveID == information.id }
+    }
+}
+
+private struct VirtualLivePerformers: View {
+    let values: LocalizableData<[Int]>
+    @State private var locale = SekaiLocale.primaryLocale
+    private var locales: [SekaiLocale] { values.localizedData?.allAvailableLocales ?? [.primaryLocale] }
+    private var selectedLocale: SekaiLocale { locales.contains(locale) ? locale : (values.majorLocale ?? .primaryLocale) }
+    private var needsPicker: Bool {
+        locales.dropFirst().contains { values.localizedData?[$0] != values.localizedData?[locales.first ?? .primaryLocale] }
+    }
+    var body: some View {
+        VStack(alignment: .trailing) {
+            if needsPicker { DetailSectionOptionPicker(selection: $locale, options: locales) }
+            CharacterWrappingHStack(characters: values.localizedData?[selectedLocale] ?? values.majorValue ?? [])
+        }
+        .onChange(of: locales, initial: true) { locale = selectedLocale }
     }
 }
 

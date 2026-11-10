@@ -2,3 +2,5 @@
 "NSPhotoLibraryAddUsageDescription" = "GreatSekaiが写真ライブラリに写真を追加するには、許可が必要です。";
 
 "Privacy.photo-library.add-only.description" = "GreatSekaiが写真ライブラリに写真を追加するには、許可が必要です。";
+
+"NSCameraUsageDescription" = "カメラで表情や顔の動きを読み取り、Live2Dモデルを動かします。";

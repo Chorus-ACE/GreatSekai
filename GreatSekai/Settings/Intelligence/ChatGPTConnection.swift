@@ -20,7 +20,7 @@ nonisolated enum ChatGPTError: LocalizedError {
         case .inference(let code):
             String(localized: "Settings.models.chatgpt.error.stream") + (code.map { " (\($0))" } ?? "")
         case .service(let status, let code):
-            String(localized: "Settings.models.error.http.\(status)") + (code.map { " (\($0))" } ?? "")
+            String(localized: "Settings.models.chatgpt.error.http.\(status)") + (code.map { " (\($0))" } ?? "")
         }
     }
 }
@@ -86,9 +86,12 @@ nonisolated enum ChatGPTAPI {
     static func safeCode(_ data: Data) -> String? {
         guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
         let error = root["error"] as? [String: Any]
-        let code = error?["code"] as? String ?? root["error"] as? String
+        let code = error?["code"] as? String ?? root["error"] as? String ?? root["code"] as? String
         return ["invalid_grant", "subscription_sharing_usage_limit_exceeded", "subscription_sharing_usage_unavailable",
-                "access_denied", "invalid_token"].contains(code ?? "") ? code : nil
+                "subscription_sharing_user_not_eligible", "subscription_sharing_unsupported_capability",
+                "subscription_sharing_route_not_supported", "subscription_sharing_invalid_user",
+                "subscription_sharing_user_unavailable", "chatpass_v2_scope_not_authorized",
+                "chatpass_v2_invalid_authorization_context", "access_denied", "invalid_token"].contains(code ?? "") ? code : nil
     }
 
     static func tokens(_ data: Data, previous: ChatGPTTokens? = nil) throws -> ChatGPTTokens {
@@ -117,7 +120,7 @@ nonisolated enum ChatGPTAPI {
         }
     }
 
-    static func models(token: String) async throws -> [Catalog.Model] {
+    static func models(token: String, session: URLSession = ChatGPTAPI.session) async throws -> [Catalog.Model] {
         var request = URLRequest(url: URL(string: resource + "/models")!)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let (data, response) = try await session.data(for: request)

@@ -41,6 +41,7 @@ struct StoryPlayerView: View {
     @State private var document: StoryPlaybackDocument?
     @State private var error: String?
     @State private var loading = true
+    @State private var loadingProgress = 0.0
     @State private var missingModels = false
     @State private var retry = 0
     @State private var muted = false
@@ -52,18 +53,25 @@ struct StoryPlayerView: View {
         VStack {
             StoryStageLayout(fullscreen: fullscreen) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: cornerRadius).fill(.black)
+                    RoundedRectangle(cornerRadius: fullscreen ? 0 : cornerRadius).fill(.black)
                     if requested {
                         if let renderer {
                             AstrayStoryView(
                                 renderer: renderer,
-                                contentMode: fillsScreen ? .fill : .fit,
+                                contentMode: .fill,
                                 safeAreaInsets: safeAreaInsets
                             )
-                          .mask(RoundedRectangle(cornerRadius: cornerRadius))
+                          .mask(RoundedRectangle(cornerRadius: fullscreen ? 0 : cornerRadius))
                         }
                         if loading, error == nil {
-                            ProgressView("Story.player.loading")
+                            VStack(spacing: 12) {
+                                ProgressView("Story.player.loading")
+                                ProgressView(value: loadingProgress, total: 1)
+                                    .progressViewStyle(.linear)
+                                    .frame(maxWidth: 280)
+                                    .accessibilityLabel("Story.player.loading")
+                            }
+                                .padding(safeAreaInsets)
                                 .wrapIf(colorScheme == .light, in: { content in
                                     content.colorInvert()
                                 })
@@ -186,6 +194,7 @@ struct StoryPlayerView: View {
         error = nil
         missingModels = false
         loading = true
+        loadingProgress = 0
         stopTranscriptVoice()
         #if os(iOS)
         try? AVAudioSession.sharedInstance().setCategory(.playback)
@@ -193,12 +202,16 @@ struct StoryPlayerView: View {
         #endif
         do {
             let document = try await StoryPlaybackDocument.load(for: episode, textLocale: locale)
+            loadingProgress = 0.05
             let renderer = try StoryRenderer(player: player)
             let resolver = try await document.assetResolver()
+            loadingProgress = 0.1
             try Task.checkCancellation()
             self.document = document
             player.onEvent = { event in
                 switch event {
+                case .loadProgress(let completed, let total):
+                    if total > 0 { loadingProgress = max(loadingProgress, 0.1 + 0.9 * Double(completed) / Double(total)) }
                 case .progress(let index, _), .dialogue(let index):
                     currentLineID = document.lineID(at: index)
                 case .finished:
@@ -219,6 +232,7 @@ struct StoryPlayerView: View {
             try await player.load(document.scenario, resolver: resolver)
             try Task.checkCancellation()
             self.renderer = renderer
+            loadingProgress = 1
             loading = false
             updateActivity()
         } catch is CancellationError {

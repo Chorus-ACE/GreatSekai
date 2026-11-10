@@ -6,8 +6,6 @@ struct CardCollectionsView: View {
     @ObservedObject private var manager = CardCollectionManager.shared
     @State private var name = ""
     @State private var creating = false
-    @State private var importing = false
-    @State private var code = ""
     @State private var busy = false
     var body: some View {
         List {
@@ -38,26 +36,25 @@ struct CardCollectionsView: View {
         }
         .navigationTitle("Collections.title")
         .toolbar {
-            ToolbarItem { Button("Collections.import", systemImage: "square.and.arrow.down") { importing = true } }
             ToolbarItem { Button("Collections.new", systemImage: "plus") { name = ""; creating = true } }
         }
         .alert("Collections.new", isPresented: $creating) {
-            TextField("Collections.name", text: $name)
+            TextField("Collections.name-or-code", text: $name)
             Button("General.cancel", role: .cancel) { }
-            Button("General.save") {
-                manager.save(SavedCardCollection(name: name.trimmingCharacters(in: .whitespacesAndNewlines)))
-            }.disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            Button(name.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("GreatSekai:") ? "Collections.import" : "General.save") {
+                if name.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("GreatSekai:") {
+                    Task { await importCollection() }
+                } else {
+                    manager.save(SavedCardCollection(name: name.trimmingCharacters(in: .whitespacesAndNewlines)))
+                }
+            }.disabled(busy || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        } message: {
+            Text("Collections.new-description")
         }
-        .sheet(isPresented: $importing) {
-            NavigationStack {
-                Form {
-                    TextField("Collections.code", text: $code, axis: .vertical)
-                    Button("Collections.import") { Task { await importCollection() } }.disabled(busy || code.isEmpty)
-                    if busy { ProgressView() }
-                }.navigationTitle("Collections.import")
-                .toolbar { ToolbarItem { Button("General.cancel") { importing = false }.disabled(busy) } }
-            }.frame(minWidth: platform == .macOS ? 350 : nil, minHeight: 250)
+        .overlay {
+            if busy { ProgressView("Collections.importing").padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12)) }
         }
+        .disabled(busy)
         .alert("Collections.error", isPresented: Binding(get: { manager.error != nil }, set: { if !$0 { manager.error = nil } })) {
             Button("General.ok") { manager.error = nil }
         } message: { Text(manager.error ?? "") }
@@ -66,7 +63,7 @@ struct CardCollectionsView: View {
         "GreatSekai:" + encodeCollection(.init(name: collection.name, cardList: collection.cards.map { $0.trained ? -$0.cardID : $0.cardID }))
     }
     private func importCollection() async {
-        let input = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        let input = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard input.hasPrefix("GreatSekai:"), let decoded = decodeCollection(String(input.dropFirst("GreatSekai:".count))),
               !decoded.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, decoded.cardList.count <= 1000,
               decoded.cardList.allSatisfy({ $0 != Int.min && $0 != 0 }) else { manager.error = String(localized: "Collections.invalid-code"); return }
@@ -83,8 +80,11 @@ struct CardCollectionsView: View {
             if !imported.cards.contains(where: { $0.id == saved.id }) { imported.cards.append(saved) }
         }
         manager.save(imported)
-        importing = false; code = ""
-        for card in imported.cards { await manager.cache(card) }
+        name = ""
+        let importedCards = imported.cards
+        Task {
+            for card in importedCards { await manager.cache(card) }
+        }
     }
 }
 

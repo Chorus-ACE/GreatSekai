@@ -7,11 +7,19 @@ struct LyricsRubyRenderer {
         let text: String
         var reading: String? = nil
         var color: CGColor? = nil
+        var gradient: [CGColor] = []
+        var gradientID: Int? = nil
+    }
+
+    struct GradientSpan {
+        var range: NSRange
+        let colors: [CGColor]
     }
 
     let text: NSAttributedString
     let fontSize: CGFloat
     let hasReadings: Bool
+    let gradients: [GradientSpan]
     private let framesetter: CTFramesetter
     private let topInset: CGFloat
 
@@ -28,13 +36,26 @@ struct LyricsRubyRenderer {
             return CTParagraphStyleCreate(&setting, 1)
         }
         let result = NSMutableAttributedString(string: "")
-        for span in spans {
+        var gradientGroups: [Int: GradientSpan] = [:]
+        for (index, span) in spans.enumerated() {
             let start = result.length
             result.append(NSAttributedString(string: span.text, attributes: [
                 NSAttributedString.Key(kCTFontAttributeName as String): font,
                 NSAttributedString.Key(kCTForegroundColorAttributeName as String): span.color ?? textColor,
                 NSAttributedString.Key(kCTParagraphStyleAttributeName as String): paragraph
             ]))
+            if span.gradient.count > 1, !span.text.isEmpty {
+                let id = span.gradientID ?? index
+                let range = NSRange(location: start, length: (span.text as NSString).length)
+                if let previous = gradientGroups[id] {
+                    gradientGroups[id]?.range = NSUnionRange(previous.range, range)
+                } else {
+                    gradientGroups[id] = .init(range: range, colors: span.gradient)
+                }
+                // Keep singer boundaries in Core Text's runs even when adjacent
+                // segments share the same first singer's solid fallback color.
+                result.addAttribute(.init("GreatSekai.Lyrics.gradient"), value: id, range: range)
+            }
             if let reading = span.reading, !reading.isEmpty, !span.text.isEmpty {
                 let annotation = CTRubyAnnotationCreateWithAttributes(
                     .center, .auto, .before, reading as CFString,
@@ -46,6 +67,7 @@ struct LyricsRubyRenderer {
             }
         }
         text = NSAttributedString(attributedString: result)
+        gradients = gradientGroups.values.sorted { $0.range.location < $1.range.location }
         framesetter = CTFramesetterCreateWithAttributedString(text)
     }
 
@@ -62,8 +84,76 @@ struct LyricsRubyRenderer {
         context.textMatrix = .identity
         context.translateBy(x: 0, y: size.height)
         context.scaleBy(x: 1, y: -1)
-        CTFrameDraw(frame(in: size), context)
+        let frame = frame(in: size)
+        let fragments = gradientFragments(in: frame)
+        if fragments.isEmpty {
+            CTFrameDraw(frame, context)
+        } else {
+            // Draw solid text, ruby annotations and color-font glyphs normally.
+            // Exclude the base glyph outlines that will receive gradients, so
+            // translucent singer colors do not blend with a solid underpainting.
+            context.saveGState()
+            let solidArea = CGMutablePath()
+            solidArea.addRect(CGRect(origin: .zero, size: size).insetBy(dx: -fontSize, dy: -fontSize))
+            for fragment in fragments { solidArea.addPath(fragment.path) }
+            context.addPath(solidArea)
+            context.clip(using: .evenOdd)
+            CTFrameDraw(frame, context)
+            context.restoreGState()
+            for fragment in fragments {
+                guard let gradient = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB),
+                                                colors: fragment.colors as CFArray, locations: nil) else { continue }
+                let bounds = fragment.path.boundingBoxOfPath
+                context.saveGState()
+                context.addPath(fragment.path)
+                context.clip()
+                context.drawLinearGradient(gradient, start: .init(x: bounds.minX, y: bounds.midY),
+                                           end: .init(x: bounds.maxX, y: bounds.midY),
+                                           options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
+                context.restoreGState()
+            }
+        }
         context.restoreGState()
+    }
+
+    private struct GradientFragment {
+        let path: CGPath
+        let colors: [CGColor]
+    }
+
+    /// One gradient per singer group and wrapped line. Ruby chunks in the same
+    /// source segment share a gradient rather than restarting at each annotation.
+    private func gradientFragments(in frame: CTFrame) -> [GradientFragment] {
+        guard !gradients.isEmpty else { return [] }
+        let lines = CTFrameGetLines(frame) as! [CTLine]
+        var origins = [CGPoint](repeating: .zero, count: lines.count)
+        CTFrameGetLineOrigins(frame, CFRange(), &origins)
+        var fragments: [GradientFragment] = []
+        for (lineIndex, line) in lines.enumerated() {
+            let lineRange = CTLineGetStringRange(line)
+            for span in gradients where NSIntersectionRange(span.range, NSRange(location: lineRange.location, length: lineRange.length)).length > 0 {
+                let path = CGMutablePath()
+                for run in CTLineGetGlyphRuns(line) as! [CTRun] {
+                    let count = CTRunGetGlyphCount(run)
+                    let attributes = CTRunGetAttributes(run) as NSDictionary
+                    guard let font = attributes[kCTFontAttributeName] else { continue }
+                    let runFont = font as! CTFont
+                    var glyphs = [CGGlyph](repeating: 0, count: count)
+                    var positions = [CGPoint](repeating: .zero, count: count)
+                    var indices = [CFIndex](repeating: 0, count: count)
+                    CTRunGetGlyphs(run, CFRange(), &glyphs)
+                    CTRunGetPositions(run, CFRange(), &positions)
+                    CTRunGetStringIndices(run, CFRange(), &indices)
+                    for index in 0..<count where NSLocationInRange(indices[index], span.range) {
+                        guard let glyph = CTFontCreatePathForGlyph(runFont, glyphs[index], nil) else { continue }
+                        path.addPath(glyph, transform: .init(translationX: origins[lineIndex].x + positions[index].x,
+                                                            y: origins[lineIndex].y + positions[index].y))
+                    }
+                }
+                if !path.isEmpty { fragments.append(.init(path: path, colors: span.colors)) }
+            }
+        }
+        return fragments
     }
 
     func frame(in size: CGSize) -> CTFrame {

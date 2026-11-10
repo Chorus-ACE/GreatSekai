@@ -4,12 +4,22 @@ import SwiftUI
 import WebKit
 
 struct Model3DViewerView: View {
+    private let initialSelection: Model3DSelection?
+
+    init(initialSelection: Model3DSelection? = nil) {
+        self.initialSelection = initialSelection
+        _locale = State(initialValue: initialSelection?.locale ?? .primaryLocale)
+        _inspectorIsDisplaying = State(initialValue: initialSelection == nil)
+        _inspectorTab = State(initialValue: initialSelection == nil ? .character : .costume)
+    }
+
     @State private var locale: SekaiLocale = .primaryLocale
     @State private var library: Model3DLocalLibrary?
     @State private var wardrobe: Model3DLocalWardrobe?
     @State private var configuration: Model3DLocalRenderConfiguration?
     @State private var characterID = ""
     @State private var selection: Model3DSelection?
+    @State private var characterCostumeIDs: Set<Int> = []
     @State private var error: String?
     @State private var loading = true
     @State private var retry = 0
@@ -107,7 +117,14 @@ struct Model3DViewerView: View {
                 let result = try await Model3DLocalClient.shared.library(for: locale)
                 try Task.checkCancellation()
                 library = result
-                characterID = result.roles.first?.id ?? ""
+                if let initialSelection, initialSelection.locale == locale {
+                    guard result.roles.contains(where: { $0.id == initialSelection.characterID }) else {
+                        throw Model3DLibrary.Failure.unknownCharacter
+                    }
+                    characterID = initialSelection.characterID
+                } else {
+                    characterID = result.roles.first?.id ?? ""
+                }
             } catch is CancellationError { } catch { if !Task.isCancelled { self.error = error.localizedDescription; loading = false } }
         }
         .task(id: "\(locale.rawValue)-\(characterID)-\(library?.revision ?? "")") {
@@ -117,9 +134,25 @@ struct Model3DViewerView: View {
                 let result = try await Model3DLocalClient.shared.wardrobe(for: characterID, in: library)
                 try Task.checkCancellation()
                 wardrobe = result
-                resetSelection()
+                if let initialSelection, initialSelection.locale == locale, initialSelection.characterID == characterID {
+                    guard result.character.costumes.flatMap(\.variants).contains(where: { $0.id == initialSelection.costumeID }),
+                          result.character.hairstyles.flatMap(\.variants).contains(where: { $0.id == initialSelection.hairstyleID }),
+                          initialSelection.accessoryID == nil || result.character.accessories.flatMap(\.variants).contains(where: { $0.id == initialSelection.accessoryID }) else {
+                        throw Model3DLibrary.Failure.unknownVariant
+                    }
+                    selection = initialSelection
+                } else {
+                    resetSelection()
+                }
                 if selection == nil { loading = false }
             } catch is CancellationError { } catch { if !Task.isCancelled { self.error = error.localizedDescription; loading = false } }
+        }
+        .task(id: "\(locale.rawValue)-\(wardrobe?.character.id ?? "")") {
+            characterCostumeIDs = []
+            guard let character = wardrobe?.character else { return }
+            let ids = await Card.costume3DIDs(forCharacterID: character.characterID, in: character.locale)
+            guard !Task.isCancelled else { return }
+            characterCostumeIDs = ids ?? []
         }
         .task(id: selection) {
             guard let wardrobe, let selection else { return }
@@ -209,7 +242,8 @@ struct Model3DViewerView: View {
         switch tab {
         case .costume:
             Model3DPartBrowser(groups: character.costumes.map { .init(id: $0.id, name: $0.name, variants: $0.variants) },
-                               selection: binding(\.costumeID), locale: locale, tab: tab)
+                               selection: binding(\.costumeID), locale: locale, tab: tab,
+                               prioritizedCostumeIDs: characterCostumeIDs)
         case .hairstyle:
             Model3DPartBrowser(groups: character.hairstyles.map { .init(id: $0.id, name: $0.name, variants: $0.variants) },
                                selection: binding(\.hairstyleID), locale: locale, tab: tab,

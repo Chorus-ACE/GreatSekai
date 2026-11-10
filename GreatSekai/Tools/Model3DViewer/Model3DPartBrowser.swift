@@ -22,21 +22,26 @@ struct Model3DPartBrowser: View {
     let tab: ModelInspectorTab
     var allowsNone = false
     var isLocked = false
+    var prioritizedCostumeIDs: Set<Int> = []
     @State private var search = ""
 
-    init(groups: [Model3DPartGroup], selection: Binding<String?>, locale: SekaiLocale, tab: ModelInspectorTab, allowsNone: Bool = false, isLocked: Bool = false) {
+    init(groups: [Model3DPartGroup], selection: Binding<String?>, locale: SekaiLocale, tab: ModelInspectorTab, allowsNone: Bool = false, isLocked: Bool = false, prioritizedCostumeIDs: Set<Int> = []) {
         self.groups = groups
         self._selection = selection
         self.locale = locale
         self.tab = tab
         self.allowsNone = allowsNone
         self.isLocked = isLocked
+        self.prioritizedCostumeIDs = prioritizedCostumeIDs
     }
 
     private var query: String { search.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var filteredGroups: [Model3DPartGroup] {
         groups.filter { $0.matches(query) }.sorted {
-            ($0.variants.map(\.costumeID).min() ?? 0) < ($1.variants.map(\.costumeID).min() ?? 0)
+            let lhsIsPrioritized = $0.variants.contains { prioritizedCostumeIDs.contains($0.costumeID) }
+            let rhsIsPrioritized = $1.variants.contains { prioritizedCostumeIDs.contains($0.costumeID) }
+            if lhsIsPrioritized != rhsIsPrioritized { return lhsIsPrioritized }
+            return ($0.variants.map(\.costumeID).min() ?? 0) < ($1.variants.map(\.costumeID).min() ?? 0)
         }
     }
     private var showsNone: Bool {

@@ -7,3 +7,5 @@
 */
 
 "Privacy.photo-library.add-only.description" = "GreatSekai需要该权限以添加照片至你的相册。";
+
+"NSCameraUsageDescription" = "使用摄像头捕捉表情和脸部动作，驱动 Live2D 模型。";

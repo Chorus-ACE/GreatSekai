@@ -19,7 +19,7 @@ struct LyricsLineText: View {
 
     var body: some View {
         let spans = displaySpans
-        if spans.contains(where: { !($0.reading?.isEmpty ?? true) }) {
+        if spans.contains(where: { !($0.reading?.isEmpty ?? true) || $0.gradient.count > 1 }) {
             let renderer = LyricsRubyRenderer(
                 spans: spans, fontSize: fontSize,
                 textColor: scheme == .dark ? CGColor(gray: 1, alpha: 1) : CGColor(gray: 0, alpha: 1),
@@ -41,32 +41,38 @@ struct LyricsLineText: View {
     }
 
     private var attributedText: AttributedString {
-        guard !line.segments.isEmpty else { return AttributedString(line.japanese) }
+        guard !line.segments.isEmpty else {
+            var text = AttributedString(line.japanese)
+            text.foregroundColor = segmentColors([]).first ?? .primary
+            return text
+        }
         var text = AttributedString()
         for segment in line.segments {
             var part = AttributedString(segment.text)
-            part.foregroundColor = segmentColor(segment.performerIDs.map(\.value)) ?? .primary
+            part.foregroundColor = segmentColors(segment.performerIDs.map(\.value)).first ?? .primary
             text += part
         }
         return text
     }
 
     private var displaySpans: [LyricsRubyRenderer.Span] {
-        guard !line.segments.isEmpty else { return [.init(text: line.japanese)] }
-        return line.segments.flatMap { segment -> [LyricsRubyRenderer.Span] in
-            let color = segmentColor(segment.performerIDs.map(\.value)).map {
-                LyricsPerformerPalette.cgColor($0, scheme: scheme)
-            }
+        guard !line.segments.isEmpty else {
+            let palette = segmentColors([]).map { LyricsPerformerPalette.cgColor($0, scheme: scheme) }
+            return [.init(text: line.japanese, color: palette.first, gradient: palette.count > 1 ? palette : [])]
+        }
+        return line.segments.enumerated().flatMap { index, segment -> [LyricsRubyRenderer.Span] in
+            let palette = segmentColors(segment.performerIDs.map(\.value)).map { LyricsPerformerPalette.cgColor($0, scheme: scheme) }
+            let gradient = palette.count > 1 ? palette : []
             guard showReadings, let ruby = segment.ruby, !ruby.isEmpty,
                   ruby.map(\.text).joined() == segment.text else {
-                return [.init(text: segment.text, color: color)]
+                return [.init(text: segment.text, color: palette.first, gradient: gradient, gradientID: index)]
             }
-            return ruby.map { .init(text: $0.text, reading: $0.reading, color: color) }
+            return ruby.map { .init(text: $0.text, reading: $0.reading, color: palette.first, gradient: gradient, gradientID: index) }
         }
     }
 
-    private func segmentColor(_ ids: [String]) -> Color? {
-        LyricsPerformerPalette.groupColor(
+    private func segmentColors(_ ids: [String]) -> [Color] {
+        LyricsPerformerPalette.groupColors(
             ids: ids.isEmpty ? (line.trailingPerformerIDs?.map(\.value) ?? []) : ids,
             colors: colors, scheme: scheme
         )

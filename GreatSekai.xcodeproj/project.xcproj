@@ -17,6 +17,9 @@
   "packages": [
     {
       "kind": "local",
+      "path": "Packages/SekaiMediaPipe",
+    }, {
+      "kind": "local",
       "path": "../SekaiKit",
     }, {
       "kind": "remote",
@@ -46,26 +49,6 @@
       "target-membership": [
         { "build-phase": "GreatSekai/copy/Embed Frameworks", "code-sign-on-copy": true, "header-preservation": "remove-on-copy" },
         "GreatSekai/frameworks",
-      ],
-    }, {
-      "kind": "group",
-      "name": "GreatSekaiWidgets",
-      "children": [
-        { "path": "<PROJECT>/GreatSekaiWidgets/CardCollectionWidget.swift", "target-membership": [ "GreatSekaiWidgets/compile-sources" ] },
-        { "path": "<PROJECT>/GreatSekaiWidgets/Localizable.xcstrings", "target-membership": [ "GreatSekaiWidgets/resources" ] },
-      ],
-    }, {
-      "kind": "group",
-      "name": "AppShared",
-      "children": [
-        { "path": "GreatSekaiWidgets/InfoPlist.xcstrings", "target-membership": [ "GreatSekaiWidgets/resources" ] },
-        {
-          "path": "<PROJECT>/AppShared/CardCollectionStore.swift",
-          "target-membership": [
-            "GreatSekai/compile-sources",
-            "GreatSekaiWidgets/compile-sources",
-          ],
-        },
       ],
     }, {
       "kind": "group",
@@ -174,6 +157,7 @@
                 { "path": "CardPicker.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
                 { "path": "CardDetailStatsView.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
                 { "path": "CardRelatedSections.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "CardDetailCostumesSection.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
               ],
             }, {
               "kind": "group",
@@ -205,6 +189,7 @@
                 { "path": "LyricsRubyRenderer.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
                 { "path": "LyricsPerformerPalette.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
                 { "path": "LyricsLineText.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "SongMovieAsset.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
               ],
             }, {
               "kind": "group",
@@ -250,8 +235,8 @@
                 { "path": "RegionalDetailSection.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
               ],
             },
-            { "kind": "folder", "path": "Honor", "target-membership": [ "GreatSekai" ] },
             { "kind": "folder", "path": "VirtualLive", "target-membership": [ "GreatSekai" ] },
+            { "kind": "folder", "path": "Honor", "target-membership": [ "GreatSekai" ] },
           ],
         }, {
           "kind": "group",
@@ -269,6 +254,10 @@
               "children": [
                 { "path": "<PROJECT>/GreatSekai/Tools/Live2DViewer/Live2DViewerView.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
                 { "path": "<PROJECT>/GreatSekai/Tools/Live2DViewer/NativeLive2DPlayer.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "<PROJECT>/GreatSekai/Tools/Live2DViewer/Live2DCatalog.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "<PROJECT>/GreatSekai/Tools/Live2DViewer/Live2DDefaultBackgrounds.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "<PROJECT>/GreatSekai/Tools/Live2DViewer/Live2DBackgroundPicker.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "<PROJECT>/GreatSekai/Tools/Live2DViewer/Live2DFaceCaptureMac.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
               ],
             }, {
               "kind": "group",
@@ -319,6 +308,34 @@
             { "path": "ImageInfo.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
             { "path": "Sekaipedia.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
             { "path": "AdvancedCacheFiles.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+          ],
+        }, {
+          "kind": "group",
+          "path": "News",
+          "children": [
+            { "path": "NewsView.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+            { "path": "NewsDetailView.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+            { "path": "NewsArticleHTML.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+          ],
+        },
+      ],
+    }, {
+      "kind": "group",
+      "name": "GreatSekaiWidgets",
+      "children": [
+        { "path": "<PROJECT>/GreatSekaiWidgets/CardCollectionWidget.swift", "target-membership": [ "GreatSekaiWidgets/compile-sources" ] },
+        { "path": "<PROJECT>/GreatSekaiWidgets/Localizable.xcstrings", "target-membership": [ "GreatSekaiWidgets/resources" ] },
+      ],
+    }, {
+      "kind": "group",
+      "name": "AppShared",
+      "children": [
+        { "path": "GreatSekaiWidgets/InfoPlist.xcstrings", "target-membership": [ "GreatSekaiWidgets/resources" ] },
+        {
+          "path": "<PROJECT>/AppShared/CardCollectionStore.swift",
+          "target-membership": [
+            "GreatSekai/compile-sources",
+            "GreatSekaiWidgets/compile-sources",
           ],
         },
       ],
@@ -388,6 +405,9 @@
           "product-name": "SekaiKit",
           "build-phase": { "build-phase": "frameworks" },
         }, {
+          "product-name": "SekaiMediaPipe",
+          "build-phase": { "build-phase": "frameworks" },
+        }, {
           "package": "SDWebImageSVGCoder",
           "product-name": "SDWebImageSVGCoder",
           "build-phase": { "build-phase": "frameworks" },
@@ -406,7 +426,7 @@
         "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
         "CODE_SIGN_ENTITLEMENTS": "GreatSekai/GreatSekai.entitlements",
         "CODE_SIGN_STYLE": "Automatic",
-        "CURRENT_PROJECT_VERSION": "3",
+        "CURRENT_PROJECT_VERSION": "4",
         "DEVELOPMENT_TEAM": "MU2GGQV46U",
         "ENABLE_APP_SANDBOX": "YES",
         "ENABLE_FILE_ACCESS_DOWNLOADS_FOLDER": "readwrite",
@@ -417,7 +437,7 @@
         "ENABLE_RESOURCE_ACCESS_AUDIO_INPUT": "NO",
         "ENABLE_RESOURCE_ACCESS_BLUETOOTH": "NO",
         "ENABLE_RESOURCE_ACCESS_CALENDARS": "NO",
-        "ENABLE_RESOURCE_ACCESS_CAMERA": "NO",
+        "ENABLE_RESOURCE_ACCESS_CAMERA": "YES",
         "ENABLE_RESOURCE_ACCESS_CONTACTS": "NO",
         "ENABLE_RESOURCE_ACCESS_LOCATION": "NO",
         "ENABLE_RESOURCE_ACCESS_PRINTING": "NO",
@@ -428,6 +448,7 @@
         "INFOPLIST_FILE": "GreatSekai/Info.plist",
         "INFOPLIST_KEY_CFBundleDisplayName": "GreatSekai",
         "INFOPLIST_KEY_LSApplicationCategoryType": "public.app-category.reference",
+        "INFOPLIST_KEY_NSCameraUsageDescription": "Use the camera to animate the Live2D model with your facial expressions.",
         "INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription": "Privacy.photo-library.add-only.description",
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]": "YES",
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]": "YES",
@@ -475,7 +496,7 @@
         "APPLICATION_EXTENSION_API_ONLY": "YES",
         "CODE_SIGN_ENTITLEMENTS": "GreatSekaiWidgets/GreatSekaiWidgets.entitlements",
         "CODE_SIGN_STYLE": "Automatic",
-        "CURRENT_PROJECT_VERSION": "1",
+        "CURRENT_PROJECT_VERSION": "4",
         "DEVELOPMENT_TEAM": "MU2GGQV46U",
         "ENABLE_APP_SANDBOX": "YES",
         "GENERATE_INFOPLIST_FILE": "YES",
@@ -493,7 +514,7 @@
           "@executable_path/../../../../Frameworks",
         ],
         "MACOSX_DEPLOYMENT_TARGET": "15.0",
-        "MARKETING_VERSION": "1.0",
+        "MARKETING_VERSION": "1.0.0",
         "PRODUCT_BUNDLE_IDENTIFIER": "com.chorus-ace.GreatSekai.Widgets",
         "PRODUCT_NAME": "$(TARGET_NAME)",
         "SDKROOT": "auto",

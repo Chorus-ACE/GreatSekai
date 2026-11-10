@@ -55,19 +55,22 @@ nonisolated enum ModelManagerError: LocalizedError {
     }
 }
 
-/// The system entry is synthesized and can never be overwritten or deleted.
+/// Built-in Apple models are synthesized and can never be overwritten or deleted.
 /// Other LanguageModel implementations can be registered by application code at launch.
 @available(iOS 27.0, macOS 27.0, *)
 @MainActor @Observable
 final class LanguageModelManager {
     static let shared = LanguageModelManager()
     static let systemID = "system"
+    static let privateCloudID = "private-cloud-compute"
+    private static let builtInIDs: Set<String> = [systemID, privateCloudID]
+    let privateCloudModel = PrivateCloudComputeLanguageModel()
 
     struct Entry: Identifiable {
         let id: String
         let name: String
         let kind: Kind
-        enum Kind { case system, openAICompatible, registered, chatGPT }
+        enum Kind { case system, privateCloudCompute, openAICompatible, registered, chatGPT }
     }
 
     private(set) var onlineModels: [OnlineModelConfiguration] = []
@@ -82,7 +85,8 @@ final class LanguageModelManager {
     private static let selectionKey = "LanguageModels.selectedID"
 
     var entries: [Entry] {
-        [Entry(id: Self.systemID, name: String(localized: "Settings.models.system"), kind: .system)]
+        [Entry(id: Self.systemID, name: String(localized: "Settings.models.system.local"), kind: .system),
+         Entry(id: Self.privateCloudID, name: String(localized: "Settings.models.system.pcc"), kind: .privateCloudCompute)]
         + onlineModels.map { Entry(id: $0.id, name: $0.name, kind: .openAICompatible) }
         + registeredEntries
         + chatGPTConnection.profiles.filter { $0.connected && $0.sharing && !$0.modelID.isEmpty }.map {
@@ -111,13 +115,21 @@ final class LanguageModelManager {
             do {
                 let models = try JSONDecoder().decode([OnlineModelConfiguration].self, from: data)
                 guard Set(models.map(\.id)).count == models.count,
-                      models.allSatisfy({ !$0.id.isEmpty && $0.id != Self.systemID && !$0.id.hasPrefix("chatgpt:") }) else {
+                      models.allSatisfy({ !$0.id.isEmpty && !Self.builtInIDs.contains($0.id) && !$0.id.hasPrefix("chatgpt:") }) else {
                     throw ModelManagerError.protectedModel
                 }
                 onlineModels = try models.map { try $0.validated() }
             } catch { loadError = error.localizedDescription }
         }
         // An unregistered provider is resolved at use time and never silently replaced by a cloud model.
+    }
+
+    func isAvailable(_ entry: Entry) -> Bool {
+        switch entry.kind {
+        case .system: SystemLanguageModel.default.isAvailable
+        case .privateCloudCompute: privateCloudModel.isAvailable
+        default: true
+        }
     }
 
     func select(_ id: String) throws {
@@ -128,7 +140,7 @@ final class LanguageModelManager {
 
     func save(_ configuration: OnlineModelConfiguration, apiKey: String) throws {
         guard loadError == nil else { throw ModelManagerError.invalidResponse }
-        guard !configuration.id.isEmpty, configuration.id != Self.systemID, !configuration.id.hasPrefix("chatgpt:"), registeredModels[configuration.id] == nil else {
+        guard !configuration.id.isEmpty, !Self.builtInIDs.contains(configuration.id), !configuration.id.hasPrefix("chatgpt:"), registeredModels[configuration.id] == nil else {
             throw ModelManagerError.protectedModel
         }
         let configuration = try configuration.validated()
@@ -142,7 +154,7 @@ final class LanguageModelManager {
     }
 
     func delete(_ id: String) throws {
-        guard id != Self.systemID else { throw ModelManagerError.protectedModel }
+        guard !Self.builtInIDs.contains(id) else { throw ModelManagerError.protectedModel }
         if registeredModels[id] != nil {
             registeredModels.removeValue(forKey: id)
             registeredEntries.removeAll { $0.id == id }
@@ -159,7 +171,7 @@ final class LanguageModelManager {
 
     /// Registration is process-local; a provider package should register its models on each launch.
     func register<Model: LanguageModel>(_ model: Model, id: String, name: String) throws {
-        guard !id.isEmpty, id != Self.systemID, !id.hasPrefix("chatgpt:"), !onlineModels.contains(where: { $0.id == id }) else {
+        guard !id.isEmpty, !Self.builtInIDs.contains(id), !id.hasPrefix("chatgpt:"), !onlineModels.contains(where: { $0.id == id }) else {
             throw ModelManagerError.protectedModel
         }
         registeredModels[id] = model
@@ -170,6 +182,7 @@ final class LanguageModelManager {
     func model(for id: String? = nil) throws -> any LanguageModel {
         let id = id ?? selectedID
         if id == Self.systemID { return SystemLanguageModel.default }
+        if id == Self.privateCloudID { return privateCloudModel }
         if let profile = chatGPTConnection.profiles.first(where: { $0.id == id }) {
             guard profile.connected, profile.sharing, !profile.modelID.isEmpty else { throw ChatGPTError.permission }
             return ChatGPTModel(clientID: profile.clientID, modelID: profile.modelID)

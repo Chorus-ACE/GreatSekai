@@ -7,3 +7,5 @@
 */
 
 "Privacy.photo-library.add-only.description" = "GreatSekai needs permission to add photos to your Photos library.";
+
+"NSCameraUsageDescription" = "Use the camera to animate the Live2D model with your facial expressions.";

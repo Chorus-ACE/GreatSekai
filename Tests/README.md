@@ -4,8 +4,17 @@ After a macOS Xcode build, run
 `sh GreatSekai/Tests/run-story-translation-tests.sh /path/to/Build/Products/Debug`
 to validate official transcript alignment across differing snippet offsets,
 unique voice matching, ambiguous/missing matches, and model JSON validation
-(including missing, duplicate, and unexpected IDs or empty translations).
-These checks use local fixtures and make no model or network requests.
+(including missing, duplicate, and unexpected IDs or empty translations). It also
+checks all 26 bundled names, speaker overrides, SEKAI terminology, neighboring context,
+malformed-output retries, persistent translation/summary caches, source/language/model
+invalidation, continued translation after provider/format errors, retrying only failed
+batches (including after reopening), all-batch failures, explicit cancellation, cache
+clearing, stale requests, and translation
+through a registered LanguageModelSession provider. The runner supplies the SekaiKit
+resource bundle so the real PreCache is exercised. These fixtures make no network requests.
+Set `SEKAI_VERIFY_SYSTEM_MODEL=1` to additionally translate a small fixture through the
+real on-device model when it is available. Remote API/ChatGPT accounts still need a live
+check with the user's configured provider.
 
 On macOS 27 or later, run `sh GreatSekai/Tests/run-language-model-tests.sh` to
 validate model CRUD, default selection, persistence, protected system entries,
@@ -14,11 +23,11 @@ function-tool round-trip. Network requests are intercepted with `URLProtocol`;
 the suite uses isolated preferences and in-memory credentials, with no real API calls.
 
 Run `sh GreatSekai/Tests/run-lyrics-typography-tests.sh` from the Sekai workspace to
-check performer ID/color resolution, mixed performer groups, contrast in light and
+check performer ID/color resolution, ordered performer gradients, contrast in light and
 dark appearances, and native ruby annotation ranges and wrapping. The renderer uses
 UTF-16 ranges, including emoji before annotated words. Set `SEKAI_RUBY_PREVIEW` to a
-PNG path to inspect the offscreen rendering. Lyrics without readings retain native
-selectable text; annotated lines expose a copy-line context-menu action and a plain
+PNG path to inspect the offscreen rendering. Lyrics without readings or shared-performer gradients retain native
+selectable text; annotated and gradient lines expose a copy-line context-menu action and a plain
 Japanese accessibility label.
 
 From the Sekai workspace:
@@ -89,17 +98,35 @@ team score or efficiency calculations.
   [Packages/Live2DKit/README.md](../Packages/Live2DKit/README.md). Test the user's local
   Miku model plus the SDK sample on macOS and iOS after SDK setup; inspect Metal validation
   output, texture orientation, motion playback, resize, pause/resume and resource release.
-  Performance has not been measured. The model importer currently accepts local folders;
-  an in-app online model catalog is not implemented.
+  This records the October state. The November online viewer and native rendering
+  validation are described below.
 
 ## Cache management checks
 
 Run `sh GreatSekai/Tests/run-advanced-cache-tests.sh` to verify byte totals and
-selective removal for information, story transcripts, and all four 3D cache roots.
+selective removal for information, story transcripts, all four 3D cache roots, and
+the separate AI outputs directory (translations, summaries, and intermediate results).
 Fixtures also check empty selections, repeated clearing, symlinks, missing directories,
-and preservation of unrelated files. SDWebImage and WebKit caches use their respective
-framework APIs; WebKit does not expose cache byte counts, so the UI labels those
-resources as system-managed instead of reporting zero bytes.
+and preservation of unrelated files. SDWebImage caches use the framework's APIs.
+
+After a macOS build, run
+`sh GreatSekai/Tests/run-story-resource-cache-tests.sh /path/to/Build/Products/Debug`
+for Astray's dedicated resource store. Story Resources reports transcript file sizes
+plus `StoryAssetCache.diskUsage()` (downloaded payloads and metadata). It no longer
+counts or deletes WebKit data. Astray downloads, playback scripts, and transcript
+voice playback share this store; native movie playback reads its cached local files.
+The store uses a private ephemeral URLSession without URLCache, keeping new Astray
+resources out of the Information category. Scripts, the Haruki index, and resolver
+master tables are conditionally revalidated when opened. Other resources are
+revalidated daily with ETag/Last-Modified; validated cached data can be used offline. Existing shared HTTP/WebKit caches are
+not migrated or removed automatically.
+
+The resource-cache fixtures check exact byte totals, persistence, conditional HTTP
+refresh, changed content, regional/host isolation, corrupt/truncated entries, offline
+reads, concurrent reuse, and clearing during downloads. They also exercise URLSession's
+actual download-to-file path with an intercepted HTTP response. No requests leave the
+process. `StoryAssetCache.clear()` cancels pending downloads and invalidates their
+writes; active decoded GPU/audio resources are not counted as disk cache.
 
 ## ChatGPT connections
 
@@ -107,7 +134,12 @@ resources as system-managed instead of reporting zero bytes.
 They verify signed RSA identities (including forged tokens and incorrect claims),
 callback state and registration isolation, identity-only grants, SSE completion and
 late failures, serialized token rotation, sign-out during refresh, and an actual
-loopback callback exchange. The tests use generated keys and in-memory credentials;
+loopback callback exchange. The real ChatGPT executor is also exercised through an
+intercepted URLSession byte stream and LanguageModelSession, covering CR/LF/CRLF,
+fragmented UTF-8, BOMs, multi-line data, completion without connection closure,
+interrupted/malformed streams, safe HTTP error codes, account model ordering, and
+inference after token renewal. SSE event boundaries must be read from bytes:
+Foundation's `AsyncBytes.lines` drops the empty lines separating events. The tests use generated keys and in-memory credentials;
 no OpenAI account or live inference is needed.
 
 The ChatGPT provider supports text sessions, including story translation, on iOS 27
@@ -118,8 +150,247 @@ The listener binds only to `127.0.0.1` and is closed on completion, cancellation
 a five-minute timeout. macOS requires the incoming-network sandbox capability.
 iOS presents SFSafariViewController to keep the app's callback listener running.
 
-Manual verification still requires an eligible real account: authorize plan use,
-select an account-provided model, translate a story, restart and verify renewal,
-switch registrations, deny plan usage, and disconnect from ChatGPT Settings.
-Verify the Safari callback on an iPhone/iPad; compilation and the macOS loopback
-test do not establish end-to-end mobile OAuth behavior.
+On 2026-11-04, a macOS app check with an existing ChatGPT connection returned English
+story translations using the account's selected GPT-6-Luna model after the byte-stream
+fix. The test was stopped after observing translated dialogue. This validates live
+inference, not a fresh OAuth flow. Reauthorization, account switching, revocation,
+and Safari callbacks on iPhone/iPad still need manual checks. The macOS app currently
+has no network-server entitlement, which is needed for the sandboxed loopback login
+listener. The CLI loopback fixture is unsandboxed and does not validate that app
+entitlement.
+
+## Default model picker and Private Cloud Compute
+
+Use `ModelPicker()` in a Form to change the persisted default model, or
+`ModelPicker { Text("Your.semantic.label") }` for a custom label. The picker lists
+built-in, configured API, registered, and connected ChatGPT models. Unavailable
+Apple models are disabled. Translation and summary requests observe the shared
+selection, cancel the previous request, and use the selected model's cache entries.
+
+Private Cloud Compute is a protected built-in provider on iOS/macOS 27 and later.
+The app target includes `com.apple.developer.private-cloud-compute`; using the
+service requires [Apple's managed entitlement approval](https://developer.apple.com/private-cloud-compute/)
+and an eligible signing profile/device. Availability and inference errors come from
+FoundationModels. PCC is not silently replaced with another provider.
+
+The language model regression runner verifies PCC selection persistence, reserved
+IDs, deletion/overwrite protection, the provider type, and session construction.
+It does not make live PCC requests or establish entitlement eligibility.
+
+## News, episode headings, MV audio and flexible story stages
+
+- `swift test --package-path SekaiKit --filter 'NewsTests|EpisodeHeadingTests|SongVideoTests|LiveTitleTests|AdditionalContentTests'`
+  checks regional news targets (including title-less TW banners), optional heading
+  fields, World Link character parts, old archives, soundtrack selection and existing
+  content. Set `SEKAI_NEWS_FIXTURES` to a directory containing `news-jp.json`,
+  `news-en.json`, `news-tw.json` and `news-kr.json` for full source snapshots.
+- `swift test --package-path JSON2Proto --filter 'AdditionalConversionTests|LiveTitleConversionTests'`
+  checks episode label/character wire round trips and Virtual Live conversion.
+- `SongMovieAssetTests.swift` compiles with the production `SongMovieAsset.swift`.
+  Pass a video URL, soundtrack URL and unused temporary output filename. The runner
+  builds the native composition and exports two seconds after a seek to 60 seconds.
+  Real song 8 assets passed both from local files and directly from storage.sekai.best;
+  both output tracks are two seconds long. Extracted MV files contain no audio;
+  the regional vocal's `music/long/<bundle>/<bundle>.mp3` supplies it.
+- `NewsArticleHTMLTests.swift` compiles with `NewsArticleHTML.swift` and runs without
+  a window. It checks Markdown conversion of headings, emphasis, lists, images,
+  relative links and tables, and excludes scripts and unsafe link schemes. Optional
+  arguments supply an actual TW HTML snapshot and a dynamic JP announcement URL.
+- Existing Astray `ViewportTests.swift` and `PlaybackTests.swift` passed with the
+  Xcode-built framework, checking Metal rendering at several aspect ratios, safe
+  dialogue/choice hit testing and cancelled loading (46 playback assertions).
+
+News uses each edition's `userInformations.json`, as in Sekai Viewer's
+`src/components/blocks/SekaiGameNews.tsx`. CN currently has no published table at
+that path and is reported unavailable. Absolute TW/KR targets are preserved;
+relative JP/EN targets resolve to their own official web origins. Article content
+is rendered with MarkdownUI using Greatdori's list/preview/detail layouts.
+
+Main story headings use the source's `episodeNoLabel` (including TW's “第1章” and
+CN's “第1话”). World Link headings use optional `gameCharacterId` associations;
+opening, ending and character-part names are derived only where the source has no
+explicit heading, including single-part chapters and two-part endings. New fields
+are optional and older archives are enriched from regional JSON. Schemas and all 13 archives were regenerated, verified, and published in asset
+commit `46f186c37bba4cd69755e1ef77c092699975f32e`; the corresponding generator is
+`7053b2ea06fce2a2975d634b2db7079d2d3f300c`.
+
+Titles/Honors are supported by app navigation, regional models and asset generation.
+Existing Protobuf message field numbers remain unchanged.
+All current app and SekaiKit catalog entries are translated into English, Japanese,
+Korean, Simplified Chinese and Traditional Chinese. Live dynamic enum/filter keys
+now use extractable literals; unused stale keys were removed. No manual extraction
+state is used. Catalogs compile with `xcrun xcstringstool compile`.
+
+Title artwork joins each regional `honorGroups` record for the correct event/ranked
+background, ranking overlay and custom frame. Live-master titles select the first
+level bundle when the root bundle is absent. Common frames and level icons are
+bundled from Sekai Viewer's `src/assets/frame` game assets; WebP layers have PNG
+fallbacks and failed image requests can be retried. Nine actual layer URLs across
+ordinary, event, ranked, achievement and birthday titles returned valid images.
+
+## November 5: online Live2D viewer and faster summaries
+
+Tools → Live2D Viewer now uses Astray's native Cubism renderer with the online JP
+model catalog. It supports character/model filtering, motion/expression selection,
+pause, replay, looping and framing on an unrestricted canvas. The inspector becomes
+a sheet on compact layouts. Catalog and animation-list failures can be retried.
+The source note identifies the JP assets explicitly.
+
+After a macOS Xcode build, compile `Live2DViewerTests.swift` with the production
+`Live2DCatalog.swift` and `NativeLive2DPlayer.swift`, linking the built Astray framework
+and adding `Packages/Astray/Astray/Live2D/Bridge` to the import search path. Run it with
+the downloaded `story-player/index.json` and JP `character2ds.json` paths. This test
+makes asset requests and needs Metal access, but creates no window. The actual catalog
+contained 670 models; Ichika's first model exposed 246 motions and 60 expressions.
+A real model rendered on an 800 × 800 texture, visibly animated, stayed in viewer
+playback, paused correctly and accepted camera framing. Cubism Core reported 5.1.0.
+
+The story translation runner also checks summary request count and full source
+coverage: 35 short dialogue lines now use one request instead of five. A 600-line
+remote-model fixture uses six requests including the final merge; all 600 unique
+line markers occur in the supplied prompts. No lines are discarded. Existing final
+summary caches remain usable. Compact ordered source records and wider consecutive
+merges reduce repeated model calls. The final generation uses Foundation Models'
+streaming API; incremental delivery depends on the SDK and provider (the current
+custom-executor implementation may coalesce snapshots until completion). Tests
+verify final streamed assembly, terminology normalization and cache reuse without
+calling a real model account. These are request-count results, not a wall-clock
+benchmark of an external model.
+
+## Live2D backgrounds and inspector forms
+
+The inspector uses grouped Forms with panel padding. Backgrounds are enumerated
+from all pages of Sekai Viewer's JP `scenario/background/` object listing. Image
+variants sharing a path are combined, preferring PNG, then JPEG, then WebP. This
+covers the published JP scenario directory, not unpublished assets or other regions.
+The background panel searches the catalog and previews the selected image; it does
+not download the entire image collection. Background changes use a separate Astray
+backdrop texture and retain the model's animation and camera state.
+
+`Live2DBackgroundTests.swift` compiles with `Live2DCatalog.swift`, linking the
+Xcode-built Astray framework as in `Live2DViewerTests.swift`. Pass any valid PNG
+path followed optionally by saved S3 XML listing pages. It checks pagination and
+continuation-token escaping, duplicate formats, noncanonical filenames, malformed
+and cyclic listings, cancellation, and Metal rendering/replacement/clearing of the
+backdrop. The current published listing returned 1,581 backgrounds across four pages.
+
+Live2D motion/expression changes now register only missing clips on the existing
+Cubism instance. They retain model textures, physics, backdrop, camera, playback
+time and pause state. Animation failures appear in the inspector while the current
+scene remains visible; newer choices supersede pending older requests. Selecting
+None clears only that animation channel. Replay and framing also retain the runtime.
+`Live2DViewerTests.swift` covers these transitions with a real model, including
+expression-only changes preserving the motion revision, paused rendering, clearing,
+malformed replacements and an intentionally delayed superseded request.
+
+## Live2D viewer controls and automatic backgrounds
+
+The character Form contains the background Picker, custom image URL/background ID
+alert, and independent Breathe/Breathe Sway switches. Camera controls and motion
+looping are removed from the viewer. The model uses its initial drawable bottom as
+its fixed screen baseline; loading a replacement model retains the backdrop.
+The parameter Form shows all model-authored ranges, with twelve controls per
+page. Manual values override animation and physics until reset, including when paused.
+
+After a macOS Xcode build, run `Tests/run-live2d-controls-tests.sh` with the Debug
+products directory containing `Astray.framework`. Its local Haru fixture needs no
+network or window and checks real Metal bottom alignment, paused parameter changes,
+range clamping/reset, breath/sway, looping off, backdrop retention across models,
+failed custom images and custom URL/ID validation.
+
+`Live2DBackgroundPickerTests.swift` also checks Original/Brand New World SEKAI maps,
+light/dark day/night selection, all twenty main-character bedrooms, and distant-tree
+fallbacks. Virtual Singer model variants retain their SEKAI unit during catalog
+decoding; `Live2DViewerTests.swift` verifies band Miku and Brand New World night Miku
+against the supplied real catalog and character2ds data.
+
+The viewer now uses a model menu grouped by character (with Other last), plus
+motion/expression Pickers in the first inspector tab. Sway, Breathe and Blink have
+independent switches. Parameter values are snapshots taken only when that panel
+opens or is paused; there is no per-frame UI tracking. A local Haru benchmark took
+about 14 ms for 1,000 parameter snapshots.
+
+Viewer framing reserves a fixed model canvas, locks authored root position/size
+tracks, and measures the initial rendered alpha baseline once during loading.
+The neutral default motion lowers the arms. Models without a neutral clip
+(such as v2_21miku_normal) instead use -38 degrees for their standard
+ParamArmL1/ParamArmR1 resting angles, matching the game's neutral stance.
+Resting values apply only without a body motion; face capture and manual
+sliders retain priority. Clearing a motion restores the resting pose. Legacy PARAM_ARM_R_1-style motion IDs
+are matched to actual MOC parameter IDs without rewriting the clip's numeric text.
+Real-model tests assert lowered arms and a fixed ParamSize when switching actual
+clips. Bedroom defaults now cover all twenty main characters;
+150 curated variants are validated against the published catalog.
+
+## Live2D selection, iOS menus and face capture
+
+Model menus have localized Unit section headers, with untitled current-selection
+and Other sections. v2 models precede older models within each character. Model
+and background selection use persistent app preferences; startup also waits for
+the model catalog when restoring an existing selection. Replacement loading pauses
+the old viewer instead of restoring the story's scale-1 layout. The local render
+suite samples this asynchronous interval to detect the previous temporary enlargement.
+With no stored selection, the viewer defaults to v2_21miku_normal.
+
+iOS model/background leaf menus contain inline Pickers. Paging buttons use an
+explicit borderless style to keep Form row actions separate. The viewer extends
+behind safe areas, and the iOS controls button uses the slider icon.
+
+On supported iOS devices, Face Tracking starts an ARKit face session after camera
+authorization, maps typed ARKit coefficients and relative head orientation to
+standard Cubism parameters, and samples at up to 30 Hz and interpolates the displayed pose at 60 Hz. Manual sliders
+have priority. Recenter resets head orientation; losing a face eases the pose back to
+neutral while preserving calibration for reacquisition. Leaving the viewer or entering the background stops the session.
+Model controls invalidate paused Metal frames without continuously refreshing
+parameter UI snapshots. Camera purpose text and capture UI have five translations.
+
+On Apple Silicon macOS, the same controls use AVFoundation with MediaPipe Face
+Landmarker, pinned to VCam's 0.0.15 native runtime. Apple Vision capture has been
+removed. Intel/Rosetta builds hide the capture section and never construct the
+unsupported runtime. iOS keeps ARKit: the local package's binary and model target
+are both conditional macOS dependencies. The built iOS Simulator app has neither
+the MediaPipe framework nor its resource bundle/model.
+
+A serial capture queue analyzes at most 30 BGRA frames per second, preferring
+640 × 480 and discarding late frames. MediaPipe outputs 52 expression scores and
+a canonical-to-observed 4×4 transform. The viewer normalizes its rotation columns,
+calibrates relative orientation with quaternions and maps the scores through
+the existing Cubism parameter adapter. macOS yaw follows the model directly;
+iOS ARKit pitch is inverted to match its up/down convention. Invalid transforms are
+rejected. Calibration, edge warnings, smooth loss/reacquisition and manual-slider
+priority remain shared with ARKit. Camera frames stay local and are not saved.
+The model resource bundle includes Apache LICENSE, upstream NOTICE and the locked
+runtime's third-party license texts.
+
+Run `bash Tests/run-mediapipe-face-tests.sh /path/to/Build/Products/Debug /path/to/public-face.png`
+after a macOS build. Google's public fixture is available from
+https://storage.googleapis.com/mediapipe-assets/business-person.png . The suite
+runs actual inference over five small rotations (five frames each), checks all
+52 scores/transform/calibrated mapping and tests face loss using blank frames.
+On the local M4 Pro, the 25 warmed tracking frames took approximately 0.13 seconds
+including fixture conversion. This is not a live camera latency measurement.
+The controls suite also tests quaternion axis directions, recentering, invalid
+transforms, smooth return/reacquisition, arm resting values and override priority.
+macOS eye openness uses the original `1 - eyeBlinkLeft/Right` expression-score
+mapping. The custom eyelid aperture measurements, open-eye calibration and wink
+remapping have been removed. Platform-specific head direction fixes remain:
+ARKit pitch is inverted, while macOS yaw follows the model directly. Live tracking
+quality still needs a camera/device check.
+
+Face pose interpolation is independent of camera callbacks. Head motion receives
+more damping near rest, expressions respond faster, and a lost face returns to
+neutral with a slower blend. Edge and missing-face warnings appear in the
+navigation subtitle (or a compact overlay on older systems); edge warnings have
+hysteresis to avoid flicker. Pose axes use explicit platform-specific sign conventions.
+
+Run `bash Tests/run-live2d-framing-tests.sh /path/to/Build/Products/Debug` to load
+the actual v2_21miku_normal model and measure leg contact at 16:9, square and
+portrait viewport sizes through animation. Set SEKAI_FRAMING_IMAGE to export the
+first frame. The baseline uses a narrow central body strip so Miku's longer
+twintails do not leave her legs above the bottom of the screen.
+
+The render suite checks neutral/expressive face mapping, invalid input clamping,
+actual face-driven Cubism values, manual precedence and return to animation after
+capture stops. It also checks calibrated MediaPipe pose axes and expression mapping without
+requiring camera access. ARKit session/camera behavior and visual tracking quality still
+require a supported physical iPhone or iPad; Simulator builds validate compilation only, not the camera session or tracking quality.

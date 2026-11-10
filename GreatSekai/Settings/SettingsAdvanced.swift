@@ -15,7 +15,7 @@
 import SDWebImageSwiftUI
 import SekaiKit
 import SwiftUI
-import WebKit
+import Astray
 
 #if os(iOS)
 import UIKit
@@ -306,21 +306,12 @@ struct SettingsAdvancedCacheManagementView: View {
 private enum AdvancedCacheStorage {
     struct Snapshot: Sendable {
         var bytes: [AdvancedCacheCategory: Int64]
-        var hasWebResources: Bool
 
         func formattedSize(for categories: Set<AdvancedCacheCategory>) -> String {
             let total = categories.reduce(Int64(0)) { $0 + (bytes[$1] ?? 0) }
             let formatted = ByteCountFormatter.string(fromByteCount: total, countStyle: .file)
-            if categories.contains(.story), hasWebResources {
-                return String(localized: "Settings.advanced.storage.cache.management.size.system.\(formatted)")
-            }
             return formatted
         }
-    }
-
-    // WebKit exposes cache records and deletion, but not their byte sizes.
-    static var webCacheTypes: Set<String> {
-        [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache, WKWebsiteDataTypeFetchCache]
     }
 
     static func snapshot() async throws -> Snapshot {
@@ -338,8 +329,8 @@ private enum AdvancedCacheStorage {
         }.value
         bytes[.images] = imageBytes
         bytes[.information, default: 0] += Int64(URLCache.shared.currentDiskUsage)
-        let records = await WKWebsiteDataStore.default().dataRecords(ofTypes: webCacheTypes)
-        return Snapshot(bytes: bytes, hasWebResources: !records.isEmpty)
+        bytes[.story, default: 0] += try await StoryAssetCache.shared.diskUsage()
+        return Snapshot(bytes: bytes)
     }
 
     static func clear(_ categories: Set<AdvancedCacheCategory>) async throws {
@@ -350,7 +341,7 @@ private enum AdvancedCacheStorage {
             }
         }
         if categories.contains(.story) {
-            await WKWebsiteDataStore.default().removeData(ofTypes: webCacheTypes, modifiedSince: .distantPast)
+            try await StoryAssetCache.shared.clear()
         }
         if categories.contains(.information) {
             URLCache.shared.removeAllCachedResponses()

@@ -39,7 +39,9 @@ struct CompactAudioPlayer: View {
         self.startOffset = startOffset.isFinite ? max(0, startOffset) : 0
         self.mediaInfo = mediaInfo
         self.showPlayButtonOnly = showPlayButtonOnly
-        self._player = .init(initialValue: .init(url: url))
+        let player = AVPlayer(url: url)
+        player.audiovisualBackgroundPlaybackPolicy = .continuesIfPossible
+        self._player = .init(initialValue: player)
     }
     
     @State private var isPlaying = false
@@ -50,19 +52,19 @@ struct CompactAudioPlayer: View {
     var body: some View {
         HStack {
             Button(action: {
-                #if !os(macOS)
-                try? AVAudioSession.sharedInstance().setActive(!isPlaying)
-                #endif
                 if let mediaInfo {
                     configureNowPlaying(title: mediaInfo.title, artist: mediaInfo.artist, player: player, artworkURL: mediaInfo.artwork, startOffset: startOffset)
                 }
                 if isPlaying {
                     player.pause()
+                    #if !os(macOS)
+                    try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+                    #endif
                 } else {
                     if duration > 0 && duration - currentTime < 0.1 {
                         seek(to: 0)
                     }
-                    player.play()
+                    playCompactAudio(player)
                 }
             }, label: {
                 Image(systemName: isPlaying ? "pause.fill" : "play.fill")
@@ -160,6 +162,15 @@ struct CompactAudioPlayer: View {
     }
 }
 
+private func playCompactAudio(_ player: AVPlayer) {
+    #if !os(macOS)
+    let session = AVAudioSession.sharedInstance()
+    try? session.setCategory(.playback, mode: .default)
+    try? session.setActive(true)
+    #endif
+    player.play()
+}
+
 func configureNowPlaying(
     title: String?,
     artist: String?,
@@ -204,7 +215,7 @@ func configureNowPlaying(
 
     // 播放 / 暂停
     command.playCommand.addTarget { _ in
-        player.play()
+        playCompactAudio(player)
         updateNowPlayingProgress(player: player, startOffset: startOffset)
         return .success
     }
@@ -219,7 +230,7 @@ func configureNowPlaying(
         if player.timeControlStatus == .playing {
             player.pause()
         } else {
-            player.play()
+            playCompactAudio(player)
         }
         updateNowPlayingProgress(player: player, startOffset: startOffset)
         return .success

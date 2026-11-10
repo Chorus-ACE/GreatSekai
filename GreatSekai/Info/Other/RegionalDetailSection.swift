@@ -6,17 +6,19 @@ struct RegionalDetailSection<Value: Equatable, Content: View>: View {
     let title: LocalizedStringKey
     let values: LocalizableData<Value>
     let content: (Value, SekaiLocale) -> Content
+    var expanded: Binding<Bool>?
     @State private var locale: SekaiLocale
 
-    init(_ title: LocalizedStringKey, values: LocalizableData<Value>, @ViewBuilder content: @escaping (Value, SekaiLocale) -> Content) {
+    init(_ title: LocalizedStringKey, values: LocalizableData<Value>, expanded: Binding<Bool>? = nil, @ViewBuilder content: @escaping (Value, SekaiLocale) -> Content) {
         self.title = title
         self.values = values
         self.content = content
+        self.expanded = expanded
         _locale = State(initialValue: values.majorLocale ?? .primaryLocale)
     }
 
-    init(_ title: LocalizedStringKey, values: LocalizableData<Value>, @ViewBuilder content: @escaping (Value) -> Content) {
-        self.init(title, values: values) { value, _ in content(value) }
+    init(_ title: LocalizedStringKey, values: LocalizableData<Value>, expanded: Binding<Bool>? = nil, @ViewBuilder content: @escaping (Value) -> Content) {
+        self.init(title, values: values, expanded: expanded) { value, _ in content(value) }
     }
 
     private var locales: [SekaiLocale] { values.localizedData?.allAvailableLocales ?? [.primaryLocale] }
@@ -41,6 +43,13 @@ struct RegionalDetailSection<Value: Equatable, Content: View>: View {
                         .accessibilityLabel(Text("Content.locale"))
                 }
                 Spacer()
+                if let expanded {
+                    Button(expanded.wrappedValue ? "Details.collapse" : "Details.expand") {
+                        withAnimation { expanded.wrappedValue.toggle() }
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                }
             }
             .frame(maxWidth: infoContentMaxWidth).detailSectionHeader()
         }

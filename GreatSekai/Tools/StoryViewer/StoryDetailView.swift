@@ -1,5 +1,6 @@
 // Transcript presentation adapted from Greatdori (Apache-2.0).
 // https://greatdori.com/LICENSE.txt
+import Astray
 import AVKit
 import Combine
 import SekaiKit
@@ -15,6 +16,7 @@ struct StoryDetailView: View {
     @State private var query = ""
     @State private var retryID = 0
     @State private var player = AVPlayer()
+    @State private var voiceTask: Task<Void, Never>?
     @State private var currentLineID: Int?
     @State private var voiceLineID: Int?
     @State private var requestedVoiceLineID: Int?
@@ -28,8 +30,20 @@ struct StoryDetailView: View {
     @AppStorage("Story.translation.alwaysUseModel") private var alwaysUseModel = false
     @State private var translation = StoryTranslation()
     @State private var translationRetryID = 0
+    @State private var summary = StorySummary()
+    @State private var summaryLanguage = SekaiLocale.primaryLocale
+    @State private var summaryRequested = false
+    @State private var summaryRetryID = 0
 
     private var translationRequest: StoryTranslation.Request {
+        modelRequest(target: translationLanguage, retryID: translationRetryID)
+    }
+
+    private var summaryRequest: StoryTranslation.Request? {
+        summaryRequested ? modelRequest(target: summaryLanguage, retryID: summaryRetryID) : nil
+    }
+
+    private func modelRequest(target: SekaiLocale?, retryID: Int) -> StoryTranslation.Request {
         var modelID = ""
         var configuration: OnlineModelConfiguration?
         var chatGPTProfile: ChatGPTProfile?
@@ -40,16 +54,8 @@ struct StoryDetailView: View {
             chatGPTProfile = ChatGPTConnection.shared.profiles.first { $0.id == modelID }
         }
         return .init(episode: currentEpisode ?? episode, transcript: transcript,
-                     target: translationLanguage, alwaysUseModel: alwaysUseModel,
-                     modelID: modelID, configuration: configuration, chatGPTProfile: chatGPTProfile, retryID: translationRetryID)
-    }
-
-    private var preferredModelName: String {
-        if #available(iOS 27.0, macOS 27.0, *) {
-            let manager = LanguageModelManager.shared
-            return manager.entries.first { $0.id == manager.selectedID }?.name ?? manager.selectedID
-        }
-        return String(localized: "Settings.models.requires-system")
+                     target: target, alwaysUseModel: alwaysUseModel,
+                     modelID: modelID, configuration: configuration, chatGPTProfile: chatGPTProfile, retryID: retryID)
     }
 
     @ViewBuilder private var translationStatus: some View {
@@ -119,13 +125,9 @@ struct StoryDetailView: View {
         ]
     }
 
-    var body: some View {
+    private var storyContent: some View {
         GeometryReader { container in
-            #if os(iOS)
-            let fillsScreen = fullscreen && container.size.width > container.size.height
-            #else
-            let fillsScreen = false
-            #endif
+            let fillsScreen = fullscreen
             GeometryReader { geometry in
                 ScrollViewReader { proxy in
                     ScrollView {
@@ -169,11 +171,8 @@ struct StoryDetailView: View {
                                     ExternalLinksSection(links: storyExternalLinks)
                                 }
                             } else if failed {
-                                ContentUnavailableView {
-                                    Label("Story.unavailable", systemImage: "books.vertical")
-                                } actions: {
-                                    Button("General.retry") { retryID += 1 }
-                                }
+                                DetailUnavailableView(title: "Story.unavailable", symbol: "books.vertical")
+                                Button("General.retry") { retryID += 1 }
                             } else {
                                 ProgressView().controlSize(.large)
                                     .frame(maxWidth: .infinity, minHeight: 200)
@@ -217,6 +216,19 @@ struct StoryDetailView: View {
             }
             .ignoresSafeArea(.container, edges: fillsScreen ? .all : [])
         }
+    }
+
+    private var voiceStatusPublisher: AnyPublisher<AVPlayerItem.Status, Never> {
+        player.publisher(for: \.currentItem).map { item in
+            item?.publisher(for: \.status).eraseToAnyPublisher()
+                ?? Just(AVPlayerItem.Status.unknown).eraseToAnyPublisher()
+        }.switchToLatest().eraseToAnyPublisher()
+    }
+
+    var body: some View {
+        let translationRequest = self.translationRequest
+        let summaryRequest = self.summaryRequest
+        storyContent
         .navigationTitle(currentEpisode?.title ?? String(localized: "App.tools.story-viewer"))
         .wrapIf(true) { content in
             if #available(iOS 26.0, macOS 26.0, *) {
@@ -267,6 +279,7 @@ struct StoryDetailView: View {
         .navigationBarBackButtonHidden(fullscreen)
         .task(id: "\(episode.id)-\(locale.rawValue)-\(retryID)") { await load() }
         .task(id: translationRequest) { await translation.load(translationRequest) }
+        .task(id: summaryRequest) { await summary.load(summaryRequest) }
         .onChange(of: locale) {
             if translationLanguage == locale {
                 translationLanguage = SekaiLocale.secondaryLocale != locale ? .secondaryLocale
@@ -276,10 +289,7 @@ struct StoryDetailView: View {
         .onReceive(player.publisher(for: \.timeControlStatus)) { status in
             voiceLineID = status == .playing ? requestedVoiceLineID : nil
         }
-        .onReceive(player.publisher(for: \.currentItem).map { item in
-            item?.publisher(for: \.status).eraseToAnyPublisher()
-                ?? Just(AVPlayerItem.Status.unknown).eraseToAnyPublisher()
-        }.switchToLatest()) { status in
+        .onReceive(voiceStatusPublisher) { status in
             if status == .failed { stopVoice() }
         }
         .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemFailedToPlayToEndTime)) { notification in
@@ -293,8 +303,10 @@ struct StoryDetailView: View {
             StoryLanguageView(language: $locale, translationLanguage: $translationLanguage,
                               alwaysUseModel: $alwaysUseModel,
                               translationStatus: translation.status, translationError: translation.error,
-                              preferredModelName: preferredModelName,
-                              retryTranslation: { translationRetryID += 1 })
+                              retryTranslation: { translationRetryID += 1 },
+                              summaryLanguage: $summaryLanguage, summary: summary,
+                              canSummarize: transcript?.lines.isEmpty == false,
+                              generateSummary: { summaryRequested = true; summaryRetryID += 1 })
         })
     }
 
@@ -359,11 +371,23 @@ struct StoryDetailView: View {
         guard let url = line.voiceURL else { return }
         stopVoice()
         requestedVoiceLineID = line.id
-        player.replaceCurrentItem(with: AVPlayerItem(url: url))
-        player.play()
+        voiceTask = Task {
+            do {
+                let file = try await StoryAssetCache.shared.fileURL(at: url)
+                try Task.checkCancellation()
+                guard requestedVoiceLineID == line.id else { return }
+                voiceTask = nil
+                player.replaceCurrentItem(with: AVPlayerItem(url: file))
+                player.play()
+            } catch {
+                if !Task.isCancelled, requestedVoiceLineID == line.id { stopVoice() }
+            }
+        }
     }
 
     private func stopVoice() {
+        voiceTask?.cancel()
+        voiceTask = nil
         player.pause()
         player.replaceCurrentItem(with: nil)
         voiceLineID = nil
@@ -498,11 +522,13 @@ private struct StoryDialogueRow: View {
                 Color.clear.contentShape(Rectangle()).onTapGesture(perform: jump)
             }
             .foregroundStyle(Color.primary)
+            
         }
         .groupBoxStrokeLineWidth(isCurrent ? 3 : 0)
-        .contextMenu {
-            Button("Story.copy-dialogue", systemImage: "doc.on.doc") { copyStringToClipboard(line.text) }
-        }
+        .textSelection(.enabled)
+//        .contextMenu {
+//            Button("Story.copy-dialogue", systemImage: "doc.on.doc") { copyStringToClipboard(line.text) }
+//        }
     }
 
     @ViewBuilder private var characterIcon: some View {
@@ -533,8 +559,11 @@ struct StoryLanguageView: View {
     @Binding var alwaysUseModel: Bool
     let translationStatus: String?
     let translationError: String?
-    let preferredModelName: String
     let retryTranslation: () -> Void
+    @Binding var summaryLanguage: SekaiLocale
+    let summary: StorySummary
+    let canSummarize: Bool
+    let generateSummary: () -> Void
     @State private var lastTranslationLanguage = SekaiLocale.secondaryLocale
 
     private var options: [SekaiLocale] { SekaiLocale.allCases.filter { $0 != language } }
@@ -577,9 +606,29 @@ struct StoryLanguageView: View {
                             Text(translationError).foregroundStyle(.secondary)
                             Button("General.retry", action: retryTranslation)
                         }
-                        LabeledContent("Story.language.translate.preferred-model", value: preferredModelName)
+                        ModelPicker()
                     }
 
+                }
+
+                Section("Story.summary") {
+                    LocalePicker($summaryLanguage, label: { Text("Story.summary.language") })
+                    Button(action: generateSummary) {
+                        Label("Story.summary.generate", systemImage: "sparkles")
+                    }
+                    .disabled(!canSummarize || summary.isLoading)
+                    if summary.isLoading { ProgressView("Story.summary.generating") }
+                    else if let status = summary.status { Text(status).foregroundStyle(.secondary) }
+                    if let error = summary.error {
+                        Text(error).foregroundStyle(.secondary)
+                        Button("General.retry", action: generateSummary)
+                    }
+                    if let text = summary.text {
+                        Text(text)
+                            .textSelection(.enabled)
+                            .typesettingLanguage(.explicit(summaryLanguage.nsLocale.language))
+                    }
+                    ModelPicker()
                 }
             }
             .formStyle(.grouped)

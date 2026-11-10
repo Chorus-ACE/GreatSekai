@@ -21,16 +21,13 @@ enum LyricsPerformerPalette {
         return base?.readable(in: scheme).color
     }
 
-    /// A shared part uses the participating singers' combined color.
-    static func groupColor(ids: [String], colors: [String: Color], scheme: ColorScheme) -> Color? {
-        let uniqueIDs = Array(Set(ids))
+    /// Keep the source singer order for a left-to-right gradient, removing duplicates.
+    static func groupColors(ids: [String], colors: [String: Color], scheme: ColorScheme) -> [Color] {
+        var seen = Set<String>()
+        let uniqueIDs = ids.filter { seen.insert($0).inserted }
         let values = uniqueIDs.compactMap { colors[$0] }.compactMap { RGB(color: $0, scheme: scheme) }
-        guard !values.isEmpty, values.count == uniqueIDs.count else { return nil }
-        let count = Double(values.count)
-        return RGB(red: values.reduce(0) { $0 + $1.red } / count,
-                   green: values.reduce(0) { $0 + $1.green } / count,
-                   blue: values.reduce(0) { $0 + $1.blue } / count,
-                   alpha: values.reduce(0) { $0 + $1.alpha } / count).readable(in: scheme).color
+        guard values.count == uniqueIDs.count else { return [] }
+        return values.map { $0.readable(in: scheme).color }
     }
 
     static func cgColor(_ color: Color, scheme: ColorScheme) -> CGColor {

@@ -1,0 +1,21 @@
+MediaPipe Face Landmarker integration for GreatSekai
+
+MediaPipe and the Face Detector, Face Mesh V2 and Blendshape V2 models:
+Copyright Google / The MediaPipe Authors. Apache License 2.0.
+https://github.com/google-ai-edge/mediapipe
+https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker
+
+Native macOS distribution: VCamApp MediaPipe Tasks Vision 0.0.15.
+Apache License 2.0. Includes downstream platform patches.
+https://github.com/vcamapp/mediapipe
+
+See LICENSE.txt and THIRD_PARTY_NOTICES.txt for the distributed license texts.
+
+Upstream distribution NOTICE (verbatim):
+
+VCamApp MediaPipe Tasks Vision Swift Package
+
+This distribution bundles MediaPipe Tasks Vision and its transitive
+dependencies. Copyright and attribution notices for bundled dependencies
+are included in THIRD_PARTY_NOTICES.md and in the corresponding release
+asset THIRD_PARTY_NOTICES.txt.

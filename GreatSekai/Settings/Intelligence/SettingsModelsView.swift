@@ -51,27 +51,27 @@ struct ModelManagementView: View {
                 }
             }
             
-            Section(content: {
-                ForEach(manager.entries.filter({ $0.kind == .system })) { item in
+            Section {
+                ForEach(manager.entries.filter { $0.kind == .system || $0.kind == .privateCloudCompute }) { item in
                     ModelRow(
                         title: item.name,
-                        caption: "Apple Foundation Models",
-                        symbol: "apple.intelligence",
+                        caption: item.kind == .privateCloudCompute ? String(localized: "Settings.models.system.model.pcc.caption") : String(localized: "Settings.models.system.model.local.caption"),
+                        symbol: item.kind == .system ? "apple.intelligence" : "cloud",
                         isSelected: item.id == manager.selectedID,
                         select: { perform { try manager.select(item.id) } }
                     ) {
                         EmptyView()
                     }
-                    .disabled(!SystemLanguageModel.default.isAvailable)
+                    .disabled(!manager.isAvailable(item))
                 }
-            }, header: {
+            } header: {
                 Text("Settings.models.system")
-            }, footer: {
-                if !SystemLanguageModel.default.isAvailable {
+            } footer: {
+                if !SystemLanguageModel.default.isAvailable || !manager.privateCloudModel.isAvailable  {
                     Text("Settings.models.system.unavailable")
                 }
-            })
-            
+            }
+
             Section(content: {
                 ForEach(manager.entries.filter({ $0.kind == .openAICompatible })) { item in
                     let configuration = manager.onlineModels.first(where: { $0.id == item.id })
@@ -365,7 +365,7 @@ struct ModelManagementView: View {
         @ViewBuilder var configuration: () -> V
 
         var body: some View {
-            HStack {
+//            HStack {
                 Button(action: select) {
                     HStack {
                         if let symbol {
@@ -382,6 +382,9 @@ struct ModelManagementView: View {
                         }
 
                         Spacer()
+                        
+                        configuration()
+                        
                         if isSelected {
                             Image(systemName: "checkmark").foregroundStyle(.tint)
                         }
@@ -391,9 +394,7 @@ struct ModelManagementView: View {
                 .buttonStyle(.plain)
                 .disabled(selectionDisabled)
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
-
-                configuration()
-            }
+//            }
         }
     }
 
