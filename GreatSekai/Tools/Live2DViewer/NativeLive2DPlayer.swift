@@ -142,6 +142,9 @@ import simd
                       parameter.minimum <= -38, parameter.maximum >= 0 else { return nil }
                 return (parameter.id, Float(-38))
             })
+            #if os(iOS)
+            player.setModelFraming(zoom: 0.8)
+            #endif
             try await renderer?.prepareModelPresentation()
             try Task.checkCancellation()
             parameters = try renderer?.modelParameters() ?? []
@@ -200,10 +203,11 @@ nonisolated struct Live2DFacePoseFilter {
             let old = values[key] ?? Self.neutralValue(for: key)
             // Head movement gets more damping near rest; eyes and lips stay responsive.
             let head = key.contains("Angle")
-            let rate: Float = returningToNeutral ? 6 : head ? min(20, 9 + abs(goal - old) * 0.4) : 24
+            let closingEye = (key == "ParamEyeLOpen" || key == "ParamEyeROpen") && goal < old
+            let rate: Float = returningToNeutral ? 6 : closingEye ? 60 : head ? min(20, 9 + abs(goal - old) * 0.4) : 24
             let weight = Float(1 - exp(-delta * Double(rate)))
             let value = old + (goal - old) * weight
-            values[key] = abs(value - goal) < 0.001 ? goal : value
+            values[key] = abs(value - goal) < (closingEye && goal == 0 ? 0.03 : 0.001) ? goal : value
         }
         return values
     }
@@ -219,14 +223,18 @@ struct Live2DFaceSample: Sendable {
     var yaw: Float = 0
     var roll: Float = 0
     var blendShapes: [String: Float] = [:]
+    /// Screen position: -1 is the left edge, 0 the center, 1 the right edge.
+    var horizontalPosition: Float = 0
 
-    static func arKit(relativeRotation rotation: simd_float3x3, blendShapes: [String: Float]) -> Self {
+    static func arKit(relativeRotation rotation: simd_float3x3, blendShapes: [String: Float],
+                      facePositionX: Float = 0.5) -> Self {
         let degrees: Float = 180 / .pi
         return Self(
             pitch: atan2(rotation.columns.2.y, hypot(rotation.columns.2.x, rotation.columns.2.z)) * degrees,
             yaw: atan2(rotation.columns.2.x, rotation.columns.2.z) * degrees,
             roll: atan2(rotation.columns.0.y, rotation.columns.1.y) * degrees,
-            blendShapes: blendShapes)
+            blendShapes: blendShapes,
+            horizontalPosition: facePositionX * 2 - 1)
     }
 
     var parameters: [String: Float] {
@@ -235,11 +243,13 @@ struct Live2DFaceSample: Sendable {
         func signed(_ value: Float) -> Float { min(1, max(-1, value)) }
         let smile = (shape("mouthSmileLeft") + shape("mouthSmileRight")) / 2
         let frown = (shape("mouthFrownLeft") + shape("mouthFrownRight")) / 2
+        let position = signed(finite(horizontalPosition))
         return [
             "ParamAngleX": min(30, max(-30, finite(yaw))),
             "ParamAngleY": min(30, max(-30, finite(pitch))),
             "ParamAngleZ": min(30, max(-30, finite(roll))),
-            "ParamBodyAngleX": min(5, max(-5, finite(yaw) * 0.15)),
+            "ParamBodyAngleX": min(10, max(-10, finite(yaw) * 0.15 + position * 6)),
+            "ParamBodyAngleZ": position * 10,
             "ParamEyeLOpen": 1 - shape("eyeBlinkLeft"),
             "ParamEyeROpen": 1 - shape("eyeBlinkRight"),
             "ParamEyeLSmile": shape("eyeSquintLeft"),
@@ -432,9 +442,14 @@ import SwiftUI
             anchorID = anchor.identifier
         }
         let rotation = simd_float3x3(neutral!.inverse * orientation)
+        let screenOrientation = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }?.interfaceOrientation ?? .portrait
+        let position = anchor.transform.columns.3
+        let projected = frame.camera.projectPoint(.init(position.x, position.y, position.z),
+            orientation: screenOrientation, viewportSize: CGSize(width: 1, height: 1))
         let sample = Live2DFaceSample.arKit(relativeRotation: rotation,
-            blendShapes: Dictionary(uniqueKeysWithValues: Self.blendShapeKeys.map { ($0.0, anchor.blendShapes[$0.1]?.floatValue ?? 0) })
-        )
+            blendShapes: Dictionary(uniqueKeysWithValues: Self.blendShapeKeys.map { ($0.0, anchor.blendShapes[$0.1]?.floatValue ?? 0) }),
+            facePositionX: Float(projected.x))
         pose.follow(sample.parameters)
         let size = frame.camera.imageResolution
         let points = stride(from: 0, to: anchor.geometry.vertices.count, by: 20).map { index in

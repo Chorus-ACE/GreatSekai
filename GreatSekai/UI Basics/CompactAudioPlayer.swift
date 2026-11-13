@@ -14,6 +14,7 @@
 
 import AVFoundation
 import AVKit
+import Combine
 import Foundation
 import MediaPlayer
 import SekaiKit
@@ -44,6 +45,7 @@ struct CompactAudioPlayer: View {
         self._player = .init(initialValue: player)
     }
     
+    @State private var nowPlaying = CompactNowPlayingSession()
     @State private var isPlaying = false
     @State private var currentTime = 0.0
     @State private var duration = 0.0
@@ -53,13 +55,11 @@ struct CompactAudioPlayer: View {
         HStack {
             Button(action: {
                 if let mediaInfo {
-                    configureNowPlaying(title: mediaInfo.title, artist: mediaInfo.artist, player: player, artworkURL: mediaInfo.artwork, startOffset: startOffset)
+                    nowPlaying.activate(title: mediaInfo.title, artist: mediaInfo.artist, player: player,
+                                        artworkURL: mediaInfo.artwork, startOffset: startOffset)
                 }
                 if isPlaying {
                     player.pause()
-                    #if !os(macOS)
-                    try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-                    #endif
                 } else {
                     if duration > 0 && duration - currentTime < 0.1 {
                         seek(to: 0)
@@ -98,6 +98,7 @@ struct CompactAudioPlayer: View {
             timeUpdateTimer?.invalidate()
             timeUpdateTimer = nil
             player.pause()
+            nowPlaying.deactivate()
         }
         .onChange(of: url) {
             reloadAudio()
@@ -105,13 +106,15 @@ struct CompactAudioPlayer: View {
         .onChange(of: startOffset) {
             reloadAudio()
         }
-        .onReceive(player.publisher(for: \.timeControlStatus)) { status in
+        .onReceive(player.publisher(for: \.timeControlStatus).receive(on: DispatchQueue.main)) { status in
             isPlaying = status == .playing
+            nowPlaying.update()
         }
-        .onReceive(player.publisher(for: \.currentItem?.duration)) { duration in
+        .onReceive(player.publisher(for: \.currentItem?.duration).receive(on: DispatchQueue.main)) { duration in
             if let duration, duration.seconds.isFinite {
                 self.duration = max(0, duration.seconds - startOffset)
                 currentTime = min(currentTime, self.duration)
+                nowPlaying.update()
             }
         }
     }
@@ -124,6 +127,7 @@ struct CompactAudioPlayer: View {
                     let seconds = player.currentTime().seconds
                     if seconds.isFinite {
                         currentTime = min(max(0, seconds - startOffset), duration)
+                        nowPlaying.update()
                     }
                 }
             }
@@ -132,6 +136,7 @@ struct CompactAudioPlayer: View {
 
     private func reloadAudio() {
         player.pause()
+        nowPlaying.deactivate()
         isPlaying = false
         isTimeEditing = false
         currentTime = 0
@@ -171,147 +176,128 @@ private func playCompactAudio(_ player: AVPlayer) {
     player.play()
 }
 
-func configureNowPlaying(
-    title: String?,
-    artist: String?,
-    player: AVPlayer,
-    artworkURL: URL?,
-    startOffset: Double = 0,
-    skipForwardSeconds: Double = 10,
-    skipBackwardSeconds: Double = 10
-) {
+/// Owns exactly one set of remote commands for the currently selected compact player.
+@MainActor
+private final class CompactNowPlayingSession {
+    private static weak var current: CompactNowPlayingSession?
+    private weak var player: AVPlayer?
+    private var startOffset = 0.0
+    private var targets: [(MPRemoteCommand, Any)] = []
+    private var artworkTask: URLSessionDataTask?
+    private var generation = UUID()
 
-    // MARK: - 基础 Now Playing 信息
-    var info: [String: Any] = [:]
-
-    if let title = title {
+    func activate(title: String?, artist: String?, player: AVPlayer, artworkURL: URL?, startOffset: Double) {
+        if Self.current === self, self.player === player { update(); return }
+        Self.current?.player?.pause()
+        Self.current?.deactivate()
+        Self.current = self
+        self.player = player
+        self.startOffset = startOffset
+        var info: [String: Any] = [MPNowPlayingInfoPropertyMediaType: MPNowPlayingInfoMediaType.audio.rawValue]
         info[MPMediaItemPropertyTitle] = title
-    }
-    if let artist = artist {
         info[MPMediaItemPropertyArtist] = artist
-    }
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+        update()
 
-    // 进度条 (duration / elapsedTime)
-    if let item = player.currentItem {
-        let duration = item.duration
-        let durationSeconds = CMTimeGetSeconds(duration)
-
-        if durationSeconds.isFinite {
-            info[MPMediaItemPropertyPlaybackDuration] = max(0, durationSeconds - startOffset)
+        let commands = MPRemoteCommandCenter.shared()
+        register(commands.playCommand) { player in playCompactAudio(player) }
+        register(commands.pauseCommand) { player in player.pause() }
+        register(commands.togglePlayPauseCommand) { player in
+            if player.rate != 0 { player.pause() } else { playCompactAudio(player) }
         }
+        commands.skipBackwardCommand.preferredIntervals = [10]
+        commands.skipForwardCommand.preferredIntervals = [10]
+        registerSeek(commands.skipBackwardCommand, direction: -1)
+        registerSeek(commands.skipForwardCommand, direction: 1)
+        commands.changePlaybackPositionCommand.isEnabled = true
+        targets.append((commands.changePlaybackPositionCommand, commands.changePlaybackPositionCommand.addTarget { [weak self] event in
+            guard let event = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
+            let position = event.positionTime
+            Task { @MainActor [weak self] in
+                guard let self, Self.current === self, let player = self.player else { return }
+                self.seek(player, to: position + self.startOffset)
+            }
+            return .success
+        }))
 
-        let currentTime = CMTimeGetSeconds(player.currentTime())
-        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = max(0, currentTime - startOffset)
-
-        info[MPNowPlayingInfoPropertyPlaybackRate] =
-            (player.timeControlStatus == .playing) ? 1.0 : 0.0
-    }
-
-    MPNowPlayingInfoCenter.default().nowPlayingInfo = info
-
-
-    // MARK: - 注册远程控制
-    let command = MPRemoteCommandCenter.shared()
-
-    // 播放 / 暂停
-    command.playCommand.addTarget { _ in
-        playCompactAudio(player)
-        updateNowPlayingProgress(player: player, startOffset: startOffset)
-        return .success
-    }
-
-    command.pauseCommand.addTarget { _ in
-        player.pause()
-        updateNowPlayingProgress(player: player, startOffset: startOffset)
-        return .success
-    }
-
-    command.togglePlayPauseCommand.addTarget { _ in
-        if player.timeControlStatus == .playing {
-            player.pause()
-        } else {
-            playCompactAudio(player)
+        guard let artworkURL else { return }
+        let generation = self.generation
+        artworkTask = URLSession.shared.dataTask(with: artworkURL) { [weak self] data, _, _ in
+            guard let data, let image = PlatformImage(data: data) else { return }
+            DispatchQueue.main.async {
+                guard let self, Self.current === self, self.generation == generation else { return }
+                var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
+                info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+                MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+            }
         }
-        updateNowPlayingProgress(player: player, startOffset: startOffset)
-        return .success
+        artworkTask?.resume()
     }
 
-
-    // MARK: - 将上一首 / 下一首变成 快退 / 快进
-    // 快退
-    command.skipBackwardCommand.isEnabled = true
-    command.skipBackwardCommand.preferredIntervals = [NSNumber(value: skipBackwardSeconds)]
-    command.skipBackwardCommand.addTarget { event in
-        guard let e = event as? MPSkipIntervalCommandEvent else { return .commandFailed }
-        let new = max(CMTimeGetSeconds(player.currentTime()) - e.interval, startOffset)
-        player.seek(to: CMTime(seconds: new, preferredTimescale: 600))
-        updateNowPlayingProgress(player: player, startOffset: startOffset)
-        return .success
-    }
-
-    // 快进
-    command.skipForwardCommand.isEnabled = true
-    command.skipForwardCommand.preferredIntervals = [NSNumber(value: skipForwardSeconds)]
-    command.skipForwardCommand.addTarget { event in
-        guard let e = event as? MPSkipIntervalCommandEvent else { return .commandFailed }
-        let current = CMTimeGetSeconds(player.currentTime())
-        let duration = CMTimeGetSeconds(player.currentItem?.duration ?? .zero)
-        let new = min(current + e.interval, duration)
-        player.seek(to: CMTime(seconds: new, preferredTimescale: 600))
-        updateNowPlayingProgress(player: player, startOffset: startOffset)
-        return .success
-    }
-
-
-    // MARK: - 支持控制中心拖动进度条
-    command.changePlaybackPositionCommand.isEnabled = true
-    command.changePlaybackPositionCommand.addTarget { event in
-        guard let e = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
-        let time = CMTime(seconds: e.positionTime + startOffset, preferredTimescale: 600)
-        player.seek(to: time) { _ in
-            updateNowPlayingProgress(player: player, startOffset: startOffset)
+    func deactivate() {
+        for (command, target) in targets { command.removeTarget(target) }
+        targets.removeAll()
+        artworkTask?.cancel()
+        artworkTask = nil
+        generation = UUID()
+        player = nil
+        if Self.current === self {
+            Self.current = nil
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            #if os(macOS)
+            MPNowPlayingInfoCenter.default().playbackState = .stopped
+            #endif
         }
-        return .success
     }
 
-
-    // MARK: - 下载封面（可选）
-    guard let artworkURL else { return }
-
-    URLSession.shared.dataTask(with: artworkURL) { data, _, _ in
-        guard let data,
-              let image = PlatformImage(data: data)
-        else { return }
-
-        let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
-
-        DispatchQueue.main.async {
-            var now = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
-            now[MPMediaItemPropertyArtwork] = artwork
-            MPNowPlayingInfoCenter.default().nowPlayingInfo = now
+    func update() {
+        guard Self.current === self, let player,
+              var info = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
+        let elapsed = player.currentTime().seconds
+        if elapsed.isFinite { info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = max(0, elapsed - startOffset) }
+        info[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
+        info[MPNowPlayingInfoPropertyDefaultPlaybackRate] = 1.0
+        if let duration = player.currentItem?.duration.seconds, duration.isFinite {
+            info[MPMediaItemPropertyPlaybackDuration] = max(0, duration - startOffset)
         }
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+        #if os(macOS)
+        MPNowPlayingInfoCenter.default().playbackState = player.rate != 0 ? .playing : .paused
+        #endif
+    }
 
-    }.resume()
+    private func register(_ command: MPRemoteCommand, action: @escaping (AVPlayer) -> Void) {
+        command.isEnabled = true
+        targets.append((command, command.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self, Self.current === self, let player = self.player else { return }
+                action(player)
+                self.update()
+            }
+            return .success
+        }))
+    }
+
+    private func registerSeek(_ command: MPSkipIntervalCommand, direction: Double) {
+        command.isEnabled = true
+        targets.append((command, command.addTarget { [weak self] event in
+            guard let event = event as? MPSkipIntervalCommandEvent else { return .commandFailed }
+            let interval = event.interval
+            Task { @MainActor [weak self] in
+                guard let self, Self.current === self, let player = self.player else { return }
+                self.seek(player, to: player.currentTime().seconds + direction * interval)
+            }
+            return .success
+        }))
+    }
+
+    private func seek(_ player: AVPlayer, to seconds: Double) {
+        guard seconds.isFinite else { return }
+        let duration = player.currentItem?.duration.seconds ?? .infinity
+        let end = duration.isFinite ? duration : .infinity
+        let target = min(max(startOffset, seconds), end)
+        player.seek(to: CMTime(seconds: target, preferredTimescale: 600)) { [weak self] _ in
+            Task { @MainActor in self?.update() }
+        }
+    }
 }
-
-
-// MARK: - 更新 Now Playing 进度
-private func updateNowPlayingProgress(player: AVPlayer, startOffset: Double) {
-    guard var now = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
-
-    now[MPNowPlayingInfoPropertyElapsedPlaybackTime] =
-        max(0, CMTimeGetSeconds(player.currentTime()) - startOffset)
-
-    now[MPNowPlayingInfoPropertyPlaybackRate] =
-        (player.timeControlStatus == .playing) ? 1.0 : 0.0
-
-    if let item = player.currentItem {
-        let duration = CMTimeGetSeconds(item.duration)
-        if duration.isFinite {
-            now[MPMediaItemPropertyPlaybackDuration] = max(0, duration - startOffset)
-        }
-    }
-
-    MPNowPlayingInfoCenter.default().nowPlayingInfo = now
-}
-

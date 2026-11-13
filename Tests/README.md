@@ -37,6 +37,7 @@ SEKAI_MASTER_TEST_DATA=/path/to/regional-fixtures \
 SEKAI_ADDITIONAL_TEST_DATA=/path/to/content-fixtures \
 swift test --package-path SekaiKit --filter 'GachaStickerTests|AdditionalContentTests'
 sh GreatSekai/Tests/run-collection-tests.sh
+sh GreatSekai/Tests/run-collection-batch-tests.sh
 sh GreatSekai/Tests/run-sekaipedia-tests.sh
 ```
 
@@ -46,6 +47,22 @@ that environment variable, only the external-fixture test is skipped. The collec
 runner compiles the production codec and shared storage directly and uses a temporary
 directory. It checks persistence, corruption reporting, Unicode names, trained and
 normal variants, empty collections and malformed import codes.
+It also checks legacy archive compatibility, stable built-in collection IDs,
+24-hour refresh boundaries, snapshot replacement and preservation of user collections.
+
+After a macOS build, run
+`SEKAI_PROTOBUF_TEST_DATA=/path/to/Sekai-Protobuf-Assets sh GreatSekai/Tests/run-builtin-collection-tests.sh /path/to/Build/Products/Debug`
+to verify built-in classification and the normal/trained artwork variants against
+the local `card.aar` archive, without making network requests. It also verifies
+that 200 collection-row metadata requests share one decoded table, with separate
+source/locale caches, expiry, missing-ID refresh, retry and protection against
+an older in-flight load overwriting a newer daily refresh.
+
+The collection batch runner checks shared in-flight availability requests, separate
+URL entries for regional/normal/trained art, positive and negative cache expiry,
+retrying transport failures, bounded parallel checks, batched updates and cancellation.
+It also compares serial and parallel processing with simulated 20 ms requests;
+no network access or changes to the user's collections are needed.
 
 The Sekaipedia runner compiles the production resolver and intercepts its HTTP requests
 locally. It checks card/event/music ID mappings, separate caches, missing and malformed
@@ -191,7 +208,10 @@ It does not make live PCC requests or establish entitlement eligibility.
   builds the native composition and exports two seconds after a seek to 60 seconds.
   Real song 8 assets passed both from local files and directly from storage.sekai.best;
   both output tracks are two seconds long. Extracted MV files contain no audio;
-  the regional vocal's `music/long/<bundle>/<bundle>.mp3` supplies it.
+  the regional vocal's `music/long/<bundle>/<bundle>.mp3` supplies it. The runner
+  also checks matching audio/video source offsets, a zero-based trimmed timeline,
+  embedded-audio movies, and padding beyond the media duration. MV padding comes
+  from each region's own `fillerSec`, already present in the archives.
 - `NewsArticleHTMLTests.swift` compiles with `NewsArticleHTML.swift` and runs without
   a window. It checks Markdown conversion of headings, emphasis, lists, images,
   relative links and tables, and excludes scripts and unsafe link schemes. Optional
@@ -333,8 +353,9 @@ suite samples this asynchronous interval to detect the previous temporary enlarg
 With no stored selection, the viewer defaults to v2_21miku_normal.
 
 iOS model/background leaf menus contain inline Pickers. Paging buttons use an
-explicit borderless style to keep Form row actions separate. The viewer extends
-behind safe areas, and the iOS controls button uses the slider icon.
+explicit borderless style to keep Form row actions separate. The iOS model canvas
+stays inside safe areas with 12-point padding and 0.95 camera zoom; the iOS controls
+button uses the slider icon. macOS keeps its existing model framing.
 
 On supported iOS devices, Face Tracking starts an ARKit face session after camera
 authorization, maps typed ARKit coefficients and relative head orientation to
@@ -371,9 +392,17 @@ On the local M4 Pro, the 25 warmed tracking frames took approximately 0.13 secon
 including fixture conversion. This is not a live camera latency measurement.
 The controls suite also tests quaternion axis directions, recentering, invalid
 transforms, smooth return/reacquisition, arm resting values and override priority.
-macOS eye openness uses the original `1 - eyeBlinkLeft/Right` expression-score
-mapping. The custom eyelid aperture measurements, open-eye calibration and wink
-remapping have been removed. Platform-specific head direction fixes remain:
+macOS always tracks the eyes independently and swaps the webcam's left/right
+blink and eye-smile channels for the model. Blink scores up to 0.05 leave the eye
+open; scores from 0.05 to 0.65 interpolate to full closure. Closing eyes use faster
+pose interpolation so brief blinks can reach zero. No advanced setting is needed.
+iOS retains its ARKit eye coefficients and uses its corrected projected horizontal
+face direction; macOS uses mirrored webcam position. Both map horizontal face
+position to body yaw and lean, independently of head rotation; face loss and
+recalibration return these body parameters to neutral as well.
+The controls suite checks independent winks, partial/full closure, short blinks,
+body direction, invalid inputs, and actual Cubism parameter overrides.
+Platform-specific head direction fixes remain:
 ARKit pitch is inverted, while macOS yaw follows the model directly. Live tracking
 quality still needs a camera/device check.
 
@@ -388,9 +417,33 @@ the actual v2_21miku_normal model and measure leg contact at 16:9, square and
 portrait viewport sizes through animation. Set SEKAI_FRAMING_IMAGE to export the
 first frame. The baseline uses a narrow central body strip so Miku's longer
 twintails do not leave her legs above the bottom of the screen.
+It also renders the complete model against a solid backdrop at phone portrait,
+phone landscape and iPad sizes. iOS uses 80% of the original full-canvas model
+framing, without an additional safe-area reduction; the backdrop still fills the screen.
 
 The render suite checks neutral/expressive face mapping, invalid input clamping,
 actual face-driven Cubism values, manual precedence and return to animation after
 capture stops. It also checks calibrated MediaPipe pose axes and expression mapping without
 requiring camera access. ARKit session/camera behavior and visual tracking quality still
 require a supported physical iPhone or iPad; Simulator builds validate compilation only, not the camera session or tracking quality.
+
+
+## Ruby placement with performer gradients
+
+`bash Tests/run-lyrics-typography-tests.sh` compares the gray ruby pixels with
+performer gradients on and off for Song 761's reported line at 13/17/26-point
+fonts and 90/140/600-point widths, including three redraws of the same renderer.
+Draw the Core Text frame before inspecting its glyph runs, and use a fresh drawing
+framesetter for each draw: inspecting runs can change cached ruby positions.
+An isolated transparency layer lets gradient colors replace the base glyphs while
+preserving ruby placement, color-font glyphs, and the surrounding background.
+
+
+## MV wheel behavior
+
+On macOS, the MV's AVPlayerView routes wheel events to its next responder,
+including events over native controls. A running #810 check held the paused
+position at 30 seconds while the containing page scrolled. This leaves pointer
+scrubbing and playback buttons available. Horizontal wheel seeking was also
+checked against AVKit's native controls and did not change the timeline; no custom
+horizontal seek implementation was added.

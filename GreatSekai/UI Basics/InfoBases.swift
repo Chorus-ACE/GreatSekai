@@ -961,6 +961,15 @@ struct DetailInfoItem: Identifiable {
             AnyView(content())
         }
     }
+    
+    init<Content: View>(
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.titleKey = ""
+        self.makeContent = {
+            AnyView(content())
+        }
+    }
 }
 
 extension DetailInfoItem {
@@ -1014,10 +1023,14 @@ extension DetailInfoItem {
 extension DetailInfoItem {
     @ViewBuilder
     func _makeView() -> some View {
-        ListItem {
-            Text(titleKey)
-                .bold()
-        } value: {
+        if !titleKey.key.isEmpty {
+            ListItem {
+                Text(titleKey)
+                    .bold()
+            } value: {
+                makeContent()
+            }
+        } else {
             makeContent()
         }
     }

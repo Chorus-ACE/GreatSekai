@@ -13,8 +13,9 @@ nonisolated struct Live2DTrackedFace: Sendable {
     let orientation: simd_quatf
     let blendShapes: [String: Float]
     let isNearEdge: Bool
+    let horizontalPosition: Float
 
-    init?(transform: [Float], blendShapes: [String: Float], isNearEdge: Bool) {
+    init?(transform: [Float], blendShapes: [String: Float], isNearEdge: Bool, horizontalPosition: Float = 0) {
         guard transform.count == 16, transform.allSatisfy(\.isFinite) else { return nil }
         var columns = (0..<3).map { column in SIMD3<Float>(transform[column], transform[4 + column], transform[8 + column]) }
         guard columns.allSatisfy({ simd_length($0) > 0.0001 }) else { return nil }
@@ -24,17 +25,34 @@ nonisolated struct Live2DTrackedFace: Sendable {
         orientation = simd_quatf(rotation)
         self.blendShapes = blendShapes
         self.isNearEdge = isNearEdge
+        self.horizontalPosition = horizontalPosition
     }
 
     func parameters(relativeTo neutral: simd_quatf) -> [String: Float] {
         let rotation = simd_float3x3(neutral.inverse * orientation)
         let degrees: Float = 180 / .pi
-        return Live2DFaceSample(
+        var parameters = Live2DFaceSample(
             pitch: atan2(-rotation.columns.2.y, hypot(rotation.columns.2.x, rotation.columns.2.z)) * degrees,
             yaw: atan2(rotation.columns.2.x, rotation.columns.2.z) * degrees,
             roll: -atan2(rotation.columns.0.y, rotation.columns.1.y) * degrees,
-            blendShapes: blendShapes
+            blendShapes: blendShapes,
+            horizontalPosition: horizontalPosition
         ).parameters
+        func opening(_ key: String) -> Float {
+            let score = blendShapes[key] ?? 0
+            guard score.isFinite else { return 1 }
+            if score >= 0.65 { return 0 }
+            // MediaPipe's expression coefficient need not reach 1 for a shut eye.
+            // Retain partial closure, with a small open-eye dead zone and a reachable shut pose.
+            return 1 - min(1, max(0, (score - 0.05) / 0.6))
+        }
+        // The unmirrored webcam's anatomical sides map to the opposite model eyes.
+        parameters["ParamEyeLOpen"] = opening("eyeBlinkRight")
+        parameters["ParamEyeROpen"] = opening("eyeBlinkLeft")
+        let leftSmile = parameters["ParamEyeLSmile"]
+        parameters["ParamEyeLSmile"] = parameters["ParamEyeRSmile"]
+        parameters["ParamEyeRSmile"] = leftSmile
+        return parameters
     }
 }
 
@@ -268,7 +286,8 @@ nonisolated private final class Live2DWebcamWorker: NSObject, AVCaptureVideoData
                 }
                 missingFrames = 0
                 isNearEdge = Live2DFacePoseFilter.isNearEdge(face.bounds, wasNearEdge: isNearEdge)
-                guard let sample = Live2DTrackedFace(transform: face.transform, blendShapes: face.blendShapes, isNearEdge: isNearEdge) else {
+                guard let sample = Live2DTrackedFace(transform: face.transform, blendShapes: face.blendShapes,
+                    isNearEdge: isNearEdge, horizontalPosition: Float(1 - 2 * face.bounds.midX)) else {
                     onEvent(.lost)
                     return
                 }

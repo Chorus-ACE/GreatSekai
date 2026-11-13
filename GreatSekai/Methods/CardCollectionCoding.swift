@@ -21,9 +21,8 @@
 // +------------+-------------------+---------+------------+---------------+
 //              |     defined in version `timbre`    |
 //
-// Encoding versions have been assigned 20 strings as specifiers,
-// each of them has in length of 3 and is uppercased.
-// Specifiers in result strings have random cases based on their main contents.
+// Each app/version pair has 20 distinct three-letter specifiers.
+// Their case is determined by the encoded contents.
 //
 // Version Timbre defines the 2nd character of an encoded string
 // is the length of verification code, from 0 to 93, mapped to ASCII
@@ -33,6 +32,8 @@
 
 import Foundation
 
+let collectionCodePrefix = "GreatSekai:"
+
 enum CollectionCodeVersion: String, Equatable, Hashable {
     case illumination
     case timbre
@@ -41,16 +42,41 @@ enum CollectionCodeVersion: String, Equatable, Hashable {
     case aspiration
 }
 
-let versionSpecifiers: [CollectionCodeVersion: [String]] = [
-    .timbre: ["HND", "ANO", "UNK", "ANN", "AIN", "PLN", "PNK", "LSL", "CHY", "ANC", "LHR", "LGW", "MAN", "STN", "LTN", "EDI", "BHX", "GLA", "BFS", "NCL"]
+enum CollectionCodeApp: String, CaseIterable {
+    case greatdori = "Greatdori"
+    case greatsekai = "GreatSekai"
+
+    var localizedName: String {
+        self == .greatdori ? "Greatdori!" : "GreatSekai"
+    }
+}
+
+struct CollectionCodeFormat: Equatable, Hashable {
+    var app: CollectionCodeApp
+    var version: CollectionCodeVersion
+}
+
+let versionSpecifiers: [CollectionCodeApp: [CollectionCodeVersion: [String]]] = [
+    .greatdori: [
+        .timbre: ["HND", "ANO", "UNK", "ANN", "AIN", "PLN", "PNK", "LSL", "CHY", "ANC", "LHR", "LGW", "MAN", "STN", "LTN", "EDI", "BHX", "GLA", "BFS", "NCL"],
+    ],
+    .greatsekai: [
+        .timbre: ["ICK", "TSK", "HNM", "HSH", "MNR", "HRK", "ARI", "SZK", "KHN", "SAN", "AKT", "TYA", "TKS", "EMU", "NNE", "RUI", "KND", "MFY", "ENA", "MZK"],
+    ],
 ]
+
+enum CollectionCodeDecodingError: Error, Equatable {
+    case invalidCode
+    case wrongApp(CollectionCodeApp)
+    case unsupportedVersion(CollectionCodeVersion)
+}
 
 struct CollectionEncodingInfo: Equatable {
     var name: String
     var cardList: [Int]
 }
 
-func encodeCollection(_ info: CollectionEncodingInfo) -> String {
+func encodeCollection(_ info: CollectionEncodingInfo, app: CollectionCodeApp = .greatsekai) -> String {
     func compressInts(_ arr: [Int], preservesOrder: Bool = false) -> String {
         func encodeInt(_ value: UInt, into data: inout Data) {
             var v = value
@@ -177,7 +203,7 @@ func encodeCollection(_ info: CollectionEncodingInfo) -> String {
     let verificationString = verification(of: content)
     let verificationLengthTag = String(UnicodeScalar(Array(33...126)[verificationString.count]))
     // precondition: (each specifiers).count = 3
-    let versionSpecifiers = versionSpecifiers[.timbre]!
+    let versionSpecifiers = versionSpecifiers[app]![.timbre]!
     let specifierSelector = verificationString.unicodeScalars.map { Int($0.value) }.reduce(into: 0) { $0 += $1 }
     let _thisSpecifier = versionSpecifiers[specifierSelector % versionSpecifiers.count]
     var thisSpecifier: [Swift.Character] = []
@@ -191,21 +217,43 @@ func encodeCollection(_ info: CollectionEncodingInfo) -> String {
     return String(thisSpecifier[0]) + verificationLengthTag + content + verificationString + String(thisSpecifier[1...2])
 }
 
-func decodeCollection(_ input: String) -> CollectionEncodingInfo? {
-    guard input.count > 5, input.utf8.count <= 32000, input.utf8.allSatisfy({ (33...126).contains($0) }) else { return nil } // s[0] + l + c + v + s[1...2]
+/// Decodes a collection, optionally supplying a display name for unnamed payloads.
+/// The fallback is applied after decoding and never becomes part of the shared code.
+func decodeCollection(_ input: String, defaultName: String = "") -> CollectionEncodingInfo? {
+    try? decodeCollectionResult(input, defaultName: defaultName).get()
+}
+
+/// Validates the complete code before reporting its source app. The optional
+/// human-readable prefix never determines the app/version identity.
+func decodeCollectionResult(_ input: String, defaultName: String = "") -> Result<CollectionEncodingInfo, CollectionCodeDecodingError> {
+    var input = input.trimmingCharacters(in: .whitespacesAndNewlines)
+    for app in CollectionCodeApp.allCases {
+        let prefix = app.rawValue + ":"
+        if input.hasPrefix(prefix) {
+            input = String(input.dropFirst(prefix.count)).trimmingCharacters(in: .whitespacesAndNewlines)
+            break
+        }
+    }
+    guard input.count > 5, input.utf8.count <= 32000, input.utf8.allSatisfy({ (33...126).contains($0) }) else { return .failure(.invalidCode) } // s[0] + l + c + v + s[1...2]
                                               // s: version specifier
                                               // l: specifier length
                                               // c: subject
                                               // v: verification string
     
-    // Verify version specifier
-    let decoderVersion: CollectionCodeVersion? = determineCollectionCodeVersion(input)
-    switch decoderVersion {
+    guard let format = determineCollectionCodeFormat(input) else { return .failure(.invalidCode) }
+    var decoded: CollectionEncodingInfo?
+    switch format.version {
     case .timbre:
-        return decodeTimbre(input)
+        decoded = decodeTimbre(input, app: format.app)
     default:
-        return nil
+        return .failure(.unsupportedVersion(format.version))
     }
+    guard var decoded else { return .failure(.invalidCode) }
+    guard format.app == .greatsekai else { return .failure(.wrongApp(format.app)) }
+    if decoded.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        decoded.name = defaultName
+    }
+    return .success(decoded)
 }
 
 private func string2IntArray(_ input: String) -> [Int32] {
@@ -273,7 +321,7 @@ private func intArray2String(_ compressed: [Int32]) -> String? {
     return String(data: Data(bytes), encoding: .utf8) ?? ""
 }
 
-func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
+private func decodeTimbre(_ input: String, app: CollectionCodeApp) -> CollectionEncodingInfo? {
     guard input.count > 5, input.utf8.count <= 32000, input.utf8.allSatisfy({ (33...126).contains($0) }) else { return nil }
     var str = input
     
@@ -292,7 +340,7 @@ func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
     guard verify(str, with: verificationString) else { return nil }
     
     // Verify specifier
-    let versionSpecifiers = versionSpecifiers[.timbre]!
+    let versionSpecifiers = versionSpecifiers[app]![.timbre]!
     let specifierSelector = verificationString.unicodeScalars.map { Int($0.value) }.reduce(into: 0) { $0 += $1 }
     var _expectedSpecifier = Array(versionSpecifiers[specifierSelector % versionSpecifiers.count])
     for (index, character) in _expectedSpecifier.enumerated() {
@@ -468,13 +516,15 @@ func decodeTimbre(_ input: String) -> CollectionEncodingInfo? {
     }
 }
 
-func determineCollectionCodeVersion(_ input: String) -> CollectionCodeVersion? {
+func determineCollectionCodeFormat(_ input: String) -> CollectionCodeFormat? {
     guard input.count >= 3 else { return nil }
     let str = input
     let specifier = (String(str.first!) + String(str.suffix(2))).uppercased()
-    for (version, specifiers) in versionSpecifiers {
-        if specifiers.contains(specifier) {
-            return version
+    for (app, versions) in versionSpecifiers {
+        for (version, specifiers) in versions {
+            if specifiers.contains(specifier) {
+                return .init(app: app, version: version)
+            }
         }
     }
     return nil

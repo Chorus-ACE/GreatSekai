@@ -119,6 +119,12 @@ struct SongDetailOverviewView: View {
                         VStack {
                             CompactAudioPlayer(
                                 url: information.song.musicURL(vocalAssetBundleName: selectedVocal.assetBundleName),
+                                mediaInfo: (
+                                    information.song.title.majorValue,
+                                    selectedVocal.characters.isEmpty ? information.song.creatorArtist.majorValue
+                                        : ListFormatter.localizedString(byJoining: selectedVocal.characters.compactMap { $0.name.majorValue }),
+                                    information.song.coverImageURL
+                                ),
                                 startOffset: information.song.fillerSec
                             )
                             .frame(minHeight: minHeight * (platform == .macOS ? 1 : 0.75))

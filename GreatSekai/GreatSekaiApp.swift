@@ -41,6 +41,10 @@ struct GreatSekaiApp: App {
                     }
             }
             .softNavigationBarEdge()
+            .task(id: scenePhase) {
+                guard scenePhase == .active else { return }
+                await CardCollectionManager.shared.maintainBuiltinCollections()
+            }
         }
         .commands {
             CommandGroup(replacing: .appSettings) {

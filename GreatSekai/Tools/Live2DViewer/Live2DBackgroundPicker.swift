@@ -65,8 +65,10 @@ struct Live2DBackgroundPicker: View {
 
     var body: some View {
         Picker(selection: selection) {
-            Text(verbatim: currentName).tag(value)
-            Divider()
+            if Live2DDefaultBackgrounds.Automatic(rawValue: value) == nil {
+                Text(verbatim: currentName).tag(value)
+                Divider()
+            }
             ForEach(Live2DDefaultBackgrounds.Automatic.allCases) { automatic in
                 Text(automatic.title).tag(automatic.rawValue)
             }

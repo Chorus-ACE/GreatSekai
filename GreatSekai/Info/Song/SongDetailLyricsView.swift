@@ -5,6 +5,7 @@ struct SongDetailLyricsView: View {
     let lyrics: Song.Lyrics
     @Environment(\.locale) private var locale
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var characterColors: [Int: Color] = [:]
     @State private var renditionKey: String?
     @State private var length: Song.Lyrics.Length = .full
@@ -89,15 +90,24 @@ struct SongDetailLyricsView: View {
                 CustomGroupBox {
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(displayedLines) { line in
-                            VStack(alignment: .leading, spacing: 1) {
+                            let translation = language.translation(of: line)
+                            let layout = sizeClass == .compact
+                                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 1))
+                                : AnyLayout(HStackLayout(alignment: .top, spacing: 20))
+                            layout {
                                 LyricsLineText(line: line, colors: showPerformers ? performerColors : [:], showReadings: showReadings)
-                                if let translation = language.translation(of: line), !translation.isEmpty {
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                if let translation, !translation.isEmpty {
                                     Text(translation)
                                         .font(.callout)
                                         .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                } else if sizeClass != .compact, language != .original {
+                                    Color.clear.frame(maxWidth: .infinity, minHeight: 0, maxHeight: 0)
                                 }
                             }
-                            .padding(.top, line.stanzaBreakBefore == true ? 8 : 0)
+                            .multilineTextAlignment(.leading)
+                            .padding(.top, line.stanzaBreakBefore == true ? (showReadings ? 14 : 12) : 0)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     } 
@@ -206,7 +216,9 @@ struct SongDetailLyricsView: View {
                     Toggle("Song.lyrics.performers", isOn: $showPerformers)
                     Toggle("Song.lyrics.readings", isOn: $showReadings)
                 } label: {
-                    Text(getAttributedString(rendition?.label ?? "Song.lyrics.options", fontSize: .title2, fontWeight: .semibold, foregroundColor: .accentColor))
+                    Text(getAttributedString(optionsTitle, fontSize: .title2, fontWeight: .semibold, foregroundColor: .accentColor))
+                        .lineLimit(1)
+                        .multilineTextAlignment(.leading)
                 }
                 .menuIndicator(.hidden)
                 .menuStyle(.borderlessButton)
@@ -237,6 +249,12 @@ struct SongDetailLyricsView: View {
         }
     }
     
+    private var optionsTitle: String {
+        if lyrics.renditions.count > 1, let rendition { return rendition.label }
+        if let rendition, rendition.lengths.count > 1 { return selectedLength.localizedName }
+        return String(localized: "Song.lyrics.options")
+    }
+
     private var selectedEditionKey: String {
         lyrics.translationEditions.first { $0.key == editionKey }?.key
         ?? lyrics.translationEditions.first { $0.key == lyrics.defaultTranslationEditionKey }?.key

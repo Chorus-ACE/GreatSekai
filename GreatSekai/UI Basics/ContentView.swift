@@ -42,6 +42,7 @@ struct ContentView: View {
     @State var showCrashAlert = false
     @State var showWhatsNewSheet = false
     @State private var showCollectionsFromWidget = false
+    @State private var collectionImportCode: String?
     
     var isUISizeExpanded: Bool {
         #if os(macOS)
@@ -176,7 +177,11 @@ struct ContentView: View {
             }
             .onOpenURL { url in
                 if url.scheme == "greatsekai", url.host == "collections" {
-                    if isUISizeExpanded {
+                    let code = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "code" }?.value
+                    collectionImportCode = code
+                    if code != nil {
+                        showCollectionsFromWidget = true
+                    } else if isUISizeExpanded {
                         selection = .tools(.collections)
                     } else {
                         selection = .tools(.home)
@@ -186,7 +191,7 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showCollectionsFromWidget) {
                 NavigationStack {
-                    CardCollectionsView()
+                    CardCollectionsView(importCode: collectionImportCode)
                         .toolbar { ToolbarItem { Button("General.done") { showCollectionsFromWidget = false } } }
                 }
             }

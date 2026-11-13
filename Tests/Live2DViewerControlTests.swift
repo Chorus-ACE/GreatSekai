@@ -27,6 +27,21 @@ import simd
         precondition(abs(Live2DFaceSample.arKit(relativeRotation: arPitch, blendShapes: [:]).parameters["ParamAngleY"]! + 10) < 0.001,
                      "ARKit pitch must use the corrected up/down direction")
         precondition(abs(Live2DFaceSample.arKit(relativeRotation: arYaw, blendShapes: [:]).parameters["ParamAngleX"]! - 12) < 0.001)
+        let arLeft = Live2DFaceSample.arKit(relativeRotation: matrix_identity_float3x3, blendShapes: [:], facePositionX: 0.25).parameters
+        let arRight = Live2DFaceSample.arKit(relativeRotation: matrix_identity_float3x3, blendShapes: [:], facePositionX: 0.75).parameters
+        precondition(arLeft["ParamBodyAngleZ"]! < 0 && arRight["ParamBodyAngleZ"]! > 0,
+                     "ARKit projected positions must use the corrected iOS body direction")
+        let leftBody = Live2DFaceSample(horizontalPosition: -0.5).parameters
+        let rightBody = Live2DFaceSample(horizontalPosition: 0.5).parameters
+        precondition(leftBody["ParamBodyAngleX"]! < 0 && leftBody["ParamBodyAngleZ"]! < 0)
+        precondition(rightBody["ParamBodyAngleX"]! > 0 && rightBody["ParamBodyAngleZ"]! > 0,
+                     "Moving across the camera must lean the body even without turning the head")
+        precondition(Live2DFaceSample(horizontalPosition: .nan).parameters.values.allSatisfy(\.isFinite))
+        var blink = Live2DFacePoseFilter()
+        blink.follow(["ParamEyeLOpen": 0, "ParamEyeROpen": 1])
+        for frame in 0..<4 { _ = blink.sample(at: Double(frame) / 60) }
+        precondition(blink.values["ParamEyeLOpen"] == 0 && blink.values["ParamEyeROpen"] == 1,
+                     "Short blinks must reach the fully closed pose without closing the other eye")
         var pose = Live2DFacePoseFilter()
         pose.follow(["ParamAngleX": 20, "ParamEyeLOpen": 0])
         let firstPose = pose.sample(at: 0)
@@ -75,7 +90,19 @@ import simd
         precondition(abs(rollPose.parameters(relativeTo: identity)["ParamAngleZ"]! + 8) < 0.001)
         precondition(abs(pitchPose.parameters(relativeTo: pitchPose.orientation)["ParamAngleY"]!) < 0.001,
                      "Recalibration must reset the head center")
-        precondition(yawPose.parameters(relativeTo: identity)["ParamEyeLOpen"] == 0.25)
+        let independentEyes = yawPose.parameters(relativeTo: identity)
+        precondition(independentEyes["ParamEyeLOpen"] == 1 && independentEyes["ParamEyeROpen"] == 0,
+                     "macOS winks must use the corrected model eye and reach full closure")
+        for (score, expected) in [(Float(0.02), Float(1)), (0.35, 0.5), (0.65, 0), (1, 0)] {
+            let matrix = matrix_identity_float4x4
+            let transform = (0..<4).flatMap { row in (0..<4).map { matrix[$0][row] } }
+            let face = Live2DTrackedFace(transform: transform, blendShapes: ["eyeBlinkRight": score],
+                                       isNearEdge: false, horizontalPosition: -0.5)!
+            let parameters = face.parameters(relativeTo: identity)
+            precondition(abs(parameters["ParamEyeLOpen"]! - expected) < 0.001)
+            precondition(parameters["ParamEyeROpen"] == 1)
+            precondition(parameters["ParamBodyAngleZ"]! < 0)
+        }
         precondition(yawPose.parameters(relativeTo: identity)["ParamMouthOpenY"] == 0.8)
         precondition(Live2DTrackedFace(transform: [Float](repeating: .nan, count: 16), blendShapes: [:], isNearEdge: false) == nil)
         precondition(Live2DTrackedFace(transform: [Float](repeating: 0, count: 16), blendShapes: [:], isNearEdge: false) == nil)

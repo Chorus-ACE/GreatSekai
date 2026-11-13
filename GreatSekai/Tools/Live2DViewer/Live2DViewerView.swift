@@ -103,6 +103,7 @@ struct Live2DViewerView: View {
             } else if isLoading {
                 VStack(spacing: 12) {
                     ProgressView("Live2D.loading")
+                        .controlSize(.large)
                     if catalog != nil {
                         ProgressView(value: player.progress)
                             .progressViewStyle(.linear)
@@ -113,6 +114,7 @@ struct Live2DViewerView: View {
                 .foregroundStyle(.white)
             } else if showsLoading {
                 ProgressView()
+                    .controlSize(.large)
                     .tint(.white)
                     .accessibilityLabel(Text("Live2D.loading"))
             } else if selectedModel == nil {

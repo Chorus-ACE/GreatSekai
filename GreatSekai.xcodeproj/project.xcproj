@@ -265,6 +265,9 @@
               "children": [
                 { "path": "<PROJECT>/GreatSekai/Tools/Collections/CardCollectionManager.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
                 { "path": "<PROJECT>/GreatSekai/Tools/Collections/CardCollectionsView.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "<PROJECT>/GreatSekai/Tools/Collections/CardCollectionBatchOperations.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "<PROJECT>/GreatSekai/Tools/Collections/BuiltinCardCollections.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
+                { "path": "<PROJECT>/GreatSekai/Tools/Collections/CardCollectionMetadataCache.swift", "target-membership": [ "GreatSekai/compile-sources" ] },
               ],
             }, {
               "kind": "group",

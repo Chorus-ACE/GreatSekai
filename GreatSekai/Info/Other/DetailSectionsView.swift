@@ -58,6 +58,8 @@ struct DetailSectionOptionPicker<T: Hashable>: View {
         }, label: {
             Text(getAttributedString(labels?[selection] ?? ((T.self == SekaiLocale.self) ? "\(selection)".uppercased() : "\(selection)"), fontSize: .title2, fontWeight: .semibold, foregroundColor: .accentColor))
         })
+        .lineLimit(1)
+        .multilineTextAlignment(.leading)
         .menuIndicator(.hidden)
         .menuStyle(.borderlessButton)
         .buttonStyle(.plain)

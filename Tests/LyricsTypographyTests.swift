@@ -79,6 +79,47 @@ struct LyricsTypographyTests {
             precondition(visible.location == 0 && visible.length == shared.text.length, "Gradient/ruby wrapping clipped")
         }
 
+        // Song 761: inspecting gradient glyphs used to shift each later ruby
+        // annotation farther right. The gray annotation pixels must stay put
+        // when singer gradients are enabled, including across wrapped lines.
+        let moon: [(String, String?)] = [
+            ("繰", "く"), ("り", nil), ("返", "かえ"), ("して", nil),
+            ("満", "み"), ("ち", nil), ("欠", "か"), ("ける", nil), ("月", "つき"), ("は", nil)
+        ]
+        for fontSize: CGFloat in [13, 17, 26] {
+            for width: CGFloat in [90, 140, 600] {
+                func annotationPixels(gradient: Bool) -> [Set<Int>] {
+                    let renderer = LyricsRubyRenderer(spans: moon.map {
+                        .init(text: $0.0, reading: $0.1, color: red,
+                              gradient: gradient ? [red, blue] : [], gradientID: 0)
+                    }, fontSize: fontSize, textColor: red, readingColor: CGColor(gray: 0.35, alpha: 1))
+                    let size = CGSize(width: width, height: renderer.size(fitting: width).height)
+                    let w = Int(width * 2), h = Int(size.height * 2)
+                    // Canvas may draw the same renderer repeatedly without a body update.
+                    return (0..<3).map { _ in
+                        let bitmap = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+                            space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                        bitmap.scaleBy(x: 2, y: 2)
+                        bitmap.setFillColor(CGColor(gray: 1, alpha: 1))
+                        bitmap.fill(CGRect(origin: .zero, size: size))
+                        bitmap.translateBy(x: 0, y: size.height); bitmap.scaleBy(x: 1, y: -1)
+                        renderer.draw(in: bitmap, size: size)
+                        let pixels = bitmap.data!.assumingMemoryBound(to: UInt8.self)
+                        return Set((0..<w * h).filter { pixel in
+                            let p = pixel * 4
+                            return pixels[p] > 50 && pixels[p] < 230
+                                && pixels[p] == pixels[p + 1] && pixels[p + 1] == pixels[p + 2]
+                        })
+                    }
+                }
+                let plain = annotationPixels(gradient: false)
+                precondition(plain.allSatisfy { !$0.isEmpty })
+                precondition(Set(plain).count == 1, "Repeated Canvas draws must preserve ruby placement")
+                precondition(plain == annotationPixels(gradient: true),
+                             "Singer gradients displaced Song 761 ruby at \(fontSize)pt / \(width)pt width")
+            }
+        }
+
         let rainbow = LyricsRubyRenderer(spans: [.init(text: "MMMMMMMMMMMMMMMM", color: red,
             gradient: [red, CGColor(srgbRed: 0, green: 1, blue: 0, alpha: 1), blue])], fontSize: 26,
             textColor: CGColor(gray: 0, alpha: 1), readingColor: CGColor(gray: 0.35, alpha: 1))

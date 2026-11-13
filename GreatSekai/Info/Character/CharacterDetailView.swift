@@ -163,16 +163,11 @@ struct CharacterDetailView: View {
                         Button(action: {
                             if let prepared = randomCardBuffer.next() {
                                 randomCard = prepared
-                            } else {
+                            } else if !randomCardBuffer.isLoading {
                                 preparationID = UUID()
                             }
                         }, label: {
-                            HStack {
-                                Label("Character.random-card", systemImage: "arrow.clockwise")
-                                if randomCardBuffer.cards.isEmpty, randomCardBuffer.isLoading {
-                                    ProgressView().controlSize(.small)
-                                }
-                            }
+                            Label("Character.random-card", systemImage: "arrow.clockwise")
                         })
                         .wrapIf(true) { content in
                             if #available(iOS 26.0, macOS 26.0, *) {
@@ -182,7 +177,6 @@ struct CharacterDetailView: View {
                             }
                         }
                         .buttonBorderShape(.capsule)
-                        .disabled(randomCardBuffer.cards.isEmpty && !randomCardBuffer.failed)
                     }
                 }
                 Spacer(minLength: 0)

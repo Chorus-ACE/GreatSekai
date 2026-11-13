@@ -21,15 +21,14 @@ struct LyricsRubyRenderer {
     let hasReadings: Bool
     let gradients: [GradientSpan]
     private let framesetter: CTFramesetter
-    private let topInset: CGFloat
 
     init(spans: [Span], fontSize: CGFloat, textColor: CGColor, readingColor: CGColor) {
         self.fontSize = fontSize
         hasReadings = spans.contains { !($0.reading?.isEmpty ?? true) && !$0.text.isEmpty }
-        topInset = hasReadings ? ceil(fontSize * 0.65) : 0
         let font = CTFontCreateUIFontForLanguage(.system, fontSize, "ja" as CFString)
             ?? CTFontCreateWithName("HiraginoSans-W3" as CFString, fontSize, nil)
-        var lineSpacing: CGFloat = hasReadings ? ceil(fontSize * 0.65) + 1 : 1
+        // Core Text includes ruby ascent in its line metrics.
+        var lineSpacing: CGFloat = 1
         let paragraph = withUnsafePointer(to: &lineSpacing) { spacing in
             var setting = CTParagraphStyleSetting(spec: .lineSpacingAdjustment,
                                                  valueSize: MemoryLayout<CGFloat>.size, value: spacing)
@@ -76,7 +75,7 @@ struct LyricsRubyRenderer {
         let measured = CTFramesetterSuggestFrameSizeWithConstraints(
             framesetter, CFRange(), nil, CGSize(width: width, height: .greatestFiniteMagnitude), nil
         )
-        return CGSize(width: ceil(min(width, measured.width)), height: ceil(measured.height) + topInset + 2)
+        return CGSize(width: ceil(min(width, measured.width)), height: ceil(measured.height) + 2)
     }
 
     func draw(in context: CGContext, size: CGSize) {
@@ -85,21 +84,14 @@ struct LyricsRubyRenderer {
         context.translateBy(x: 0, y: size.height)
         context.scaleBy(x: 1, y: -1)
         let frame = frame(in: size)
+        // Draw annotations before inspecting glyph runs. Core Text can shift
+        // ruby positions when the same frame's runs are queried before drawing.
+        // An isolated layer lets gradients replace base glyph colors (including
+        // their alpha) without replacing the background or ruby annotations.
+        context.beginTransparencyLayer(auxiliaryInfo: nil)
+        CTFrameDraw(frame, context)
         let fragments = gradientFragments(in: frame)
-        if fragments.isEmpty {
-            CTFrameDraw(frame, context)
-        } else {
-            // Draw solid text, ruby annotations and color-font glyphs normally.
-            // Exclude the base glyph outlines that will receive gradients, so
-            // translucent singer colors do not blend with a solid underpainting.
-            context.saveGState()
-            let solidArea = CGMutablePath()
-            solidArea.addRect(CGRect(origin: .zero, size: size).insetBy(dx: -fontSize, dy: -fontSize))
-            for fragment in fragments { solidArea.addPath(fragment.path) }
-            context.addPath(solidArea)
-            context.clip(using: .evenOdd)
-            CTFrameDraw(frame, context)
-            context.restoreGState()
+        if !fragments.isEmpty {
             for fragment in fragments {
                 guard let gradient = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB),
                                                 colors: fragment.colors as CFArray, locations: nil) else { continue }
@@ -107,12 +99,14 @@ struct LyricsRubyRenderer {
                 context.saveGState()
                 context.addPath(fragment.path)
                 context.clip()
+                context.setBlendMode(.copy)
                 context.drawLinearGradient(gradient, start: .init(x: bounds.minX, y: bounds.midY),
                                            end: .init(x: bounds.maxX, y: bounds.midY),
                                            options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
                 context.restoreGState()
             }
         }
+        context.endTransparencyLayer()
         context.restoreGState()
     }
 
@@ -157,7 +151,10 @@ struct LyricsRubyRenderer {
     }
 
     func frame(in size: CGSize) -> CTFrame {
-        let bounds = CGRect(x: 0, y: 0, width: max(1, size.width), height: max(1, size.height - topInset))
-        return CTFramesetterCreateFrame(framesetter, CFRange(), CGPath(rect: bounds, transform: nil), nil)
+        let bounds = CGRect(x: 0, y: 0, width: max(1, size.width), height: max(1, size.height))
+        // Glyph inspection can also change the framesetter's cached ruby layout.
+        // Keep that cache local to each draw so Canvas redraws remain identical.
+        let drawingFramesetter = CTFramesetterCreateWithAttributedString(text)
+        return CTFramesetterCreateFrame(drawingFramesetter, CFRange(), CGPath(rect: bounds, transform: nil), nil)
     }
 }

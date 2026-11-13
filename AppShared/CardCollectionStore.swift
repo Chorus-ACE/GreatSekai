@@ -5,6 +5,78 @@ nonisolated struct SavedCardCollection: Codable, Identifiable, Hashable, Sendabl
     var id = UUID()
     var name: String
     var cards: [SavedCard] = []
+    var builtinKind: BuiltinCardCollectionKind? = nil
+    var updatedAt: Date? = nil
+    var isBuiltIn: Bool { builtinKind != nil }
+}
+
+nonisolated enum BuiltinCardCollectionKind: String, Codable, CaseIterable, Sendable {
+    case worldLink
+    case festivals
+    case birthdayAnniversary
+
+    var id: UUID {
+        switch self {
+        case .worldLink: UUID(uuidString: "F6C541A7-C858-4C9D-B4E7-000000000001")!
+        case .festivals: UUID(uuidString: "F6C541A7-C858-4C9D-B4E7-000000000002")!
+        case .birthdayAnniversary: UUID(uuidString: "F6C541A7-C858-4C9D-B4E7-000000000003")!
+        }
+    }
+
+    var localizedName: String {
+        switch self {
+        case .worldLink: String(localized: "Collections.builtin.world-link")
+        case .festivals: String(localized: "Collections.builtin.festivals")
+        case .birthdayAnniversary: String(localized: "Collections.builtin.birthday-anniversary")
+        }
+    }
+}
+
+nonisolated enum BuiltinCardCollectionUpdates {
+    static let interval: TimeInterval = 24 * 60 * 60
+
+    /// Includes placeholders on first launch without replacing user collections.
+    /// Fixed IDs keep Widget selections valid across refreshes and renames.
+    static func seed(_ collections: [SavedCardCollection]) -> [SavedCardCollection] {
+        collections.filter { !$0.isBuiltIn } + BuiltinCardCollectionKind.allCases.map { kind in
+            var collection = collections.first { $0.builtinKind == kind }
+                ?? SavedCardCollection(id: kind.id, name: kind.localizedName, builtinKind: kind)
+            collection.id = kind.id
+            collection.name = kind.localizedName
+            return collection
+        }
+    }
+
+    static func lastUpdate(in collections: [SavedCardCollection]) -> Date? {
+        let dates = BuiltinCardCollectionKind.allCases.compactMap { kind in
+            collections.first { $0.builtinKind == kind }?.updatedAt
+        }
+        guard dates.count == BuiltinCardCollectionKind.allCases.count else { return nil }
+        return dates.min()
+    }
+
+    static func needsUpdate(_ collections: [SavedCardCollection], now: Date = .now) -> Bool {
+        guard let lastUpdate = lastUpdate(in: collections) else { return true }
+        let age = now.timeIntervalSince(lastUpdate)
+        return age < 0 || age >= interval
+    }
+
+    /// Call only after a complete, fresh master-data load. All three snapshots
+    /// and their timestamps are persisted together, preserving prior data on failure.
+    static func applying(
+        _ cards: [BuiltinCardCollectionKind: [SavedCard]],
+        to collections: [SavedCardCollection], now: Date = .now
+    ) -> [SavedCardCollection] {
+        seed(collections).map { collection in
+            guard let kind = collection.builtinKind else { return collection }
+            var result = collection
+            var ids = Set<String>()
+            result.cards = (cards[kind] ?? []).filter { ids.insert($0.id).inserted }
+                .sorted { ($0.cardID, $0.trained ? 1 : 0) < ($1.cardID, $1.trained ? 1 : 0) }
+            result.updatedAt = now
+            return result
+        }
+    }
 }
 
 nonisolated struct SavedCard: Codable, Identifiable, Hashable, Sendable {

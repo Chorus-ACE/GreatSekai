@@ -37,7 +37,14 @@ struct Model3DPartBrowser: View {
 
     private var query: String { search.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var filteredGroups: [Model3DPartGroup] {
-        groups.filter { $0.matches(query) }.sorted {
+        // The first two source designs are the character's default outfits.
+        let defaults = tab == .costume ? Array(groups.prefix(2).map(\.id)) : []
+        return groups.filter { $0.matches(query) }.sorted {
+            let lhsDefault = defaults.firstIndex(of: $0.id)
+            let rhsDefault = defaults.firstIndex(of: $1.id)
+            if lhsDefault != nil || rhsDefault != nil {
+                return (lhsDefault ?? .max) < (rhsDefault ?? .max)
+            }
             let lhsIsPrioritized = $0.variants.contains { prioritizedCostumeIDs.contains($0.costumeID) }
             let rhsIsPrioritized = $1.variants.contains { prioritizedCostumeIDs.contains($0.costumeID) }
             if lhsIsPrioritized != rhsIsPrioritized { return lhsIsPrioritized }
