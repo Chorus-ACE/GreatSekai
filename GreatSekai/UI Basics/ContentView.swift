@@ -43,6 +43,7 @@ struct ContentView: View {
     @State var showWhatsNewSheet = false
     @State private var showCollectionsFromWidget = false
     @State private var collectionImportCode: String?
+    @State private var cardFromWidget: CardWidgetLink?
     
     var isUISizeExpanded: Bool {
         #if os(macOS)
@@ -53,6 +54,11 @@ struct ContentView: View {
     }
 
     var body: some View {
+        startupContent.onOpenURL(perform: openURL)
+    }
+
+    @ViewBuilder
+    private var startupContent: some View {
         if mainAppShouldBeDisplayed {
             Group {
                 if #available(macOS 15.0, iOS 18.0, *) {
@@ -175,18 +181,13 @@ struct ContentView: View {
                         }
                     }
             }
-            .onOpenURL { url in
-                if url.scheme == "greatsekai", url.host == "collections" {
-                    let code = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "code" }?.value
-                    collectionImportCode = code
-                    if code != nil {
-                        showCollectionsFromWidget = true
-                    } else if isUISizeExpanded {
-                        selection = .tools(.collections)
-                    } else {
-                        selection = .tools(.home)
-                        showCollectionsFromWidget = true
-                    }
+            .sheet(item: Binding(
+                get: { isInitializationRequired ? nil : cardFromWidget },
+                set: { cardFromWidget = $0 }
+            )) { card in
+                NavigationStack {
+                    CardDetailView(id: card.id)
+                        .toolbar { ToolbarItem { Button("General.done") { cardFromWidget = nil } } }
                 }
             }
             .sheet(isPresented: $showCollectionsFromWidget) {
@@ -203,7 +204,8 @@ struct ContentView: View {
                     showWelcomeScreen = true
                     AppVersion.updateLastVersion()
                 }
-                if AppVersion.appHadUpdated(ignoreBuildNumber: false) ?? false && UserDefaults.standard.integer(forKey: "LastSeenWhatsNewHash") != stableHashOfWhatsNew() && !whatsNew.isEmpty || forceDisplayWhatsNewSheet {
+                if cardFromWidget == nil,
+                   AppVersion.appHadUpdated(ignoreBuildNumber: false) ?? false && UserDefaults.standard.integer(forKey: "LastSeenWhatsNewHash") != stableHashOfWhatsNew() && !whatsNew.isEmpty || forceDisplayWhatsNewSheet {
                     showWhatsNewSheet = true
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -275,6 +277,25 @@ struct ContentView: View {
                             crashViewShouldBeDisplayed = true
                         }
                     }
+            }
+        }
+    }
+
+    private func openURL(_ url: URL) {
+        if let card = CardWidgetLink(url: url) {
+            showWhatsNewSheet = false
+            showCollectionsFromWidget = false
+            cardFromWidget = card
+        } else if url.scheme == "greatsekai", url.host == "collections" {
+            let code = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "code" }?.value
+            collectionImportCode = code
+            if code != nil {
+                showCollectionsFromWidget = true
+            } else if isUISizeExpanded {
+                selection = .tools(.collections)
+            } else {
+                selection = .tools(.home)
+                showCollectionsFromWidget = true
             }
         }
     }

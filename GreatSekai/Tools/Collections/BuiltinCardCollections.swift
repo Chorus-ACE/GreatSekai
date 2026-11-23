@@ -17,14 +17,23 @@ nonisolated enum BuiltinCardCollections {
         var result: [BuiltinCardCollectionKind: [SavedCard]] = [:]
         for card in cards {
             guard let kind = kind(sourceType: card.sourceType, rarity: card.rarity) else { continue }
-            let title = card.name.majorValue ?? "#\(card.id)"
-            if !card.isInitiallySpecialTrained || card.afterTrainingArtURL == nil {
-                result[kind, default: []].append(SavedCard(cardID: card.id, trained: false, title: title, imageURL: card.beforeTrainingArtURL))
-            }
-            if let url = card.afterTrainingArtURL {
-                result[kind, default: []].append(SavedCard(cardID: card.id, trained: true, title: title, imageURL: url))
-            }
+            result[kind, default: []].append(contentsOf: card.collectionArtworks)
         }
         return result
+    }
+}
+
+extension Card {
+    nonisolated var collectionArtworks: [SavedCard] {
+        let title = name.majorValue ?? "#\(id)"
+        let trainedURL = afterTrainingArtURL
+        var artworks: [SavedCard] = []
+        if !isInitiallySpecialTrained || trainedURL == nil {
+            artworks.append(SavedCard(cardID: id, trained: false, title: title, imageURL: beforeTrainingArtURL))
+        }
+        if let trainedURL {
+            artworks.append(SavedCard(cardID: id, trained: true, title: title, imageURL: trainedURL))
+        }
+        return artworks
     }
 }

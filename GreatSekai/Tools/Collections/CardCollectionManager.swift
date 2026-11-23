@@ -1,6 +1,4 @@
 import Combine
-import ImageIO
-import UniformTypeIdentifiers
 import Foundation
 import SekaiKit
 import WidgetKit
@@ -17,6 +15,7 @@ final class CardCollectionManager: ObservableObject {
     var builtinCollections: [SavedCardCollection] { collections.filter(\.isBuiltIn) }
     var lastBuiltinUpdate: Date? { BuiltinCardCollectionUpdates.lastUpdate(in: collections) }
     private var builtinUpdateTask: Task<Void, Never>?
+    private var catalogNeedsRefresh = ((try? CardCollectionStore.loadCatalog()) ?? []).isEmpty
     private var storageAvailable = true
     private var imageCacheTasks: [String: Task<Bool, Error>] = [:]
     private var backgroundCacheTask: Task<Void, Never>?
@@ -64,7 +63,7 @@ final class CardCollectionManager: ObservableObject {
         guard storageAvailable else { builtinUpdateError = error; return }
         let seeded = BuiltinCardCollectionUpdates.seed(collections)
         if seeded != collections, !persist(seeded) { builtinUpdateError = error; return }
-        guard force || BuiltinCardCollectionUpdates.needsUpdate(collections) else { return }
+        guard force || catalogNeedsRefresh || BuiltinCardCollectionUpdates.needsUpdate(collections) else { return }
         isUpdatingBuiltins = true
         builtinUpdateError = nil
         let metadataNamespace = CardCollectionMetadataCache.namespace
@@ -79,6 +78,13 @@ final class CardCollectionManager: ObservableObject {
                 await CardCollectionMetadataCache.shared.store(cards, namespace: metadataNamespace)
             }
             let generated = BuiltinCardCollections.generate(from: cards)
+            let catalog = cards.map { CardCatalogEntry(artworks: $0.collectionArtworks) }
+            do {
+                try CardCollectionStore.saveCatalog(catalog)
+                catalogNeedsRefresh = false
+            } catch {
+                catalogNeedsRefresh = true
+            }
             let updated = BuiltinCardCollectionUpdates.applying(generated, to: collections)
             if persist(updated) {
                 cacheInBackground(generated.values.flatMap { $0 })
@@ -96,7 +102,7 @@ final class CardCollectionManager: ObservableObject {
         while !Task.isCancelled {
             await updateBuiltinCollections()
             let delay: TimeInterval
-            if BuiltinCardCollectionUpdates.needsUpdate(collections) { delay = 3600 }
+            if catalogNeedsRefresh || BuiltinCardCollectionUpdates.needsUpdate(collections) { delay = 3600 }
             else { delay = max(1, (lastBuiltinUpdate ?? .now).addingTimeInterval(BuiltinCardCollectionUpdates.interval).timeIntervalSinceNow) }
             do { try await Task.sleep(for: .seconds(delay)) }
             catch { return }
@@ -205,22 +211,8 @@ final class CardCollectionManager: ObservableObject {
     /// Downloading, decoding, resizing and writing all run off the main actor.
     nonisolated private static func downloadAndCache(_ card: SavedCard) async throws -> Bool {
         guard !FileManager.default.fileExists(atPath: CardCollectionStore.imageURL(for: card).path) else { return false }
-        let (data, response) = try await URLSession.shared.data(from: card.imageURL)
-        guard let response = response as? HTTPURLResponse, (200..<300).contains(response.statusCode), response.mimeType?.hasPrefix("image/") == true else {
-            throw URLError(.badServerResponse)
-        }
-        // Bound decoded bitmap memory for the Widget extension.
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
-              let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [
-                kCGImageSourceCreateThumbnailFromImageAlways: true,
-                kCGImageSourceThumbnailMaxPixelSize: 1000,
-                kCGImageSourceCreateThumbnailWithTransform: true
-              ] as CFDictionary) else { throw URLError(.cannotDecodeContentData) }
-        let resized = NSMutableData()
-        guard let destination = CGImageDestinationCreateWithData(resized, UTType.jpeg.identifier as CFString, 1, nil) else { throw URLError(.cannotDecodeContentData) }
-        CGImageDestinationAddImage(destination, thumbnail, [kCGImageDestinationLossyCompressionQuality: 0.9] as CFDictionary)
-        guard CGImageDestinationFinalize(destination) else { throw URLError(.cannotDecodeContentData) }
-        try CardCollectionStore.cacheImage(resized as Data, for: card)
+        let data = try await CardCollectionStore.downloadArtwork(from: card.imageURL)
+        try CardCollectionStore.cacheImage(data, for: card)
         return true
     }
 }

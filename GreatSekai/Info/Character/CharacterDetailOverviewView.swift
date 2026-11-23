@@ -28,6 +28,18 @@ struct CharacterDetailOverviewView: View {
         calendar.timeZone = .init(identifier: "Asia/Tokyo")!
         return calendar
     }
+    
+    private var alternativeLocale: Locale {
+        var components = Locale.Components(locale: locale)
+
+        components.measurementSystem = 
+            locale.measurementSystem == .metric ? .us : .metric
+
+        return Locale(components: components)
+    }
+    
+    @Environment(\.locale) private var locale
+    
     var body: some View {
         DetailInfoBase(content: {
             DetailInfoItem("Character.name", localizableText: information.fullName)
@@ -90,7 +102,17 @@ struct CharacterDetailOverviewView: View {
             })
             
             DetailInfoItem("Character.height", content: {
-                Text(information.height, format: .measurement(width: .narrow, usage: .personHeight))
+                VStack(alignment: .trailing) {
+                    Text(information.height, format: .measurement(width: .narrow, usage: .personHeight))
+                    
+                    if showAdvancedDetails {
+//                        let alternativeHeight = information.height.converted(to: Locale.current.measurementSystem == .metric ? .inches : .centimeters)
+                        
+                        Text(information.height,format: .measurement(width: .narrow, usage: .personHeight).locale(alternativeLocale))
+                            .foregroundStyle(.secondary)
+                            .environment(\.locale, alternativeLocale)
+                    }
+                }
             })
             
             if showAdvancedDetails {
@@ -359,6 +381,7 @@ struct CharacterWrappingHStack: View {
             }
         }
         .frame(maxWidth: CGFloat(characters.count) * (imageButtonSize + 10))
+        .accessibilityElement(children: .contain)
     }
     
     @ViewBuilder

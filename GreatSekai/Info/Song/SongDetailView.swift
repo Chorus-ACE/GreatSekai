@@ -39,7 +39,6 @@ struct SongDetailView: View {
                 }
 
                 SongDetailDifficultiesView(information: information)
-    //            SongDetailGameplayView(information: information)
                 SongDetailMusicVideoView(content: videoContent).id(information.id)
                 
                 if let lyrics {
@@ -55,7 +54,7 @@ struct SongDetailView: View {
                         Text("Song.lyrics").font(.title2).bold().detailSectionHeader()
                     }
                 }
-    //            DetailsEventsSection(events: information.events, applyLocaleFilter: true)
+                SongEventsSection(songID: information.id).id(information.id)
     //            SongDetailMatchView(song: information.song, songMatches: $songMatches)
 
 
@@ -134,6 +133,30 @@ struct SongDetailView: View {
         }
     }
 
+}
+
+private struct SongEventsSection: View {
+    let songID: Int
+    @State private var events: [Event]?
+    @State private var eventsFailed = false
+    @State private var retry = 0
+
+    var body: some View {
+        Group {
+            if eventsFailed {
+                DetailRetrySection(title: Event.pluralName) { retry += 1 }
+            } else {
+                DetailsEventsSection(events: events)
+            }
+        }
+        .task(id: retry) {
+            eventsFailed = false
+            let result = await ExtendedEvent.events(containingSongID: songID)
+            guard !Task.isCancelled else { return }
+            events = result
+            eventsFailed = result == nil
+        }
+    }
 }
 
 private struct SongExternalLinksSection: View {

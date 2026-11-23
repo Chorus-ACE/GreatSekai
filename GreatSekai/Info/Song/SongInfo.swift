@@ -19,7 +19,7 @@ import SwiftUI
 
 // MARK: SongInfo
 struct SongInfo: View {
-    @State var information: Song
+    let information: Song
     var subtitle: LocalizedStringKey? = nil
     var layout: SummaryLayout
     
@@ -53,10 +53,15 @@ struct SongInfo: View {
             .interpolation(.high)
         } detail: {
             Group {
+                let creator = information.creatorArtist.localizedData?.forPreferredLocale() ?? String(localized: "Info.unknown")
+                let separator = String(localized: "Typography.bold-dot-seperater")
                 if let subtitle {
-                    Text(information.creatorArtist.localizedData?.forPreferredLocale() ?? String(localized: "Info.unknown")) + Text("Typography.bold-dot-seperater").bold() + Text(subtitle)
+                    Text(creator) + Text("Typography.bold-dot-seperater").bold() + Text(subtitle)
+                } else if let focus = information.focusCharacterLabel {
+                    HighlightableText("\(creator)\(separator)\(focus)")
+                        .typesettingLanguage(.explicit(SekaiLocale.primaryLocale.nsLocale.language))
                 } else {
-                    HighlightableText(information.creatorArtist.localizedData?.forPreferredLocale() ?? String(localized: "Info.unknown"), suffix: "\(String(localized: "Typography.bold-dot-seperater"))\(information.majorCategory.localizedName(caseAllConveysMixed: true))")
+                    HighlightableText(creator, suffix: "\(separator)\(information.majorCategory.localizedName(caseAllConveysMixed: true))")
                 }
             }
             .font(platform == .macOS ? .body : .caption)

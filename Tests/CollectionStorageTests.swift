@@ -58,6 +58,20 @@ struct CollectionStorageTests {
         let empty = try CardCollectionStore.load(from: directory); assert(empty.isEmpty)
         try CardCollectionStore.save([collection], in: directory)
         let loaded = try CardCollectionStore.load(from: directory); assert(loaded == [collection])
+        let catalogBeforeUpgrade = try CardCollectionStore.loadCatalog(from: directory)
+        assert(catalogBeforeUpgrade.isEmpty)
+        let uncollected = SavedCard(cardID: 2, trained: false, title: "未收藏", imageURL: URL(string: "https://example.com/other.jpg")!)
+        try CardCollectionStore.saveCatalog([.init(artworks: [card, trained]), .init(artworks: [uncollected])], in: directory)
+        let catalog = try CardCollectionStore.loadCatalog(from: directory)
+        assert(catalog.map(\.artworks) == [[card, trained], [uncollected]])
+        let collectionsAfterCatalogSave = try CardCollectionStore.load(from: directory)
+        assert(collectionsAfterCatalogSave == [collection])
+        let link = CardWidgetLink(id: uncollected.cardID)
+        assert(CardWidgetLink(url: link.url)?.id == uncollected.cardID)
+        for malformed in ["greatsekai://cards", "greatsekai://cards/-1", "greatsekai://cards/2/3",
+                          "greatsekai://cards/unknown", "https://cards/2", CardWidgetLink.collectionsURL.absoluteString] {
+            assert(CardWidgetLink(url: URL(string: malformed)!) == nil)
+        }
         var renamed = collection; renamed.name = "New name"; renamed.cards.reverse()
         try CardCollectionStore.save([renamed], in: directory)
         let updated = try CardCollectionStore.load(from: directory); assert(updated == [renamed])
@@ -135,6 +149,6 @@ struct CollectionStorageTests {
             let input = String((0..<Int.random(in: 0...300)).map { _ in Character(UnicodeScalar(Int.random(in: 0...126))!) })
             _ = decodeCollection(input)
         }
-        print("Collection persistence, app/version identification, cross-app rejection, Unicode code round-trips, variants and 1500 malformed inputs passed.")
+        print("Collection and catalog persistence, Widget card links, app/version identification, cross-app rejection, Unicode code round-trips, variants and 1500 malformed inputs passed.")
     }
 }

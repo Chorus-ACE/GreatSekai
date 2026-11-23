@@ -116,31 +116,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Display rotating art from a chosen card collection."
+            "value" : "Show random artwork from the card catalog or rotate through a selected collection."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選択したカードコレクションのイラストを順番に表示します。"
+            "value" : "カード図鑑からランダムに選んだイラストや、選択したコレクションのイラストを表示します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "선택한 카드 컬렉션의 일러스트를 순서대로 표시합니다."
+            "value" : "카드 도감에서 무작위로 고른 일러스트나 선택한 컬렉션의 일러스트를 표시합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轮播所选收藏集中的卡面。"
+            "value" : "随机显示图鉴中的卡面，或轮播所选收藏集中的卡面。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輪播所選收藏集中的卡面。"
+            "value" : "隨機顯示圖鑑中的卡面，或輪播所選收藏集中的卡面。"
           }
         }
       }
@@ -175,6 +175,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在 GreatSekai 中加入並下載卡面。"
+          }
+        }
+      }
+    },
+    "Collections.widget-random" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Random Card"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ランダムなカード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무작위 카드"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "随机卡牌"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隨機卡片"
+          }
+        }
+      }
+    },
+    "Collections.widget-random.artwork-unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Card artwork is temporarily unavailable."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カードイラストを一時的に読み込めません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카드 일러스트를 일시적으로 불러올 수 없습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂时无法加载卡面。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫時無法載入卡面。"
+          }
+        }
+      }
+    },
+    "Collections.widget-random.load-catalog" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open GreatSekai to load the card catalog."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GreatSekaiを開いてカード図鑑を読み込んでください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GreatSekai를 열어 카드 도감을 불러오세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开 GreatSekai 加载卡牌图鉴。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟 GreatSekai 載入卡片圖鑑。"
           }
         }
       }

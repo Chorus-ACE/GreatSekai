@@ -251,36 +251,42 @@ struct CustomGroupBox<Content: View>: View {
         self.content = content
     }
     
+    private var actualStrokeLineWidth: CGFloat {
+        strokeLineWidth > 0 ? strokeLineWidth : envStrokeLineWidth
+    }
+    
     var body: some View {
-        if showGroupBox && !suppressCustomGroupBox {
-            if #available(anyAppleOS 26.0, *) {
-                ExtendedConstraints(isActive: useExtenedConstraints) {
-                    content()
-                        .padding(.all, showGroupBox && !suppressCustomGroupBox ? nil : 0)
-                }
-                .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
-                .overlay {
-                    if showGroupBox && !suppressCustomGroupBox {
-                        let strokeLineWidth = strokeLineWidth > 0 ? strokeLineWidth : envStrokeLineWidth
-                        if strokeLineWidth > 0 {
-                            RoundedRectangle(cornerRadius: cornerRadius)
-                                .strokeBorder(.tint.opacity(0.9), lineWidth: strokeLineWidth)
-                                .allowsHitTesting(false)
+        Group {
+            if showGroupBox && !suppressCustomGroupBox {
+                if #available(anyAppleOS 26.0, *) {
+                    ExtendedConstraints(isActive: useExtenedConstraints) {
+                        content()
+                            .padding(.all, showGroupBox && !suppressCustomGroupBox ? nil : 0)
+                    }
+                    .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+                    .overlay {
+                        if showGroupBox && !suppressCustomGroupBox {
+                            if actualStrokeLineWidth > 0 {
+                                RoundedRectangle(cornerRadius: cornerRadius)
+                                    .strokeBorder(.tint.opacity(0.9), lineWidth: strokeLineWidth)
+                                    .allowsHitTesting(false)
+                            }
                         }
                     }
+                    .preference(key: CustomGroupBoxActivePreference.self, value: showGroupBox)
+                } else {
+                    _CustomGroupBox2(showGroupBox: showGroupBox, cornerRadius: cornerRadius, useExtenedConstraints: useExtenedConstraints, strokeLineWidth: strokeLineWidth) {
+                        content()
+                    }
                 }
-                .preference(key: CustomGroupBoxActivePreference.self, value: showGroupBox)
             } else {
-                _CustomGroupBox2(showGroupBox: showGroupBox, cornerRadius: cornerRadius, useExtenedConstraints: useExtenedConstraints, strokeLineWidth: strokeLineWidth) {
+                ExtendedConstraints(isActive: useExtenedConstraints) {
                     content()
                 }
+                .preference(key: CustomGroupBoxActivePreference.self, value: showGroupBox)
             }
-        } else {
-            ExtendedConstraints(isActive: useExtenedConstraints) {
-                content()
-            }
-            .preference(key: CustomGroupBoxActivePreference.self, value: showGroupBox)
         }
+        .accessibilityAddTraits(actualStrokeLineWidth > 0 ? [.isSelected] : [])
     }
 }
 

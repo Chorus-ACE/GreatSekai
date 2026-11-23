@@ -526,6 +526,9 @@ private struct StoryDialogueRow: View {
         }
         .groupBoxStrokeLineWidth(isCurrent ? 3 : 0)
         .textSelection(.enabled)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Story.dialog.line.speaker-\(speaker).speech-\(displayedText)")
+        .accessibilityHint("Story.dialog.line.accessibility-hint")
 //        .contextMenu {
 //            Button("Story.copy-dialogue", systemImage: "doc.on.doc") { copyStringToClipboard(line.text) }
 //        }

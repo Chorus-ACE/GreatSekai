@@ -1,6 +1,8 @@
 import Foundation
+import ImageIO
+import UniformTypeIdentifiers
 
-/// Shared by the app and Widget extension. Art is cached before a widget timeline is requested.
+/// Shared by the app and Widget extension.
 nonisolated struct SavedCardCollection: Codable, Identifiable, Hashable, Sendable {
     var id = UUID()
     var name: String
@@ -88,6 +90,28 @@ nonisolated struct SavedCard: Codable, Identifiable, Hashable, Sendable {
     var imageFile: String { id + ".image" }
 }
 
+nonisolated struct CardCatalogEntry: Codable, Sendable {
+    let artworks: [SavedCard]
+}
+
+nonisolated struct CardWidgetLink: Identifiable {
+    static let collectionsURL = URL(string: "greatsekai://collections")!
+    let id: Int
+
+    init(id: Int) {
+        self.id = id
+    }
+
+    init?(url: URL) {
+        let path = url.pathComponents
+        guard url.scheme == "greatsekai", url.host == "cards", path.count == 2,
+              let id = Int(path[1]), id > 0 else { return nil }
+        self.init(id: id)
+    }
+
+    var url: URL { URL(string: "greatsekai://cards/\(id)")! }
+}
+
 nonisolated enum CardCollectionStore {
     static let groupID = "group.com.qastor.GreatSekai.Widgets"
     static let widgetKind = "com.qastor.GreatSekai.CardCollection"
@@ -112,16 +136,26 @@ nonisolated enum CardCollectionStore {
     }
     static var file: URL { directory.appendingPathComponent("Collections.plist") }
     static func load(from directory: URL = Self.directory) throws -> [SavedCardCollection] {
-        let file = directory.appendingPathComponent("Collections.plist")
-        guard FileManager.default.fileExists(atPath: file.path) else { return [] }
-        return try PropertyListDecoder().decode([SavedCardCollection].self, from: Data(contentsOf: file))
+        try loadList(from: directory.appendingPathComponent("Collections.plist"))
     }
     static func save(_ collections: [SavedCardCollection], in directory: URL = Self.directory) throws {
-        let file = directory.appendingPathComponent("Collections.plist")
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try saveList(collections, to: directory.appendingPathComponent("Collections.plist"))
+    }
+    static func loadCatalog(from directory: URL = Self.directory) throws -> [CardCatalogEntry] {
+        try loadList(from: directory.appendingPathComponent("CardCatalog.plist"))
+    }
+    static func saveCatalog(_ catalog: [CardCatalogEntry], in directory: URL = Self.directory) throws {
+        try saveList(catalog, to: directory.appendingPathComponent("CardCatalog.plist"))
+    }
+    private static func loadList<Element: Decodable>(from file: URL) throws -> [Element] {
+        guard FileManager.default.fileExists(atPath: file.path) else { return [] }
+        return try PropertyListDecoder().decode([Element].self, from: Data(contentsOf: file))
+    }
+    private static func saveList<Element: Encodable>(_ values: [Element], to file: URL) throws {
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
-        try encoder.encode(collections).write(to: file, options: .atomic)
+        try encoder.encode(values).write(to: file, options: .atomic)
     }
     static func imageURL(for card: SavedCard) -> URL {
         directory.appendingPathComponent("Images", isDirectory: true).appendingPathComponent(card.imageFile)
@@ -130,5 +164,26 @@ nonisolated enum CardCollectionStore {
         let path = imageURL(for: card)
         try FileManager.default.createDirectory(at: path.deletingLastPathComponent(), withIntermediateDirectories: true)
         try data.write(to: path, options: .atomic)
+    }
+    static func downloadArtwork(from url: URL, timeout: TimeInterval = 60) async throws -> Data {
+        let request = URLRequest(url: url, timeoutInterval: timeout)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let response = response as? HTTPURLResponse,
+              (200..<300).contains(response.statusCode),
+              response.mimeType?.hasPrefix("image/") == true else { throw URLError(.badServerResponse) }
+
+        // Bound decoded bitmap memory for the Widget extension.
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceThumbnailMaxPixelSize: 1000,
+                kCGImageSourceCreateThumbnailWithTransform: true
+              ] as CFDictionary) else { throw URLError(.cannotDecodeContentData) }
+        let resized = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(resized, UTType.jpeg.identifier as CFString, 1, nil)
+        else { throw URLError(.cannotDecodeContentData) }
+        CGImageDestinationAddImage(destination, thumbnail, [kCGImageDestinationLossyCompressionQuality: 0.9] as CFDictionary)
+        guard CGImageDestinationFinalize(destination) else { throw URLError(.cannotDecodeContentData) }
+        return resized as Data
     }
 }
